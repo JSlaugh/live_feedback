@@ -59,12 +59,6 @@ defmodule LiveFeedbackWeb.FeedbackLive.Index do
     |> assign(:messages, Messages.get_messages_for_course_page_id(course_page.id))
   end
 
-  # defp apply_action(socket, :index, %{"id" => id}) do
-  #   socket
-  #   |> assign(:page_title, "Edit Course page")
-  #   |> assign(:course_page, Courses.get_course_page!(id))
-  # end
-
   defp apply_action(socket, :new, %{"coursepage" => coursepage}) do
     socket
     |> assign(:page_title, "New Message")
@@ -102,58 +96,42 @@ defmodule LiveFeedbackWeb.FeedbackLive.Index do
     if (socket.assigns.current_user && socket.assigns.current_user.is_admin) ||
          message.anonymous_id == socket.assigns.anonymous_id do
       Messages.update_message(id, %{"content" => content})
-      {:noreply, stream(socket, :messages, %{})}
+      {:noreply, stream(socket, :messages, Messages.get_messages_for_course_page_id(socket.assigns.course_page.id))}
     else
-      {:noreply, put_flash(socket, :error, "You are not authorized to edit this message.")}
+      {:noreply, put_flash(socket, :error, "You cannot edit this message.")}
     end
   end
 
   @impl true
-  def handle_event("edit_message", %{"id" => id}, socket) do
+  def handle_event("like_message", %{"id" => id, "value" => value}, socket) do
     message = Messages.get_message!(id)
+    user_id_or_anonymous_id = socket.assigns.anonymous_id  # Or use current_user.id for logged-in users
 
-    {:noreply, assign(socket, live_action: :edit, message: message)}
-  end
+    # Add logging to verify the function call
+    IO.inspect(user_id_or_anonymous_id, label: "User ID or Anonymous ID")
+    IO.inspect(message, label: "Message")
 
-  @impl true
-  def handle_info({:new_message, message}, socket) do
-    if message.course_page_id == socket.assigns.course_page.id do
-      {:noreply, stream_insert(socket, :messages, message)}
-    else
-      {:noreply, socket}
+    case Messages.toggle_like_message(message, user_id_or_anonymous_id, value) do
+      {:ok, updated_message} ->
+        IO.inspect(updated_message, label: "Updated Message")  # Log updated message for debugging
+
+        # Update the message stream manually
+        updated_streams =
+          Enum.map(socket.assigns.streams.messages, fn
+            {id, msg} when id == message.id -> {id, updated_message}
+            other -> other
+          end)
+
+        {:noreply, assign(socket, streams: %{messages: updated_streams})}
+
+      {:error, _changeset} ->
+        IO.inspect("Error updating message")
+        {:noreply, socket}
     end
   end
 
-  @impl true
-  def handle_info({:updated_message, message}, socket) do
-    if message.course_page_id == socket.assigns.course_page.id do
-      {:noreply, stream_insert(socket, :messages, message)}
-    else
-      {:noreply, socket}
-    end
-  end
 
-  @impl true
-  def handle_info({:deleted_message, message}, socket) do
-    if message.course_page_id == socket.assigns.course_page.id do
-      {:noreply, stream_delete(socket, :messages, message)}
-    else
-      {:noreply, socket}
-    end
-  end
 
-  @impl true
-  def handle_info({:deleted_all_messages, _course_page}, socket) do
-    {:noreply, stream(socket, :messages, [], reset: true)}
-  end
 
-  @impl true
-  def handle_info({LiveFeedbackWeb.FeedbackLive.FormComponent, {:saved, _message}}, socket) do
-    # if message.course_page_id == socket.assigns.course_page.id do
-    #   updated_messages = [message | socket.assigns.messages]
-    #   {:noreply, stream(socket, :messages, updated_messages)}
-    # else
-    {:noreply, socket}
-    # end
-  end
+
 end
