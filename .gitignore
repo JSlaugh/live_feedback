@@ -39,5 +39,4 @@ npm-debug.log
 .vs/*
 
 #ignore env
-.env
 config/.env.exs
