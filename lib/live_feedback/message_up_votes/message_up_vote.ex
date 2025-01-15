@@ -20,9 +20,7 @@ defmodule LiveFeedback.MixProject.MessageUpVotes do
     |> validate_required(@required_fields)
     |> foreign_key_constraint(:users_id)
     |> foreign_key_constraint(:messages_id)
-    |> unique_constraint([:users,:messages],
-    name: :users_id,
-    message: @already_exists
+    |> unique_constraint([:users,:messages]
     )
   end
 end

@@ -37,3 +37,6 @@ npm-debug.log
 
 #ignore vscode files
 .vs/*
+
+#ignore env
+config/.env.exs
