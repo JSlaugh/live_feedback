@@ -103,32 +103,24 @@ defmodule LiveFeedbackWeb.FeedbackLive.Index do
   end
 
   @impl true
-  def handle_event("like_message", %{"id" => id, "value" => value}, socket) do
-    message = Messages.get_message!(id)
-    user_id_or_anonymous_id = socket.assigns.anonymous_id  # Or use current_user.id for logged-in users
+  @impl true
+def handle_event("like_message", %{"id" => id, "value" => value}, socket) do
+  message = Messages.get_message!(id)
+  user_id_or_anonymous_id = socket.assigns.anonymous_id
 
-    # Add logging to verify the function call
-    IO.inspect(user_id_or_anonymous_id, label: "User ID or Anonymous ID")
-    IO.inspect(message, label: "Message")
+  case Messages.toggle_like_message(message, user_id_or_anonymous_id, value) do
+    {:ok, updated_message} ->
+      # Update the message in the LiveView stream
+      {:noreply, stream_insert(socket, :messages, updated_message)}
 
-    case Messages.toggle_like_message(message, user_id_or_anonymous_id, value) do
-      {:ok, updated_message} ->
-        IO.inspect(updated_message, label: "Updated Message")  # Log updated message for debugging
-
-        # Update the message stream manually
-        updated_streams =
-          Enum.map(socket.assigns.streams.messages, fn
-            {id, msg} when id == message.id -> {id, updated_message}
-            other -> other
-          end)
-
-        {:noreply, assign(socket, streams: %{messages: updated_streams})}
-
-      {:error, _changeset} ->
-        IO.inspect("Error updating message")
-        {:noreply, socket}
-    end
+    {:error, changeset} ->
+      # Handle errors, e.g., log or display an error message
+      IO.inspect(changeset.errors, label: "Changeset Errors")
+      {:noreply, socket}
   end
+end
+
+
 
 
 

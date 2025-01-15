@@ -136,8 +136,6 @@ def toggle_like_message(%Message{} = message, user_id_or_anonymous_id, _value) d
   # Get the current list of user IDs who have liked this message or default to an empty list
   liked_by_user_ids = message.liked_by_user_ids || []
 
-  IO.inspect(liked_by_user_ids, label: "Liked By User IDs Before Update")
-
   # Determine if the user has already liked the message
   user_has_liked = Enum.member?(liked_by_user_ids, user_id_or_anonymous_id)
 
@@ -156,18 +154,13 @@ def toggle_like_message(%Message{} = message, user_id_or_anonymous_id, _value) d
       message.like_count + 1
     end
 
-  IO.inspect(updated_likes, label: "Updated Liked By User IDs")
-  IO.inspect(updated_like_count, label: "Updated Like Count")
-
   changeset = Message.changeset(message, %{like_count: updated_like_count, liked_by_user_ids: updated_likes})
 
   case Repo.update(changeset) do
     {:ok, updated_message} ->
-      IO.inspect(updated_message, label: "Message After Update")
       {:ok, updated_message}
 
     {:error, changeset} ->
-      IO.inspect(changeset.errors, label: "Error Changeset")
       {:error, changeset}
   end
 end
