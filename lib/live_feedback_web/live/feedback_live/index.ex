@@ -59,6 +59,12 @@ defmodule LiveFeedbackWeb.FeedbackLive.Index do
     |> assign(:messages, Messages.get_messages_for_course_page_id(course_page.id))
   end
 
+  # defp apply_action(socket, :index, %{"id" => id}) do
+  #   socket
+  #   |> assign(:page_title, "Edit Course page")
+  #   |> assign(:course_page, Courses.get_course_page!(id))
+  # end
+
   defp apply_action(socket, :new, %{"coursepage" => coursepage}) do
     socket
     |> assign(:page_title, "New Message")
@@ -96,29 +102,80 @@ defmodule LiveFeedbackWeb.FeedbackLive.Index do
     if (socket.assigns.current_user && socket.assigns.current_user.is_admin) ||
          message.anonymous_id == socket.assigns.anonymous_id do
       Messages.update_message(id, %{"content" => content})
-      {:noreply, stream(socket, :messages, Messages.get_messages_for_course_page_id(socket.assigns.course_page.id))}
+      {:noreply, stream(socket, :messages, %{})}
     else
-      {:noreply, put_flash(socket, :error, "You cannot edit this message.")}
+      {:noreply, put_flash(socket, :error, "You are not authorized to edit this message.")}
     end
   end
 
   @impl true
-def handle_event("like_message", %{"id" => id, "value" => value}, socket) do
-  # Fetch the message and handle the like logic
-  message = Messages.get_message!(id)
-  user_id_or_anonymous_id = socket.assigns.anonymous_id
+  def handle_event("edit_message", %{"id" => id}, socket) do
+    message = Messages.get_message!(id)
 
-  case Messages.toggle_like_message(message, user_id_or_anonymous_id, value) do
-    {:ok, updated_message} ->
-      # Update only the changed message in the stream
-      {:noreply, stream_insert(socket, :messages, updated_message)}
-
-    {:error, changeset} ->
-      # Log errors for debugging
-      IO.inspect(changeset.errors, label: "Changeset Errors")
-      {:noreply, socket}
+    {:noreply, assign(socket, live_action: :edit, message: message)}
   end
-end
+
+  @impl true
+  def handle_event("like_message", %{"id" => id, "value" => value}, socket) do
+    # Fetch the message and handle the like logic
+    message = Messages.get_message!(id)
+    user_id_or_anonymous_id = socket.assigns.anonymous_id
+
+    case Messages.toggle_like_message(message, user_id_or_anonymous_id, value) do
+      {:ok, updated_message} ->
+        # Update only the changed message in the stream
+        {:noreply, stream_insert(socket, :messages, updated_message)}
+
+      {:error, changeset} ->
+        # Log errors for debugging
+        IO.inspect(changeset.errors, label: "Changeset Errors")
+        {:noreply, socket}
+    end
+  end
+
+  @impl true
+  def handle_info({:new_message, message}, socket) do
+    if message.course_page_id == socket.assigns.course_page.id do
+      {:noreply, stream_insert(socket, :messages, message)}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  @impl true
+  def handle_info({:updated_message, message}, socket) do
+    if message.course_page_id == socket.assigns.course_page.id do
+      {:noreply, stream_insert(socket, :messages, message)}
+    else
+      {:noreply, socket}
+    end
+  end
+
+
+  @impl true
+  def handle_info({:deleted_message, message}, socket) do
+    if message.course_page_id == socket.assigns.course_page.id do
+      {:noreply, stream_delete(socket, :messages, message)}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  @impl true
+  def handle_info({:deleted_all_messages, _course_page}, socket) do
+    {:noreply, stream(socket, :messages, [], reset: true)}
+  end
+
+  @impl true
+  def handle_info({LiveFeedbackWeb.FeedbackLive.FormComponent, {:saved, _message}}, socket) do
+    # if message.course_page_id == socket.assigns.course_page.id do
+    #   updated_messages = [message | socket.assigns.messages]
+    #   {:noreply, stream(socket, :messages, updated_messages)}
+    # else
+    {:noreply, socket}
+    # end
+  end
+
 
 
 end
