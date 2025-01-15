@@ -103,27 +103,22 @@ defmodule LiveFeedbackWeb.FeedbackLive.Index do
   end
 
   @impl true
-  @impl true
 def handle_event("like_message", %{"id" => id, "value" => value}, socket) do
+  # Fetch the message and handle the like logic
   message = Messages.get_message!(id)
   user_id_or_anonymous_id = socket.assigns.anonymous_id
 
   case Messages.toggle_like_message(message, user_id_or_anonymous_id, value) do
     {:ok, updated_message} ->
-      # Update the message in the LiveView stream
+      # Update only the changed message in the stream
       {:noreply, stream_insert(socket, :messages, updated_message)}
 
     {:error, changeset} ->
-      # Handle errors, e.g., log or display an error message
+      # Log errors for debugging
       IO.inspect(changeset.errors, label: "Changeset Errors")
       {:noreply, socket}
   end
 end
-
-
-
-
-
 
 
 end

@@ -17,7 +17,7 @@
   <% end %>
 </.header>
 
-<div id="messages" phx-update="replace" class="mt-4">
+<div id="messages" phx-update="stream" class="mt-4">
   <%= for {id, message} <- @streams.messages do %>
     <div
       id={"message-#{id}"}
