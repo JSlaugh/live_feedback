@@ -143,9 +143,10 @@ defmodule LiveFeedbackWeb.FeedbackLive.Index do
   end
 
   @impl true
-  def handle_info({:updated_message, message}, socket) do
-    if message.course_page_id == socket.assigns.course_page.id do
-      {:noreply, stream_insert(socket, :messages, message)}
+  def handle_info({:updated_message, updated_message}, socket) do
+    # Only update the message if it belongs to the current course page
+    if updated_message.course_page_id == socket.assigns.course_page.id do
+      {:noreply, stream_insert(socket, :messages, updated_message)}
     else
       {:noreply, socket}
     end
@@ -165,6 +166,17 @@ defmodule LiveFeedbackWeb.FeedbackLive.Index do
   def handle_info({:deleted_all_messages, _course_page}, socket) do
     {:noreply, stream(socket, :messages, [], reset: true)}
   end
+
+  @impl true
+def handle_info({:like_updated, updated_message}, socket) do
+  # Ensure that the message is for the current course page
+  if updated_message.course_page_id == socket.assigns.course_page.id do
+    # Insert the updated message into the stream to update the like count
+    {:noreply, stream_insert(socket, :messages, updated_message)}
+  else
+    {:noreply, socket}
+  end
+end
 
   @impl true
   def handle_info({LiveFeedbackWeb.FeedbackLive.FormComponent, {:saved, _message}}, socket) do

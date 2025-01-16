@@ -185,41 +185,7 @@ defmodule LiveFeedback.Messages do
     end
   end
 
-  @doc """
-Toggles the like on a message for a given user (authenticated or anonymous).
-"""
-def toggle_like_message(%Message{} = message, user_id_or_anonymous_id, _value) do
-  # Get the current list of user IDs who have liked this message or default to an empty list
-  liked_by_user_ids = message.liked_by_user_ids || []
 
-  # Determine if the user has already liked the message
-  user_has_liked = Enum.member?(liked_by_user_ids, user_id_or_anonymous_id)
-
-  # Update the like count and list
-  updated_likes =
-    if user_has_liked do
-      List.delete(liked_by_user_ids, user_id_or_anonymous_id)
-    else
-      [user_id_or_anonymous_id | liked_by_user_ids]
-    end
-
-  updated_like_count =
-    if user_has_liked do
-      message.like_count - 1
-    else
-      message.like_count + 1
-    end
-
-  changeset = Message.changeset(message, %{like_count: updated_like_count, liked_by_user_ids: updated_likes})
-
-  case Repo.update(changeset) do
-    {:ok, updated_message} ->
-      {:ok, updated_message}
-
-    {:error, changeset} ->
-      {:error, changeset}
-  end
-end
 
 @doc """
 Toggles the like on a message for a given user (authenticated or anonymous).
@@ -250,12 +216,17 @@ def toggle_like_message(%Message{} = message, user_id_or_anonymous_id, _value) d
 
   case Repo.update(changeset) do
     {:ok, updated_message} ->
+      # Broadcast the updated message to the course page topic
+      topic = "messages:#{updated_message.course_page_id}"
+      Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:updated_message, updated_message})
+
       {:ok, updated_message}
 
     {:error, changeset} ->
       {:error, changeset}
   end
 end
+
 
   def subscribe(course_page_id) do
     topic = "messages:#{course_page_id}"
