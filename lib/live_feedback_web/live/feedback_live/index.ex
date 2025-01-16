@@ -119,9 +119,9 @@ defmodule LiveFeedbackWeb.FeedbackLive.Index do
   def handle_event("like_message", %{"id" => id, "value" => value}, socket) do
     # Fetch the message and handle the like logic
     message = Messages.get_message!(id)
-    user_id_or_anonymous_id = socket.assigns.anonymous_id
+    anonymous_id = socket.assigns.anonymous_id
 
-    case Messages.toggle_like_message(message, user_id_or_anonymous_id, value) do
+    case Messages.toggle_like_message(message, anonymous_id) do
       {:ok, updated_message} ->
         # Update only the changed message in the stream
         {:noreply, stream_insert(socket, :messages, updated_message)}

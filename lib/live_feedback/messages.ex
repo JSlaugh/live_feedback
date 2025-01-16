@@ -9,6 +9,7 @@ defmodule LiveFeedback.Messages do
   alias LiveFeedback.Repo
 
   alias LiveFeedback.Messages.Message
+  alias LiveFeedback.Messages.LikedBy
   alias LiveFeedback.Courses.CoursePage
 
   # Admins can update any message
@@ -190,33 +191,52 @@ defmodule LiveFeedback.Messages do
 @doc """
 Toggles the like on a message for a given user (authenticated or anonymous).
 """
-def toggle_like_message(%Message{} = message, user_id_or_anonymous_id, _value) do
-  # Get the current list of user IDs who have liked this message or default to an empty list
-  liked_by_user_ids = message.liked_by_user_ids || []
+@doc """
+Toggles the like on a message for a given user (authenticated or anonymous).
+"""
+def toggle_like_message(%Message{} = message, anonymous_id) do
+  like_query =
+    from(l in LikedBy,
+      where: l.message_id == ^message.id and l.anonymous_id == ^anonymous_id
+    )
 
-  # Determine if the user has already liked the message
-  user_has_liked = Enum.member?(liked_by_user_ids, user_id_or_anonymous_id)
+  case Repo.one(like_query) do
+    # If a like exists, remove it
+    %LikedBy{} = like ->
+      Repo.delete(like)
+      |> case do
+        {:ok, _} ->
+          update_like_count(message, -1)
 
-  # Update the like count and list
-  updated_likes =
-    if user_has_liked do
-      List.delete(liked_by_user_ids, user_id_or_anonymous_id)
-    else
-      [user_id_or_anonymous_id | liked_by_user_ids]
-    end
+        {:error, changeset} ->
+          {:error, changeset}
+      end
 
-  updated_like_count =
-    if user_has_liked do
-      message.like_count - 1
-    else
-      message.like_count + 1
-    end
+    # If no like exists, create one
+    nil ->
+      %LikedBy{}
+      |> LikedBy.changeset(%{message_id: message.id, anonymous_id: anonymous_id})
+      |> Repo.insert()
+      |> case do
+        {:ok, _} ->
+          update_like_count(message, 1)
 
-  changeset = Message.changeset(message, %{like_count: updated_like_count, liked_by_user_ids: updated_likes})
+        {:error, changeset} ->
+          {:error, changeset}
+      end
+  end
+end
 
-  case Repo.update(changeset) do
+# Helper function to update the like count on a message
+defp update_like_count(%Message{} = message, delta) do
+  new_count = message.like_count + delta
+
+  message
+  |> Message.changeset(%{like_count: new_count})
+  |> Repo.update()
+  |> case do
     {:ok, updated_message} ->
-      # Broadcast the updated message to the course page topic
+      # Broadcast the updated message
       topic = "messages:#{updated_message.course_page_id}"
       Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:updated_message, updated_message})
 
@@ -227,6 +247,17 @@ def toggle_like_message(%Message{} = message, user_id_or_anonymous_id, _value) d
   end
 end
 
+def has_liked_message?(%Message{} = message, anonymous_id) do
+  like_query =
+    from(l in LikedBy,
+      where: l.message_id == ^message.id and l.anonymous_id == ^anonymous_id
+    )
+
+  case Repo.one(like_query) do
+    nil -> false
+    %LikedBy{} -> true
+  end
+end
 
   def subscribe(course_page_id) do
     topic = "messages:#{course_page_id}"
