@@ -178,6 +178,15 @@ def handle_info({:like_updated, updated_message}, socket) do
   end
 end
 
+def handle_event("focus_message", %{"id" => id}, socket) do
+  message = LiveFeedback.Messages.get_message!(id)
+
+  {:noreply,
+   socket
+   |> assign(:live_action, :focus)
+   |> assign(:message, message)}
+end
+
   @impl true
   def handle_info({LiveFeedbackWeb.FeedbackLive.FormComponent, {:saved, _message}}, socket) do
     # if message.course_page_id == socket.assigns.course_page.id do
