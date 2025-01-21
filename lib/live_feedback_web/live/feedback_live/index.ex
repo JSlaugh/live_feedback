@@ -154,13 +154,19 @@ defmodule LiveFeedbackWeb.FeedbackLive.Index do
 
 
   @impl true
-  def handle_info({:deleted_message, message}, socket) do
-    if message.course_page_id == socket.assigns.course_page.id do
-      {:noreply, stream_delete(socket, :messages, message)}
-    else
-      {:noreply, socket}
-    end
+def handle_info({:deleted_message, message}, socket) do
+  if message.course_page_id == socket.assigns.course_page.id do
+    socket =
+      socket
+      |> stream_delete(:messages, message)
+      |> push_patch(to: ~p"/page/#{socket.assigns.course_page.slug}")
+
+    {:noreply, socket}
+  else
+    {:noreply, socket}
   end
+end
+
 
   @impl true
   def handle_info({:deleted_all_messages, _course_page}, socket) do
