@@ -161,8 +161,19 @@ defmodule LiveFeedback.Messages do
       [%Message{}, ...]
 
   """
-  def get_messages_for_course_page_id(course_page_id) do
-    from(m in Message, where: m.course_page_id == ^course_page_id, order_by: [asc: m.inserted_at])
+  def get_messages_for_course_page_id(course_page_id, sort_by \\ :oldest) do
+    sort_order =
+      case sort_by do
+        :newest -> [desc: :inserted_at]
+        :oldest -> [asc: :inserted_at]
+        :like_count -> [desc: :like_count]
+        _ -> [asc: :inserted_at] # Default to oldest
+      end
+
+    from(m in Message,
+      where: m.course_page_id == ^course_page_id,
+      order_by: ^sort_order
+    )
     |> Repo.all(preload: [:course_page])
   end
 

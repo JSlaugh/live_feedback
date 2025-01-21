@@ -25,11 +25,13 @@ defmodule LiveFeedbackWeb.FeedbackLive.Index do
      |> assign(:anonymous_id, anonymous_id)
      |> assign(:page_admin, page_admin)
      |> assign(:course_page, course_page)
+     |> assign_new(:sort_by, fn -> :oldest end) # Use existing sort_by or default to :oldest
      |> stream(
        :messages,
        Messages.get_messages_for_course_page_id(course_page.id)
      )}
   end
+
 
   def get_anonymous_id(session) do
     Map.get(session, "anonymous_id")
@@ -193,6 +195,24 @@ def handle_event("focus_message", %{"id" => id}, socket) do
    |> assign(:message, message)}
 end
 
+@impl true
+def handle_event("sort_messages", %{"sort" => sort_by}, socket) do
+  IO.inspect(sort_by, label: "Sort by")
+
+  # Ensure that sort_by is an atom
+  sort_by_atom = String.to_existing_atom(sort_by)
+
+  course_page_id = socket.assigns.course_page.id
+
+  # Fetch and update the sorted messages
+  sorted_messages = Messages.get_messages_for_course_page_id(course_page_id, sort_by_atom)
+
+  {:noreply,
+   socket
+   |> assign(:sort_by, sort_by_atom)  # Update the sort_by atom in the socket
+   |> stream(:messages, sorted_messages, reset: true)}  # Stream the sorted messages
+end
+
   @impl true
   def handle_info({LiveFeedbackWeb.FeedbackLive.FormComponent, {:saved, _message}}, socket) do
     # if message.course_page_id == socket.assigns.course_page.id do
@@ -202,7 +222,5 @@ end
     {:noreply, socket}
     # end
   end
-
-
 
 end
