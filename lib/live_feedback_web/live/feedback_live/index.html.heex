@@ -79,30 +79,7 @@
     <div class="max-w-[90%]">
       <p class="text-lg"><%= @message.content %></p>
     </div>
-    <!-- Display Like Count and Like Button -->
-    <div class="absolute bottom-0 left-0 flex space-x-2 mt-2">
-      <span>Likes: <%= @message.like_count %></span>
-      <button
-        phx-click="like_message"
-        phx-value-id={@message.id}
-        phx-value-value="like"
-        class="ml-2 text-blue-500"
-      >
-        <.icon
-          name={
-            if LiveFeedback.Messages.has_liked_message?(@message, @anonymous_id),
-              do: "hero-hand-thumb-up-solid",
-              else: "hero-hand-thumb-up"
-          }
-        />
-      </button>
-    </div>
     <div class="absolute top-0 right-0 flex mt-2 mr-2 space-x-2">
-      <%= if @anonymous_id == @message.anonymous_id do %>
-        <button phx-click="edit_message" phx-value-id={@message.id} class="text-blue-500">
-          <.icon name="hero-pencil-square" />
-        </button>
-      <% end %>
       <%= if @page_admin || @anonymous_id == @message.anonymous_id do %>
         <button phx-click="delete_message" phx-value-id={@message.id} class="ml-2 text-red-500">
           <.icon name="hero-trash" />
