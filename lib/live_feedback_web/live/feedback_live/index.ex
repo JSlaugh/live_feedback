@@ -25,11 +25,13 @@ defmodule LiveFeedbackWeb.FeedbackLive.Index do
      |> assign(:anonymous_id, anonymous_id)
      |> assign(:page_admin, page_admin)
      |> assign(:course_page, course_page)
+     |> assign_new(:sort_by, fn -> :oldest end) # Use existing sort_by or default to :oldest
      |> stream(
        :messages,
        Messages.get_messages_for_course_page_id(course_page.id)
      )}
   end
+
 
   def get_anonymous_id(session) do
     Map.get(session, "anonymous_id")
@@ -116,6 +118,24 @@ defmodule LiveFeedbackWeb.FeedbackLive.Index do
   end
 
   @impl true
+  def handle_event("like_message", %{"id" => id, "value" => value}, socket) do
+    # Fetch the message and handle the like logic
+    message = Messages.get_message!(id)
+    anonymous_id = socket.assigns.anonymous_id
+
+    case Messages.toggle_like_message(message, anonymous_id) do
+      {:ok, updated_message} ->
+        # Update only the changed message in the stream
+        {:noreply, stream_insert(socket, :messages, updated_message)}
+
+      {:error, changeset} ->
+        # Log errors for debugging
+        IO.inspect(changeset.errors, label: "Changeset Errors")
+        {:noreply, socket}
+    end
+  end
+
+  @impl true
   def handle_info({:new_message, message}, socket) do
     if message.course_page_id == socket.assigns.course_page.id do
       {:noreply, stream_insert(socket, :messages, message)}
@@ -125,27 +145,71 @@ defmodule LiveFeedbackWeb.FeedbackLive.Index do
   end
 
   @impl true
-  def handle_info({:updated_message, message}, socket) do
-    if message.course_page_id == socket.assigns.course_page.id do
-      {:noreply, stream_insert(socket, :messages, message)}
+  def handle_info({:updated_message, updated_message}, socket) do
+    # Only update the message if it belongs to the current course page
+    if updated_message.course_page_id == socket.assigns.course_page.id do
+      {:noreply, stream_insert(socket, :messages, updated_message)}
     else
       {:noreply, socket}
     end
   end
 
+
   @impl true
-  def handle_info({:deleted_message, message}, socket) do
-    if message.course_page_id == socket.assigns.course_page.id do
-      {:noreply, stream_delete(socket, :messages, message)}
-    else
-      {:noreply, socket}
-    end
+def handle_info({:deleted_message, message}, socket) do
+  if message.course_page_id == socket.assigns.course_page.id do
+    socket =
+      socket
+      |> stream_delete(:messages, message)
+      |> push_patch(to: ~p"/page/#{socket.assigns.course_page.slug}")
+
+    {:noreply, socket}
+  else
+    {:noreply, socket}
   end
+end
+
 
   @impl true
   def handle_info({:deleted_all_messages, _course_page}, socket) do
     {:noreply, stream(socket, :messages, [], reset: true)}
   end
+
+  @impl true
+def handle_info({:like_updated, updated_message}, socket) do
+  # Ensure that the message is for the current course page
+  if updated_message.course_page_id == socket.assigns.course_page.id do
+    # Insert the updated message into the stream to update the like count
+    {:noreply, stream_insert(socket, :messages, updated_message)}
+  else
+    {:noreply, socket}
+  end
+end
+
+def handle_event("focus_message", %{"id" => id}, socket) do
+  message = LiveFeedback.Messages.get_message!(id)
+
+  {:noreply,
+   socket
+   |> assign(:live_action, :focus)
+   |> assign(:message, message)}
+end
+
+@impl true
+def handle_event("sort_messages", %{"sort" => sort_by}, socket) do
+  # Ensure that sort_by is an atom
+  sort_by_atom = String.to_existing_atom(sort_by)
+
+  course_page_id = socket.assigns.course_page.id
+
+  # Fetch and update the sorted messages
+  sorted_messages = Messages.get_messages_for_course_page_id(course_page_id, sort_by_atom)
+
+  {:noreply,
+   socket
+   |> assign(:sort_by, sort_by_atom)  # Update the sort_by atom in the socket
+   |> stream(:messages, sorted_messages, reset: true)}  # Stream the sorted messages
+end
 
   @impl true
   def handle_info({LiveFeedbackWeb.FeedbackLive.FormComponent, {:saved, _message}}, socket) do
@@ -156,4 +220,5 @@ defmodule LiveFeedbackWeb.FeedbackLive.Index do
     {:noreply, socket}
     # end
   end
+
 end
