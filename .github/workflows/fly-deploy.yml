@@ -15,7 +15,7 @@ jobs:
       name: ${{ github.ref_name }}    # main or development
     env:
       FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-      DEPLOY_FILE: ${{ secrets.FLY_DEPLOY_FILE }}
+      # DEPLOY_FILE: ${{ secrets.FLY_DEPLOY_FILE }}
     steps:
       # 1 Checkout the code
       - name: Checkout code
@@ -28,4 +28,4 @@ jobs:
       # 3 Deploy to fly.io
       - name: Deploy to fly.io
         run: |
-            flyctl deploy --remote-only --config "$env:DEPLOY_FILE"
+            flyctl deploy --remote-only --config "$FLY_DEPLOY_FILE"
