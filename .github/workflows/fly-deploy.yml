@@ -11,11 +11,9 @@ jobs:
     name: Deploy app
     runs-on: ubuntu-latest
     concurrency: deploy-group    # optional: ensure only one action runs at a time
-    environment:
-      name: ${{ github.ref_name }}    # main or development
+    environment: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
     env:
       FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-      # DEPLOY_FILE: ${{ secrets.FLY_DEPLOY_FILE }}
     steps:
       - run: echo $FLY_DEPLOY_FILE
       - run: echo $FLY_API_TOKEN
