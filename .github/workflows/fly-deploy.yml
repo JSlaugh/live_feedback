@@ -12,12 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     concurrency: deploy-group    # optional: ensure only one action runs at a time
     environment: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
-    env:
-      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
     steps:
-      - run: echo "$FLY_DEPLOY_FILE"
-      - run: echo "$FLY_API_TOKEN"
-
       # 1 Checkout the code
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,3 +25,6 @@ jobs:
       - name: Deploy to fly.io
         run: |
             flyctl deploy --remote-only --config "$FLY_DEPLOY_FILE"
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_DEPLOY_FILE: ${{ vars.FLY_DEPLOY_FILE }}
