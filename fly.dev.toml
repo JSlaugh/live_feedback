@@ -16,6 +16,7 @@ kill_signal = 'SIGTERM'
 [env]
   PHX_HOST = 'live-feedback-dev.fly.dev'
   PORT = '8080'
+  LOG_LEVEL = "debug"
 
 [http_service]
   internal_port = 8080
