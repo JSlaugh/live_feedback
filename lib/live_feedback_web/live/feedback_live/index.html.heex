@@ -15,7 +15,25 @@
   <%= if @current_user do %>
     <div class="absolute top-0 right-0 hidden mt-32 mr-32 lg:block"><%= raw(@qr_code_svg) %></div>
   <% end %>
+  <div class="outer-container">
+    <div class="flex items-center justify-between mt-4">
+      <form phx-change="sort_messages">
+        <select
+          id="sort"
+          name="sort"
+          class="p-2 border rounded-lg"
+        >
+          <option value="oldest" selected={@sort_by == :oldest}>Oldest</option>
+          <option value="newest" selected={@sort_by == :newest}>Newest</option>
+          <option value="like_count" selected={@sort_by == :like_count}>Most Liked</option>
+        </select>
+      </form>
+    </div>
+  </div>
+  
+  
 </.header>
+
 
 <div id="messages" phx-update="stream" class="mt-4">
   <div
@@ -25,6 +43,34 @@
   >
     <div class="max-w-[90%]">
       <p class="text-lg"><%= message.content %></p>
+    </div>
+    <!-- Button to Focus Message -->
+    <%= if @page_admin do %>
+    <button
+      phx-click="focus_message"
+      phx-value-id={message.id}
+      class="mt-2 text-blue-500 underline"
+    >
+    <.icon name="hero-arrows-pointing-out" />
+    </button>
+    <%= end %>
+    <!-- Display Like Count and Like Button -->
+    <div class="absolute bottom-0 left-0 flex space-x-2 mt-2">
+      <span>Likes: <%= message.like_count %></span>
+      <button
+        phx-click="like_message"
+        phx-value-id={message.id}
+        phx-value-value="like"
+        class="ml-2 text-blue-500"
+      >
+        <.icon
+          name={
+            if LiveFeedback.Messages.has_liked_message?(message, @anonymous_id),
+              do: "hero-hand-thumb-up-solid",
+              else: "hero-hand-thumb-up"
+          }
+        />
+      </button>
     </div>
     <div class="absolute top-0 right-0 flex mt-2 mr-2 space-x-2">
       <%= if @anonymous_id == message.anonymous_id do %>
@@ -40,6 +86,26 @@
     </div>
   </div>
 </div>
+
+<.modal
+  :if={@live_action == :focus}
+  id="message-modal"
+  show
+  on_cancel={JS.patch(~p"/page/#{@course_page.slug}")}
+>
+  <div class="relative p-4 bg-gray-200 rounded-lg">
+    <div class="max-w-[90%]">
+      <p class="text-lg"><%= @message.content %></p>
+    </div>
+    <div class="absolute top-0 right-0 flex mt-2 mr-2 space-x-2">
+      <%= if @page_admin || @anonymous_id == @message.anonymous_id do %>
+        <button phx-click="delete_message" phx-value-id={@message.id} class="ml-2 text-red-500">
+          <.icon name="hero-trash" />
+        </button>
+      <% end %>
+    </div>
+  </div>
+</.modal>
 
 <.modal
   :if={@live_action in [:new, :edit]}
