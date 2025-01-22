@@ -28,4 +28,4 @@ jobs:
       # 3 Deploy to fly.io
       - name: Deploy to fly.io
         run: |
-            flyctl deploy --remote-only --config "$DEPLOY_FILE"
+            flyctl deploy --remote-only --config "$env:DEPLOY_FILE"
