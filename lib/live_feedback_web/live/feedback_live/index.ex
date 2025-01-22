@@ -197,8 +197,6 @@ end
 
 @impl true
 def handle_event("sort_messages", %{"sort" => sort_by}, socket) do
-  IO.inspect(sort_by, label: "Sort by")
-
   # Ensure that sort_by is an atom
   sort_by_atom = String.to_existing_atom(sort_by)
 

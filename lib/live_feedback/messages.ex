@@ -178,7 +178,7 @@ defmodule LiveFeedback.Messages do
   end
 
   def delete_all_messages_for_course_page(%CoursePage{id: course_page_id}) do
-    from(m in Message, where: m.course_page_id == ^course_page_id)
+    from(message in Message, where: message.course_page_id == ^course_page_id)
     |> Repo.delete_all()
     |> case do
       {_, nil} ->
@@ -207,8 +207,8 @@ Toggles the like on a message for a given user (authenticated or anonymous).
 """
 def toggle_like_message(%Message{} = message, anonymous_id) do
   like_query =
-    from(l in LikedBy,
-      where: l.message_id == ^message.id and l.anonymous_id == ^anonymous_id
+    from(like in LikedBy,
+      where: like.message_id == ^message.id and like.anonymous_id == ^anonymous_id
     )
 
   case Repo.one(like_query) do
@@ -260,8 +260,8 @@ end
 
 def has_liked_message?(%Message{} = message, anonymous_id) do
   like_query =
-    from(l in LikedBy,
-      where: l.message_id == ^message.id and l.anonymous_id == ^anonymous_id
+    from(like in LikedBy,
+      where: like.message_id == ^message.id and like.anonymous_id == ^anonymous_id
     )
 
   case Repo.one(like_query) do

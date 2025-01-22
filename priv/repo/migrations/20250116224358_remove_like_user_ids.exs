@@ -2,11 +2,6 @@ defmodule LiveFeedback.Repo.Migrations.AddLikedByUserIdsToMessages do
   use Ecto.Migration
 
   def change do
-    # Remove the old `liked_by_user_ids` field from the messages table
-    alter table(:messages) do
-      remove :liked_by_user_ids
-    end
-
     # Create the new `liked_by` table for the likes association
     create table(:liked_by) do
       add :message_id, references(:messages, on_delete: :delete_all), null: false
