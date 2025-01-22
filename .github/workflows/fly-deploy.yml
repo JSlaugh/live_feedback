@@ -17,6 +17,9 @@ jobs:
       FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
       # DEPLOY_FILE: ${{ secrets.FLY_DEPLOY_FILE }}
     steps:
+      - run: echo $FLY_DEPLOY_FILE
+      - run: echo $FLY_API_TOKEN
+
       # 1 Checkout the code
       - name: Checkout code
         uses: actions/checkout@v4
