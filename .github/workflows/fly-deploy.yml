@@ -2,31 +2,31 @@
 
 name: Fly Deploy
 on:
-  push:
-    branches:
-      - main      # production
-      - dev       # development
+    push:
+        branches:
+            - main # production
+            - dev # development
 jobs:
-  deploy:
-    name: Deploy app
-    runs-on: ubuntu-latest
-    concurrency: deploy-group    # optional: ensure only one action runs at a time
-    steps:
-      # 1 Checkout the code
-      - name: Checkout code
-        uses: actions/checkout@v4
+    deploy:
+        name: Deploy app
+        runs-on: ubuntu-latest
+        concurrency: deploy-group # optional: ensure only one action runs at a time
+        steps:
+            # 1 Checkout the code
+            - name: Checkout code
+              uses: actions/checkout@v4
 
-      # 2 Set up fly.io CLI
-      - name: Set up fly.io CLI
-        uses: superfly/flyctl-actions/setup-flyctl@master
+            # 2 Set up fly.io CLI
+            - name: Set up fly.io CLI
+              uses: superfly/flyctl-actions/setup-flyctl@master
 
-      # 3 Deploy to fly.io
-      - name: Deploy to fly.io
-        run: |
-          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            flyctl deploy --remote-only --config fly.toml
-          elif [ "${{ github.ref }}" == "refs/heads/dev" ]; then
-            flyctl deploy --remote-only --config fly.dev.toml
-          fi
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+            # 3 Deploy to fly.io
+            - name: Deploy to fly.io
+              run: |
+                  if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+                    flyctl deploy --remote-only --config fly.toml
+                  elif [ "${{ github.ref }}" == "refs/heads/dev" ]; then
+                    flyctl deploy --remote-only -a live-feedback-dev --config fly.dev.toml
+                  fi
+              env:
+                  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
