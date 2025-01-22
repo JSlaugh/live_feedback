@@ -15,8 +15,8 @@ jobs:
     env:
       FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
     steps:
-      - run: echo $FLY_DEPLOY_FILE
-      - run: echo $FLY_API_TOKEN
+      - run: echo "$FLY_DEPLOY_FILE"
+      - run: echo "$FLY_API_TOKEN"
 
       # 1 Checkout the code
       - name: Checkout code
