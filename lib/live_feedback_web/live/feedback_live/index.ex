@@ -20,10 +20,13 @@ defmodule LiveFeedbackWeb.FeedbackLive.Index do
         false
       end
 
+      qr_code_visible = page_admin
+
     {:ok,
      socket
      |> assign(:anonymous_id, anonymous_id)
      |> assign(:page_admin, page_admin)
+     |> assign(:qr_code_visible, qr_code_visible)
      |> assign(:course_page, course_page)
      |> assign_new(:sort_by, fn -> :oldest end) # Use existing sort_by or default to :oldest
      |> stream(
@@ -193,6 +196,10 @@ def handle_event("focus_message", %{"id" => id}, socket) do
    socket
    |> assign(:live_action, :focus)
    |> assign(:message, message)}
+end
+
+def handle_event("toggle_qr_code", _params, socket) do
+  {:noreply, assign(socket, :qr_code_visible, !socket.assigns.qr_code_visible)}
 end
 
 @impl true
