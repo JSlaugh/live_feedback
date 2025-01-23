@@ -40,3 +40,6 @@ npm-debug.log
 
 #ignore env
 config/.env.exs
+
+#ignore dev because of my own password lol
+config/dev.exs
