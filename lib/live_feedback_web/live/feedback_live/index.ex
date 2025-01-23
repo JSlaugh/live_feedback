@@ -141,7 +141,13 @@ defmodule LiveFeedbackWeb.FeedbackLive.Index do
   @impl true
   def handle_info({:new_message, message}, socket) do
     if message.course_page_id == socket.assigns.course_page.id do
-      {:noreply, stream_insert(socket, :messages, message)}
+      sorted_messages =
+        Messages.get_messages_for_course_page_id(
+          socket.assigns.course_page.id,
+          socket.assigns.sort_by
+        )
+
+      {:noreply, stream(socket, :messages, sorted_messages, reset: true)}
     else
       {:noreply, socket}
     end
