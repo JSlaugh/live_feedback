@@ -31,7 +31,7 @@
   <div class="outer-container">
     <div class="flex items-center justify-between mt-4">
       <form phx-change="sort_messages">
-      <select id="sort" name="sort" class="p-2 border rounded-lg">
+        <select id="sort" name="sort" class="p-2 border rounded-lg">
           <option value="oldest" selected={@sort_by == :oldest}>Oldest</option>
 
           <option value="newest" selected={@sort_by == :newest}>Newest</option>
@@ -51,28 +51,28 @@
         <div class="max-w-[90%] flex">
           <p class="text-lg break-words"><%= message.content %></p>
           <div class="ml-4 rounded-lg">
-          <%= cond do %>
-          <% !@page_admin ->%>
-          <button
-            phx-click="like_message"
-            phx-value-id={message.id}
-            phx-value-value="like"
-            class="text-blue-500"
-            >
-            <.icon name={
-              if LiveFeedback.Messages.has_liked_message?(message, @anonymous_id),
-                do: "hero-hand-thumb-up-solid",
-                else: "hero-hand-thumb-up"
-            } />
-          </button>
-          <% @page_admin && message.like_count > 0 -> %>
-          <span class="text-blue-500">
-            <.icon name="hero-hand-thumb-up-solid"/>
-            <%= message.like_count %>
-          </span>
-          <% true -> %>
-          <% end %>
-        </div>
+            <%= cond do %>
+              <% !@page_admin ->%>
+                <button
+                  phx-click="like_message"
+                  phx-value-id={message.id}
+                  phx-value-value="like"
+                  class="text-blue-500"
+                >
+                  <.icon name={
+                    if LiveFeedback.Messages.has_liked_message?(message, @anonymous_id),
+                      do: "hero-hand-thumb-up-solid",
+                      else: "hero-hand-thumb-up"
+                  } />
+                </button>
+              <% @page_admin && message.like_count > 0 -> %>
+                <span class="text-blue-500">
+                  <.icon name="hero-hand-thumb-up-solid"/>
+                  <%= message.like_count %>
+                </span>
+              <% true -> %>
+            <% end %>
+          </div>
         </div>
 
         <div class="space-y-1">
@@ -105,17 +105,16 @@
         </div>
       </div>
     </div>
-
-    </div>
   </div>
+</div>
 
-  <.modal
+<.modal
   :if={@live_action == :focus}
   id="message-modal"
   show
   on_cancel={JS.patch(~p"/page/#{@course_page.slug}")}
 >
-<div class="flex justify-between break-words p-4 bg-gray-200 rounded-lg">
+  <div class="flex justify-between break-words p-4 bg-gray-200 rounded-lg">
     <div class="max-w-[90%]">
       <p class="text-lg"><%= @message.content %></p>
     </div>
@@ -130,20 +129,20 @@
   </div>
 </.modal>
 
-    <.modal
-      :if={@live_action in [:new, :edit]}
-      id="message-modal"
-      show
-      on_cancel={JS.patch(~p"/page/#{@course_page.slug}")}
-    >
-      <.live_component
-        module={LiveFeedbackWeb.FeedbackLive.FormComponent}
-        id={@message.id || :new}
-        course_page={@course_page}
-        title={@page_title}
-        action={@live_action}
-        message={@message}
-        anonymous_id={@anonymous_id}
-        patch={~p"/page/#{@course_page.slug}"}
-      />
-    </.modal>
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="message-modal"
+  show
+  on_cancel={JS.patch(~p"/page/#{@course_page.slug}")}
+>
+  <.live_component
+    module={LiveFeedbackWeb.FeedbackLive.FormComponent}
+    id={@message.id || :new}
+    course_page={@course_page}
+    title={@page_title}
+    action={@live_action}
+    message={@message}
+    anonymous_id={@anonymous_id}
+    patch={~p"/page/#{@course_page.slug}"}
+  />
+</.modal>
