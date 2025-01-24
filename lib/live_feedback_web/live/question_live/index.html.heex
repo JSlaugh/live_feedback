@@ -1,0 +1,32 @@
+<h1>Questions</h1>
+
+<%= if @questions == [] do %>
+  <p>No questions found for Course Page ID: <%= @course_page_id %>.</p>
+<% else %>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Course Page ID</th>
+        <th>URL</th>
+        <th>Type</th>
+        <th>Content</th>
+        <th>Display Order</th>
+        <th>Archived</th>
+      </tr>
+    </thead>
+    <tbody>
+      <%= for question <- @questions do %>
+        <tr>
+          <td><%= question.id %></td>
+          <td><%= question.course_page_id %></td>
+          <td><%= question.url %></td>
+          <td><%= question.question_type %></td>
+          <td><%= question.question_content %></td>
+          <td><%= question.display_order %></td>
+          <td><%= if question.is_archived, do: "Yes", else: "No" %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>
