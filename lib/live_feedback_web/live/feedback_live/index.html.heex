@@ -1,54 +1,80 @@
 <.header>
   <h1 class="text-2xl font-bold">Send a message <.icon name="hero-arrow-long-right" /></h1>
-  
+
   <p><%= @course_page.description %></p>
-  
+
   <:actions>
     <%= if @page_admin do %>
       <.button phx-click="delete_all_messages" class="bg-red-600 hover:bg-red-600">
         Clear the Page
       </.button>
     <% end %>
-    
+
     <.link patch={~p"/page/#{@course_page.slug}/new"}>
       <.button>New Message</.button>
     </.link>
   </:actions>
-  <div class="absolute top-0 right-0 mt-32 mr-32 lg:block">
-    <div class="flex flex-col items-end">
-      <button 
-        phx-click="toggle_qr_code" 
-        class="p-2 mb-4 bg-blue-500 text-white rounded-lg">
-        <.icon name="hero-qr-code"/>
-      </button>
-      <%= if @qr_code_visible do %>
-        <div class="absolute top-0 right-0 hidden mt-32 mr-32 lg:block"><%= raw(@qr_code_svg) %></div>
-      <% end %>
+
+    <div class="absolute top-0 right-0 hidden mt-32 mr-32 lg:block">
+      <div class="flex flex-col items-end">
+        <button
+            phx-click="toggle_qr_code"
+            class="p-2 mb-4 bg-blue-500 text-white rounded-lg">
+            <.icon name="hero-qr-code"/>
+        </button>
+        <%= if @qr_code_visible do %>
+          <%= raw(@qr_code_svg) %>
+        <% end %>
+      </div>
     </div>
-  </div>
+
   <div class="outer-container">
     <div class="flex items-center justify-between mt-4">
       <form phx-change="sort_messages">
-        <select id="sort" name="sort" class="p-2 border rounded-lg">
+      <select id="sort" name="sort" class="p-2 border rounded-lg">
           <option value="oldest" selected={@sort_by == :oldest}>Oldest</option>
-          
+
           <option value="newest" selected={@sort_by == :newest}>Newest</option>
-          
+
           <option value="like_count" selected={@sort_by == :like_count}>Most Liked</option>
         </select>
       </form>
     </div>
   </div>
-</.header>
 
-<div id="messages" phx-update="stream" class="flex flex-row">
+
+</.header>
+<div id="messages" phx-update="stream" class="flex flex-col">
   <div :for={{id, message} <- @streams.messages} id={id} class="my-4">
     <div class="bg-gray-200 p-4 mb-4 rounded-lg box-border">
       <div class="flex flex-row justify-between">
-        <div class="max-w-[90%]">
+        <div class="max-w-[90%] flex">
           <p class="text-lg break-words"><%= message.content %></p>
+          <div class="ml-4 rounded-lg">
+          <%= cond do %>
+          <% !@page_admin ->%>
+          <button
+            phx-click="like_message"
+            phx-value-id={message.id}
+            phx-value-value="like"
+            class="text-blue-500"
+            >
+            <.icon name={
+              if LiveFeedback.Messages.has_liked_message?(message, @anonymous_id),
+                do: "hero-hand-thumb-up-solid",
+                else: "hero-hand-thumb-up"
+            } />
+          </button>
+          <% @page_admin && message.like_count > 0 -> %>
+          <span class="text-blue-500">
+            <.icon name="hero-hand-thumb-up-solid"/>
+            <%= message.like_count %>
+          </span>
+          <% true -> %>
+          <% end %>
         </div>
-        
+        </div>
+
         <div class="space-y-1">
           <!-- Button to Focus Message -->
           <%= if @page_admin do %>
@@ -60,15 +86,15 @@
               <.icon name="hero-arrows-pointing-out" />
             </button>
           <% end %>
-          
+
           <div>
-            <%= if @anonymous_id == message.anonymous_id do %>
+            <%= if @anonymous_id == message.anonymous_id && !@page_admin do %>
               <button phx-click="edit_message" phx-value-id={message.id} class="text-blue-500">
                 <.icon name="hero-pencil-square" />
               </button>
             <% end %>
           </div>
-          
+
           <div>
             <%= if @page_admin || @anonymous_id == message.anonymous_id do %>
               <button phx-click="delete_message" phx-value-id={message.id} class=" text-red-500">
@@ -79,62 +105,21 @@
         </div>
       </div>
     </div>
-    <!-- Display Like Count and Like Button -->
-    <div class="flex bg-gray-500 -mt-10 ml-4 w-14 p-2 rounded-lg space-x-2  items-center">
-      <button
-        phx-click="like_message"
-        phx-value-id={message.id}
-        phx-value-value="like"
-        class="text-blue-500"
-      >
-        <.icon name={
-          if LiveFeedback.Messages.has_liked_message?(message, @anonymous_id),
-            do: "hero-hand-thumb-up-solid",
-            else: "hero-hand-thumb-up"
-        } />
-      </button>
-      <% message.like_count > 0 -> %>
-      <.icon name="hero-hand-thumb-up-solid" class="ml-2 text-blue-500"/>
-      <% true ->%>
-      <% end %>
-    </div>
-    </div>
-    <div class="absolute top-0 right-0 flex mt-2 mr-2 space-x-2">
-      <!-- Button to Focus Message -->
-      <%= if @page_admin do %>
-      <button
-        phx-click="focus_message"
-        phx-value-id={message.id}
-        class="text-blue-500"
-      >
-      <.icon name="hero-arrows-pointing-out" />
-      </button>
-      <%= end %>
-      <%= if @anonymous_id == message.anonymous_id && !@page_admin do %>
-        <button phx-click="edit_message" phx-value-id={message.id} class="text-blue-500">
-          <.icon name="hero-pencil-square" />
-        </button>
-      <% end %>
-      <%= if @page_admin || @anonymous_id == message.anonymous_id do %>
-        <button phx-click="delete_message" phx-value-id={message.id} class="ml-2 text-red-500">
-          <.icon name="hero-trash" />
-        </button>
-      <% end %>
+
     </div>
   </div>
-</div>
 
-<.modal
+  <.modal
   :if={@live_action == :focus}
   id="message-modal"
   show
   on_cancel={JS.patch(~p"/page/#{@course_page.slug}")}
 >
-  <div class="flex justify-between break-words p-4 bg-gray-200 rounded-lg">
+<div class="flex justify-between break-words p-4 bg-gray-200 rounded-lg">
     <div class="max-w-[90%]">
       <p class="text-lg"><%= @message.content %></p>
     </div>
-    
+
     <div>
       <%= if @page_admin || @anonymous_id == @message.anonymous_id do %>
         <button phx-click="delete_message" phx-value-id={@message.id} class="ml-2 text-red-500">
@@ -145,20 +130,20 @@
   </div>
 </.modal>
 
-<.modal
-  :if={@live_action in [:new, :edit]}
-  id="message-modal"
-  show
-  on_cancel={JS.patch(~p"/page/#{@course_page.slug}")}
->
-  <.live_component
-    module={LiveFeedbackWeb.FeedbackLive.FormComponent}
-    id={@message.id || :new}
-    course_page={@course_page}
-    title={@page_title}
-    action={@live_action}
-    message={@message}
-    anonymous_id={@anonymous_id}
-    patch={~p"/page/#{@course_page.slug}"}
-  />
-</.modal>
+    <.modal
+      :if={@live_action in [:new, :edit]}
+      id="message-modal"
+      show
+      on_cancel={JS.patch(~p"/page/#{@course_page.slug}")}
+    >
+      <.live_component
+        module={LiveFeedbackWeb.FeedbackLive.FormComponent}
+        id={@message.id || :new}
+        course_page={@course_page}
+        title={@page_title}
+        action={@live_action}
+        message={@message}
+        anonymous_id={@anonymous_id}
+        patch={~p"/page/#{@course_page.slug}"}
+      />
+    </.modal>
