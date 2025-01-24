@@ -21,4 +21,5 @@ Ready to run in production? Please [check our deployment guides](https://hexdocs
 
 Add a .env.exs file in the config folder.
 
-You will need to then add System.put_env("EMAIL", "YOUR DESIRED EMAIL")
+You will need to then add
+System.put_env("EMAIL", "YOUR DESIRED EMAIL")
