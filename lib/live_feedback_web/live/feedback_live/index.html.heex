@@ -14,11 +14,18 @@
       <.button>New Message</.button>
     </.link>
   </:actions>
-  
-  <%= if @current_user do %>
-    <div class="absolute top-0 right-0 hidden mt-32 mr-32 lg:block"><%= raw(@qr_code_svg) %></div>
-  <% end %>
-  
+  <div class="absolute top-0 right-0 mt-32 mr-32 lg:block">
+    <div class="flex flex-col items-end">
+      <button 
+        phx-click="toggle_qr_code" 
+        class="p-2 mb-4 bg-blue-500 text-white rounded-lg">
+        <.icon name="hero-qr-code"/>
+      </button>
+      <%= if @qr_code_visible do %>
+        <div class="absolute top-0 right-0 hidden mt-32 mr-32 lg:block"><%= raw(@qr_code_svg) %></div>
+      <% end %>
+    </div>
+  </div>
   <div class="outer-container">
     <div class="flex items-center justify-between mt-4">
       <form phx-change="sort_messages">
@@ -86,7 +93,33 @@
             else: "hero-hand-thumb-up"
         } />
       </button>
-       <span class=""><%= message.like_count %></span>
+      <% message.like_count > 0 -> %>
+      <.icon name="hero-hand-thumb-up-solid" class="ml-2 text-blue-500"/>
+      <% true ->%>
+      <% end %>
+    </div>
+    </div>
+    <div class="absolute top-0 right-0 flex mt-2 mr-2 space-x-2">
+      <!-- Button to Focus Message -->
+      <%= if @page_admin do %>
+      <button
+        phx-click="focus_message"
+        phx-value-id={message.id}
+        class="text-blue-500"
+      >
+      <.icon name="hero-arrows-pointing-out" />
+      </button>
+      <%= end %>
+      <%= if @anonymous_id == message.anonymous_id && !@page_admin do %>
+        <button phx-click="edit_message" phx-value-id={message.id} class="text-blue-500">
+          <.icon name="hero-pencil-square" />
+        </button>
+      <% end %>
+      <%= if @page_admin || @anonymous_id == message.anonymous_id do %>
+        <button phx-click="delete_message" phx-value-id={message.id} class="ml-2 text-red-500">
+          <.icon name="hero-trash" />
+        </button>
+      <% end %>
     </div>
   </div>
 </div>
