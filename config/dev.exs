@@ -3,7 +3,7 @@ import Config
 # Configure your database
 config :live_feedback, LiveFeedback.Repo,
   username: "postgres",
-  password: "Capst0ne2025*",
+  password: "postgres",
   hostname: "localhost",
   database: "live_feedback_dev",
   stacktrace: true,
