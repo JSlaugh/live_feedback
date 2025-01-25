@@ -11,6 +11,7 @@ defmodule LiveFeedback.Messages do
   alias LiveFeedback.Messages.Message
   alias LiveFeedback.Messages.LikedBy
   alias LiveFeedback.Courses.CoursePage
+  alias LiveFeedback.Questions.Question
 
   # Admins can update any message
   def authorize(:update_message, %{role: :admin} = _user, _message), do: :ok

@@ -19,7 +19,9 @@
     <div class="sr-only">
       <.link navigate={~p"/course_pages/#{course_page}"}>Show</.link>
     </div>
+    <.link patch={~p"/course_pages/#{course_page}/questions"}>Questions</.link>
     <.link patch={~p"/course_pages/#{course_page}/edit"}>Edit</.link>
+
   </:action>
   <:action :let={{id, course_page}}>
     <.link
