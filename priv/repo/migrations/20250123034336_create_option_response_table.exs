@@ -10,5 +10,6 @@ defmodule LiveFeedback.Repo.Migrations.CreateOptionResponseTable do
       end
 
       create index(:question_options_responses, [:user_id])
+      create index(:question_options_responses, [:question_id])
   end
 end

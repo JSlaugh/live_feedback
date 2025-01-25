@@ -11,5 +11,6 @@ defmodule LiveFeedback.Repo.Migrations.CreateQuestionOptionsTable do
     end
 
     create index(:question_options, [:question_id])
+    create unique_index(:question_options, [:question_id, :option_order])
   end
 end
