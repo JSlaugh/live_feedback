@@ -3,7 +3,7 @@ defmodule LiveFeedback.Repo.Migrations.CreateQuestionOptionsTable do
 
   def change do
     create table(:question_options) do
-      add :question_id, references(:questions, on_delete: :nothing)
+      add :question_id, references(:questions, on_delete: :delete_all)
       add :option_content, :string, size: 500
       add :option_order, :integer
       add :url, :string
