@@ -28,33 +28,111 @@
         <option value="QA">Q&A</option>
         <option value="free_response">Free Response</option>
         <option value="multiple_choice">Multiple Choice</option>
+        <option value="multi-select">Multi-Select</option>
         <option value="true_false">True/False</option>
       </select>
     </div>
 
-    <%= if @question_type == "multiple_choice" do %>
-    <div id="multiple-choice-options" class="space-y-4">
-      <div>
-        <label for="option_a" class="block text-lg font-medium text-gray-700">Option A:</label>
-        <input type="text" id="option_a" name="option_a" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-      </div>
+    <%= if @question_type == "multiple_choice" ||  @question_type == "multi-select" do %>
+      <div id="multiple-choice-options" class="space-y-4">
+        <table class="w-full table-auto border-collapse border border-gray-300">
+          <thead>
+            <tr class="bg-gray-200">
+              <th class="border border-gray-300 px-4 py-2 text-left">Option</th>
+              <th class="border border-gray-300 px-4 py-2 text-left">Answer Text</th>
+              <th class="border border-gray-300 px-4 py-2 text-left">Correct</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="border border-gray-300 px-4 py-2">A</td>
+              <td class="border border-gray-300 px-4 py-2">
+                <input type="text" id="option_a" name="option_a" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </td>
+              <td class="border border-gray-300 px-4 py-2 text-center">
+              <input
+              type={if @question_type == "multiple_choice", do: "radio", else: "checkbox"}
+              id="correct_a"
+              name={if @question_type == "multiple_choice", do: "correct_option", else: "correct_a"}
+              class="h-5 w-5 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            />
 
-      <div>
-        <label for="option_b" class="block text-lg font-medium text-gray-700">Option B:</label>
-        <input type="text" id="option_b" name="option_b" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 px-4 py-2">B</td>
+              <td class="border border-gray-300 px-4 py-2">
+                <input type="text" id="option_b" name="option_b" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </td>
+              <td class="border border-gray-300 px-4 py-2 text-center">
+                <input
+                  type={if @question_type == "multiple_choice", do: "radio", else: "checkbox"}
+                  id="correct_b"
+                  name={if @question_type == "multiple_choice", do: "correct_option", else: "correct_a"}
+                  class="h-5 w-5 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 px-4 py-2">C</td>
+              <td class="border border-gray-300 px-4 py-2">
+                <input type="text" id="option_c" name="option_c" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </td>
+              <td class="border border-gray-300 px-4 py-2 text-center">
+                <input
+                  type={if @question_type == "multiple_choice", do: "radio", else: "checkbox"}
+                  id="correct_c"
+                  name={if @question_type == "multiple_choice", do: "correct_option", else: "correct_a"}
+                  class="h-5 w-5 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 px-4 py-2">D</td>
+              <td class="border border-gray-300 px-4 py-2">
+                <input type="text" id="option_d" name="option_d" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </td>
+              <td class="border border-gray-300 px-4 py-2 text-center">
+                <input
+                  type={if @question_type == "multiple_choice", do: "radio", else: "checkbox"}
+                  id="correct_d"
+                  name={if @question_type == "multiple_choice", do: "correct_option", else: "correct_a"}
+                  class="h-5 w-5 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-
-      <div>
-        <label for="option_c" class="block text-lg font-medium text-gray-700">Option C:</label>
-        <input type="text" id="option_c" name="option_c" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-      </div>
-
-      <div>
-        <label for="option_d" class="block text-lg font-medium text-gray-700">Option D:</label>
-        <input type="text" id="option_d" name="option_d" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-      </div>
-    </div>
     <% end %>
+
+    <%= if @question_type == "true_false" do %>
+      <div id="true_false" class="space-y-4">
+        <table class="w-full table-auto border-collapse border border-gray-300">
+          <thead>
+            <tr class="bg-gray-200">
+              <th class="border border-gray-300 px-4 py-2 text-left">Option</th>
+              <th class="border border-gray-300 px-4 py-2 text-left">Correct</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="border border-gray-300 px-4 py-2">True</td>
+              <td class="border border-gray-300 px-4 py-2 text-center">
+                <input type="radio" id="correct_a" name="correct_option" class="h-5 w-5 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50" />
+              </td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 px-4 py-2">False</td>
+              <td class="border border-gray-300 px-4 py-2 text-center">
+                <input type="radio" id="correct_b" name="correct_option" class="h-5 w-5 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+
 
     <button type="submit" class="w-full py-2 px-4 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">Save</button>
   </form>

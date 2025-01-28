@@ -18,11 +18,19 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
   end
 
   @impl true
-  def handle_event("add_question", %{"question_content" => content, "question_type" => type}, socket) do
+  def handle_event("add_question", %{"question_content" => content, "question_type" => type, "option_a" => option_a, "option_b" => option_b, "option_c" => option_c, "option_d" => option_d, "correct_a" => correct_a, "correct_b" => correct_b, "correct_c" => correct_c, "correct_d" => correct_d}, socket) do
+    options = %{
+      "option_a" => {option_a || "", correct_a == "true"},
+      "option_b" => {option_b || "", correct_b == "true"},
+      "option_c" => {option_c || "", correct_c == "true"},
+      "option_d" => {option_d || "", correct_d == "true"}
+    }
+
     attrs = %{
       "course_page_id" => socket.assigns.course_page_id,
       "question_content" => content,
       "question_type" => type,
+      "options" => options,
       "display_order" => Questions.get_max_display_order(socket.assigns.course_page_id)
     }
 
