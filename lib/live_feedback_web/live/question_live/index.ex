@@ -11,43 +11,78 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
      socket
      |> assign(:course_page_id, course_page_id)
      |> assign(:course_name, Questions.get_course_name(course_page_id))
-     |> assign(:show_form, false)
+     |> assign(:show_form, "none")
      |> assign(:question_type, "QA")
      |> stream(:questions, questions)
     }
   end
 
   @impl true
-  def handle_event("add_question", %{"question_content" => content, "question_type" => type, "option_a" => option_a, "option_b" => option_b, "option_c" => option_c, "option_d" => option_d, "correct_a" => correct_a, "correct_b" => correct_b, "correct_c" => correct_c, "correct_d" => correct_d}, socket) do
-    options = %{
-      "option_a" => {option_a || "", correct_a == "true"},
-      "option_b" => {option_b || "", correct_b == "true"},
-      "option_c" => {option_c || "", correct_c == "true"},
-      "option_d" => {option_d || "", correct_d == "true"}
-    }
+  def handle_event("add_question", params, socket) do
+    IO.inspect(params, label: "Received params")
+    content = Map.get(params, "question_content", "")
+    type = Map.get(params, "question_type", "")
 
+    option_A =
+      if type == "true_false" do
+        "true"
+      else
+        Map.get(params, "option_A", "")
+      end
+    option_B =
+      if type == "true_false" do
+        "false"
+      else
+        Map.get(params, "option_B", "")
+      end
+    option_C = Map.get(params, "option_C", "")
+    option_D = Map.get(params, "option_D", "")
+
+    correct_A = Map.get(params, "correct_A", "false")
+    correct_B = Map.get(params, "correct_B", "false")
+    correct_C = Map.get(params, "correct_C", "false")
+    correct_D = Map.get(params, "correct_D", "false")
+
+    # Prepare the attributes for the new question
     attrs = %{
       "course_page_id" => socket.assigns.course_page_id,
       "question_content" => content,
       "question_type" => type,
-      "options" => options,
       "display_order" => Questions.get_max_display_order(socket.assigns.course_page_id)
     }
 
+    # Attempt to add the question
     case Questions.add_question(attrs) do
       {:ok, question} ->
-        # Add the new question to the stream
+        # Loop through each option and call add_option_to_question/1 if not empty
+        for {option, correct, order} <- [
+              {option_A, correct_A == "on", 1},
+              {option_B, correct_B == "on", 2},
+              {option_C, correct_C == "on", 3},
+              {option_D, correct_D == "on", 4}
+            ], option != "" do
+          option_attrs = %{
+            "option_order" => order,
+            "option_content" => option,
+            "is_correct" => correct,
+            "question_id" => question.id  # Associate with the newly added question
+          }
+          # Add the option to the question
+          Questions.add_option_to_question(option_attrs)
+        end
+
+        # Return the updated socket with the new question streamed
         {:noreply,
          socket
-         |> assign(show_form: !socket.assigns.show_form)
+         |> assign(show_form: "none")
          |> put_flash(:info, "Question added successfully.")
          |> stream_insert(:questions, question)}  # Stream the newly added question
 
       {:error, changeset} ->
+        # In case of error, return the socket with an error message
         {:noreply,
-        socket
-        |> put_flash(:error, "Failed to add question.")
-      }
+         socket
+         |> put_flash(:error, "Failed to add question.")}
     end
   end
 
@@ -72,10 +107,10 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
 
 
   @impl true
-  def handle_event("toggle_form", _params, socket) do
+  def handle_event("toggle_form",%{"form" => form}, socket) do
     {:noreply,
      socket
-     |> assign(show_form: !socket.assigns.show_form)
+     |> assign(show_form: (if form == socket.assigns.show_form, do: "none", else: form))
      |> assign(:question_type, "QA")}
   end
 

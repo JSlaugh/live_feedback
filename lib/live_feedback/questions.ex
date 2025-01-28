@@ -9,6 +9,7 @@ defmodule LiveFeedback.Questions do
   alias LiveFeedback.Messages.LikedBy
   alias LiveFeedback.Courses.CoursePage
   alias LiveFeedback.Questions.Question
+  alias LiveFeedback.Questions.QuestionOptions
 
   def list_questions_for_course(course_page_id) do
     from(question in Question,
@@ -41,6 +42,12 @@ defmodule LiveFeedback.Questions do
   def add_question(attrs) do
     %Question{}
     |> Question.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def add_option_to_question(attrs) do
+    %QuestionOptions{}
+    |> QuestionOptions.changeset(attrs)
     |> Repo.insert()
   end
 
