@@ -18,6 +18,14 @@ module.exports = {
 		extend: {
 			colors: {
 				brand: "#FD4F00",
+				logo_red: "#E11D3A",
+				brand_grey: "#E5E7E5",
+				brand_navy: "#274C68",
+				brand_blue: "#86BBD8",
+			},
+			fontFamily: {
+				title: ["mozaic-geo-variable", "sans-serif"],
+				sans: ["poppins", "sans-serif"],
 			},
 		},
 	},
