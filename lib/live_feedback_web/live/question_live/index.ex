@@ -38,10 +38,16 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     option_C = Map.get(params, "option_C", "")
     option_D = Map.get(params, "option_D", "")
 
-    correct_A = Map.get(params, "correct_A", "false")
-    correct_B = Map.get(params, "correct_B", "false")
-    correct_C = Map.get(params, "correct_C", "false")
-    correct_D = Map.get(params, "correct_D", "false")
+    answer = Map.get(params, "answer", "")
+    correct_A = Map.get(params, "correct_A", "")
+    correct_B = Map.get(params, "correct_B", "")
+    correct_C = Map.get(params, "correct_C", "")
+    correct_D = Map.get(params, "correct_D", "")
+
+    answer_A = if answer == "A" || correct_A == "A", do: true, else: false
+    answer_B = if answer == "B" || correct_B == "B", do: true, else: false
+    answer_C = if answer == "C" || correct_C == "C", do: true, else: false
+    answer_D = if answer == "D" || correct_D == "D", do: true, else: false
 
     # Prepare the attributes for the new question
     attrs = %{
@@ -56,10 +62,10 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
       {:ok, question} ->
         # Loop through each option and call add_option_to_question/1 if not empty
         for {option, correct, order} <- [
-              {option_A, correct_A == "on", 1},
-              {option_B, correct_B == "on", 2},
-              {option_C, correct_C == "on", 3},
-              {option_D, correct_D == "on", 4}
+              {option_A, answer_A, 1},
+              {option_B, answer_B, 2},
+              {option_C, answer_C, 3},
+              {option_D, answer_D, 4}
             ], option != "" do
           option_attrs = %{
             "option_order" => order,

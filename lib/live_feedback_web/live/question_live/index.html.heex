@@ -51,7 +51,11 @@
                   <input type="text" id={"option_#{option}"} name={"option_#{option}"} class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </td>
                 <td class="px-4 py-2 text-center">
-                  <input type={if @question_type == "multiple_choice", do: "radio", else: "checkbox"} id={"correct_#{option}"} name={"correct_#{option}"} class="h-5 w-5 text-blue-600 focus:ring-2 focus:ring-blue-500" />
+                  <input type={if @question_type == "multiple_choice", do: "radio", else: "checkbox"}
+                  id={"correct_#{option}"}
+                  name={if @question_type == "multiple_choice", do: "answer", else: "correct_#{option}"}
+                  value={option}
+                  class="h-5 w-5 text-blue-600 focus:ring-2 focus:ring-blue-500" />
                 </td>
               </tr>
             <% end %>
@@ -72,9 +76,9 @@
           <tbody>
             <%= for option <- ["A", "B"] do%>
               <tr>
-                <td class="px-4 py-2"><%= option %></td>
+                <td class="px-4 py-2"><%= if option == "A", do: "True", else: "False" %></td>
                 <td class="px-4 py-2 text-center">
-                  <input type="radio" id={"correct_#{option}"} name={"correct_#{option}"} class="h-5 w-5 text-blue-600 focus:ring-2 focus:ring-blue-500" />
+                  <input type="radio" id={"correct_#{option}"} name="answer" value={option} class="h-5 w-5 text-blue-600 focus:ring-2 focus:ring-blue-500" />
                 </td>
               </tr>
             <% end %>
