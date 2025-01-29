@@ -6,7 +6,7 @@ defmodule LiveFeedback.Courses.CoursePage do
     field :description, :string
     field :title, :string
     field :slug, :string
-    field :user_id, :id
+    belongs_to :user, LiveFeedback.Accounts.User
 
     timestamps(type: :utc_datetime)
   end
