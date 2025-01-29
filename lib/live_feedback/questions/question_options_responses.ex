@@ -2,7 +2,7 @@ defmodule LiveFeedback.Questions.QuestionOptionsResponses do
   use Ecto.Schema
   import Ecto.Changeset
 
-  schema "questions" do
+  schema "question_options_responses" do
     belongs_to :user_id, LiveFeedback.Accounts.User
     belongs_to :question__id, LiveFeedback.Questions.Question
     field :option_response, :integer
