@@ -10,7 +10,7 @@ defmodule LiveFeedback.Repo.Migrations.CreateQuestionsTable do
       add :display_order, :integer
       add :is_archived, :boolean
 
-      timestamps()
+      timestamps(type: :utc_datetime)
     end
 
     create index(:questions, [:course_page_id])

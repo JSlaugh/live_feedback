@@ -1,15 +1,15 @@
-defmodule LiveFeedback.Questions.QuestionOptions do
+defmodule LiveFeedback.Questions.QuestionOption do
   use Ecto.Schema
   import Ecto.Changeset
 
   schema "question_options" do
-    belongs_to :question_id, LiveFeedback.Questions.Question
+    belongs_to :question, LiveFeedback.Questions.Question
     field :option_content, :string
     field :option_order, :string
     field :url, :string
     field :is_correct, :boolean
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   @doc false

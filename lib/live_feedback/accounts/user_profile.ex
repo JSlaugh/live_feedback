@@ -9,7 +9,7 @@ defmodule LiveFeedback.Accounts.UserProfile do
     field :display_name, :string
     field :custom_registration_id, :string
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   @doc false

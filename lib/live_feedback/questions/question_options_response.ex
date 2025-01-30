@@ -1,18 +1,18 @@
-defmodule LiveFeedback.Questions.QuestionOptionsResponses do
+defmodule LiveFeedback.Questions.QuestionOptionsResponse do
   use Ecto.Schema
   import Ecto.Changeset
 
   schema "question_options_responses" do
-    belongs_to :user_id, LiveFeedback.Accounts.User
-    belongs_to :question__id, LiveFeedback.Questions.Question
+    belongs_to :user, LiveFeedback.Accounts.User
+    belongs_to :question, LiveFeedback.Questions.Question
     field :option_response, :integer
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   @doc false
-  def changeset(question_options_responses, attrs) do
-    question_options_responses
+  def changeset(question_options_response, attrs) do
+    question_options_response
     |> cast(attrs, [:user_id, :question_id, :option_response])
     |> validate_required([:user_id, :question_id, :option_response])
     |> validate_number(:option_response, greater_than_or_equal_to: 0)

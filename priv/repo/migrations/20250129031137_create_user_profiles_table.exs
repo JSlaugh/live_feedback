@@ -9,7 +9,7 @@ defmodule LiveFeedback.Repo.Migrations.CreateUserProfilesTable do
       add :display_name, :string
       add :custom_registration_id, :string
 
-      timestamps()
+      timestamps(type: :utc_datetime)
     end
 
     create index(:user_profiles, [:user_id])

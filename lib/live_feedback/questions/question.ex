@@ -10,7 +10,7 @@ defmodule LiveFeedback.Questions.Question do
     field :display_order, :integer
     field :is_archived, :boolean, default: false
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   @doc false

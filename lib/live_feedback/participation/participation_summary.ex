@@ -7,7 +7,7 @@ defmodule LiveFeedback.Participation.ParticipationSummary do
     belongs_to :profile, LiveFeedback.Accounts.UserProfile
     field :percentage, :float
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   @doc false

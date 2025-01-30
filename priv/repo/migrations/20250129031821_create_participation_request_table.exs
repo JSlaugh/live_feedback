@@ -7,7 +7,7 @@ defmodule LiveFeedback.Repo.Migrations.CreateParticipationRequestTable do
       add :participation_date, :date
       add :date_requested, :date
 
-      timestamps()
+      timestamps(type: :utc_datetime)
     end
 
     create index(:participation_requests, [:course_page_id])

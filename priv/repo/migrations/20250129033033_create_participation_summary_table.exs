@@ -7,7 +7,7 @@ defmodule LiveFeedback.Repo.Migrations.CreateParticipationSummaryTable do
       add :profile_id, references(:user_profiles, on_delete: :nothing)
       add :percentage, :float
 
-      timestamps()
+      timestamps(type: :utc_datetime)
     end
 
     create index(:participation_summaries, [:participation_request_id])

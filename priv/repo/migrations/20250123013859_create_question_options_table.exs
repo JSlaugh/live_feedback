@@ -8,6 +8,8 @@ defmodule LiveFeedback.Repo.Migrations.CreateQuestionOptionsTable do
       add :option_order, :string, size: 1
       add :url, :string
       add :is_correct, :boolean
+
+      timestamps(type: :utc_datetime)
     end
 
     create index(:question_options, [:question_id])
