@@ -17,11 +17,10 @@
 
 <%= if @show_form == "add" do %>
   <form phx-submit="add_question" class="mt-4 space-y-4">
-    <div>
-      <label for="question_content" class="block text-lg font-medium text-gray-700">Question:</label>
-      <input type="text" id="question_content" name="question_content" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required />
-    </div>
+    <!-- Question Content -->
+    <.live_component module={LiveFeedbackWeb.QuestionLive.QuestionContent}  id="content" />
 
+    <!-- Question Type Selection -->
     <div>
       <label for="question_type" class="block text-lg font-medium text-gray-700">Question Type:</label>
       <select id="question_type" name="question_type" phx-change="typeChange" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -33,59 +32,16 @@
       </select>
     </div>
 
-    <%= if @question_type in ["multiple_choice", "multi-select"] do %>
-      <div id="multiple-choice-options" class="space-y-4">
-        <table class="w-full table-auto border-collapse border border-gray-300">
-          <thead>
-            <tr class="bg-gray-200">
-              <th class="px-4 py-2 text-left">Option</th>
-              <th class="px-4 py-2 text-left">Answer Text</th>
-              <th class="px-4 py-2 text-left">Correct</th>
-            </tr>
-          </thead>
-          <tbody>
-            <%= for option <- ["A", "B", "C", "D"] do %>
-              <tr>
-                <td class="px-4 py-2"><%= option %></td>
-                <td class="px-4 py-2">
-                  <input type="text" id={"option_#{option}"} name={"option_#{option}"} class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </td>
-                <td class="px-4 py-2 text-center">
-                  <input type={if @question_type == "multiple_choice", do: "radio", else: "checkbox"}
-                  id={"correct_#{option}"}
-                  name={if @question_type == "multiple_choice", do: "answer", else: "correct_#{option}"}
-                  value={option}
-                  class="h-5 w-5 text-blue-600 focus:ring-2 focus:ring-blue-500" />
-                </td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
-      </div>
-    <% end %>
+    <!-- Render Options -->
+    <div id="options" phx-update="replace">
+      <%= if @question_type == "multiple_choice" or @question_type == "multi-select" do %>
+        <.live_component module={LiveFeedbackWeb.QuestionLive.MultipleChoice} question_type={@question_type} id="multiple_choice" />
+      <% end %>
 
-    <%= if @question_type == "true_false" do %>
-      <div id="true_false" class="space-y-4">
-        <table class="w-full table-auto border-collapse border border-gray-300">
-          <thead>
-            <tr class="bg-gray-200">
-              <th class="px-4 py-2 text-left">Option</th>
-              <th class="px-4 py-2 text-left">Correct</th>
-            </tr>
-          </thead>
-          <tbody>
-            <%= for option <- ["A", "B"] do%>
-              <tr>
-                <td class="px-4 py-2"><%= if option == "A", do: "True", else: "False" %></td>
-                <td class="px-4 py-2 text-center">
-                  <input type="radio" id={"correct_#{option}"} name="answer" value={option} class="h-5 w-5 text-blue-600 focus:ring-2 focus:ring-blue-500" />
-                </td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
-      </div>
-    <% end %>
+      <%= if @question_type == "true_false" do %>
+        <.live_component  module={LiveFeedbackWeb.QuestionLive.TrueFalse} id="true_false" />
+      <% end %>
+    </div>
 
     <button type="submit" class="w-full py-2 px-4 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600">Save</button>
   </form>
