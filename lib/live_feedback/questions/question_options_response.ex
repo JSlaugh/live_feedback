@@ -5,7 +5,7 @@ defmodule LiveFeedback.Questions.QuestionOptionsResponse do
   schema "question_options_responses" do
     belongs_to :user, LiveFeedback.Accounts.User
     belongs_to :question, LiveFeedback.Questions.Question
-    field :option_response, :integer
+    field :option_response, :string
 
     timestamps(type: :utc_datetime)
   end
@@ -15,7 +15,7 @@ defmodule LiveFeedback.Questions.QuestionOptionsResponse do
     question_options_response
     |> cast(attrs, [:user_id, :question_id, :option_response])
     |> validate_required([:user_id, :question_id, :option_response])
-    |> validate_number(:option_response, greater_than_or_equal_to: 0)
+    |> validate_length(:option_response, max: 1)
     |> foreign_key_constraint(:user_id)
     |> foreign_key_constraint(:question_id)
   end
