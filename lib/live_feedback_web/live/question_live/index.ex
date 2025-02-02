@@ -15,6 +15,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
      |> assign(:question_type, "QA")
      |> stream(:questions, questions)
     }
+
   end
 
   @impl true
@@ -39,7 +40,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     option_D = Map.get(params, "option_D", "")
 
     answer = Map.get(params, "answer", "")
-    correct_A = Map.get(params, "correct_A", "")
+    correct_A = Map.get(params, "correct_A", "") #change to select
     correct_B = Map.get(params, "correct_B", "")
     correct_C = Map.get(params, "correct_C", "")
     correct_D = Map.get(params, "correct_D", "")
@@ -111,16 +112,17 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     end
   end
 
-
-  @impl true
-  def handle_event("toggle_form",%{"form" => form}, socket) do
+  def handle_event("toggle_form", %{"form" => form}, socket) do
     {:noreply,
-     socket
-     |> assign(show_form: (if form == socket.assigns.show_form, do: "none", else: form))
-     |> assign(:question_type, "QA")}
+      socket
+      |> assign(show_form: form)
+      |> stream(:questions, Questions.list_questions_for_course(socket.assigns.course_page_id), reset: true)}
   end
 
   def handle_event("typeChange", %{"question_type" => question_type}, socket) do
-    {:noreply, assign(socket, question_type: question_type)}
+    {:noreply,
+    socket
+    |> assign(question_type: question_type)
+    |> stream(:questions, Questions.list_questions_for_course(socket.assigns.course_page_id), reset: true)}
   end
 end

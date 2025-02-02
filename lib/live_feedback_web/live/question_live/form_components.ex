@@ -1,3 +1,74 @@
+defmodule LiveFeedback.QuestionLive.QuestionComponent do
+  use Phoenix.LiveComponent
+
+  def render(assigns) do
+    ~H"""
+    <div id={"question_wrapper_#{@question.id}"} class="w-full">
+      <%= if @show_form == "#{@question.id}"  do %>
+        <.live_component module={LiveFeedbackWeb.QuestionLive.FormComponent} question_type={@question_type} id={"form_#{@question.id}"}/>
+      <% else %>
+        <.live_component module={LiveFeedbackWeb.QuestionLive.ViewQuestion} question={@question} id={"questionView_#{@question.id}"}/>
+      <% end %>
+    </div>
+    """
+  end
+
+end
+
+defmodule LiveFeedbackWeb.QuestionLive.ViewQuestion do
+  use Phoenix.LiveComponent
+  import LiveFeedbackWeb.CoreComponents
+
+  def render(assigns) do
+    ~H"""
+    <div phx-click="toggle_form" phx-value-form={Integer.to_string(@question.id)} id={"question_#{@question.id}"} class="flex justify-between items-center p-4 bg-gray-200 rounded-lg shadow-md hover:bg-gray-300 transition-all">
+      <p class="text-gray-800"><%= @question.question_content %></p>
+      <button phx-click="delete_question" phx-value-id={@question.id} class="text-red-500 hover:text-red-700 focus:outline-none">
+        <.icon name="hero-trash" />
+      </button>
+    </div>
+    """
+  end
+end
+
+
+defmodule LiveFeedbackWeb.QuestionLive.FormComponent do
+  use Phoenix.LiveComponent
+  def render(assigns) do
+    ~H"""
+      <form id="question_form" phx-submit="add_question" class="mt-4 space-y-4" phx-update="replace">
+        <!-- Question Content -->
+        <.live_component module={LiveFeedbackWeb.QuestionLive.QuestionContent}  id="content" />
+
+        <!-- Question Type Selection -->
+        <div>
+          <label for="question_type" class="block text-lg font-medium text-gray-700">Question Type:</label>
+          <select id="question_type" name="question_type" phx-change="typeChange" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="QA">Q&A</option>
+            <option value="free_response">Free Response</option>
+            <option value="multiple_choice">Multiple Choice</option>
+            <option value="multi-select">Multi-Select</option>
+            <option value="true_false">True/False</option>
+          </select>
+        </div>
+
+        <!-- Render Options -->
+        <div id="options" phx-update="replace">
+          <%= if @question_type == "multiple_choice" or @question_type == "multi-select" do %>
+            <.live_component module={LiveFeedbackWeb.QuestionLive.MultipleChoice} question_type={@question_type} id="multiple_choice" />
+          <% end %>
+
+          <%= if @question_type == "true_false" do %>
+            <.live_component  module={LiveFeedbackWeb.QuestionLive.TrueFalse} id="true_false" />
+          <% end %>
+        </div>
+
+        <button type="submit" class="w-full py-2 px-4 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600">Save</button>
+      </form>
+    """
+  end
+end
+
 
 defmodule LiveFeedbackWeb.QuestionLive.QuestionContent do
   use Phoenix.LiveComponent
