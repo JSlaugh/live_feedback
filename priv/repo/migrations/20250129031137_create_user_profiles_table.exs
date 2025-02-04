@@ -12,7 +12,6 @@ defmodule LiveFeedback.Repo.Migrations.CreateUserProfilesTable do
       timestamps(type: :utc_datetime)
     end
 
-    create index(:user_profiles, [:user_id])
-    create index(:user_profiles, [:course_page_id])
+    create unique_index(:user_profiles, [:user_id, :course_page_id])
   end
 end

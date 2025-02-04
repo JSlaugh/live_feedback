@@ -9,6 +9,7 @@ defmodule LiveFeedback.Questions.Question do
     field :question_content, :string
     field :display_order, :integer
     field :is_archived, :boolean, default: false
+    field :is_required, :boolean, default: false
 
     timestamps(type: :utc_datetime)
   end

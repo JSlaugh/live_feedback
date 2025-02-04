@@ -13,6 +13,6 @@ defmodule LiveFeedback.Repo.Migrations.CreateQuestionsTable do
       timestamps(type: :utc_datetime)
     end
 
-    create index(:questions, [:course_page_id])
+    create unique_index(:questions, [:course_page_id, :question_content])
   end
 end
