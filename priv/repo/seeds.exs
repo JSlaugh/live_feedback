@@ -1627,211 +1627,6 @@ _user25_user_profile = Repo.insert!(%UserProfile{
 )
 
 ###########################################################################
-################         Test User Option Responses        ################
-###########################################################################
-# Insert QuestionOptionsResponse for user 6
-_user6_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_profile_id: 11,
-  question_id: 4,
-  option_response: "D",
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-# Insert QuestionOptionsResponse for user 7
-_user7_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_profile_id: 12,
-  question_id: 4,
-  option_response: "D",
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-## RESPONSE 8 IS MISSING ON PURPOSE ##
-
-# Insert QuestionOptionsResponse for user 9
-_user9_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_profile_id: 14,
-  question_id: 4,
-  option_response: "B",
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-# Insert QuestionOptionsResponse for user 10
-_user10_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_profile_id: 15,
-  question_id: 4,
-  option_response: "D",
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-# Insert QuestionOptionsResponse for user 11
-_user11_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_profile_id: 16,
-  question_id: 4,
-  option_response: "D",
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-# Insert QuestionOptionsResponse for user 12
-_user12_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_profile_id: 17,
-  question_id: 4,
-  option_response: "D",
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-# Insert QuestionOptionsResponse for user 13
-_user13_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_profile_id: 18,
-  question_id: 4,
-  option_response: "C",
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-# Insert QuestionOptionsResponse for user 14
-_user14_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_profile_id: 19,
-  question_id: 4,
-  option_response: "D",
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-# Insert QuestionOptionsResponse for user 15
-_user15_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_profile_id: 20,
-  question_id: 4,
-  option_response: "D",
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-# Insert QuestionOptionsResponse for user 16
-_user16_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_profile_id: 21,
-  question_id: 4,
-  option_response: "D",
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-# Insert QuestionOptionsResponse for user 17
-_user17_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_profile_id: 22,
-  question_id: 4,
-  option_response: "D",
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-# Insert QuestionOptionsResponse for user 18
-_user18_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_profile_id: 23,
-  question_id: 4,
-  option_response: "D",
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-## RESPONSE 19 IS MISSING ON PURPOSE ##
-
-# Insert QuestionOptionsResponse for user 20
-_user20_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_profile_id: 25,
-  question_id: 4,
-  option_response: "A",
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-# Insert QuestionOptionsResponse for user 21
-_user21_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_profile_id: 26,
-  question_id: 4,
-  option_response: "D",
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-# Insert QuestionOptionsResponse for user 22
-_user22_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_profile_id: 27,
-  question_id: 4,
-  option_response: "A",
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-# Insert QuestionOptionsResponse for user 23
-_user23_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_profile_id: 28,
-  question_id: 4,
-  option_response: "D",
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-# Insert QuestionOptionsResponse for user 24
-_user24_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_profile_id: 29,
-  question_id: 4,
-  option_response: "D",
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-# Insert QuestionOptionsResponse for user 25
-_user25_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_profile_id: 30,
-  question_id: 4,
-  option_response: "D",
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-###########################################################################
 ################               Question Queues             ################
 ###########################################################################
 
@@ -1879,6 +1674,351 @@ _queue5 = Repo.insert!(%Queue{
   course_page_id: 9,
   name: "Friday Schedule",
   description: "",
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+###########################################################################
+################            Question Occurances            ################
+###########################################################################
+
+# Create date var from string
+{:ok, date_used} = Date.from_iso8601("2025-01-31")
+
+
+_QuestionOccurance1 = Repo.insert!(%QuestionOccurance{
+  question_id: 1,
+  queue_id: 1,
+  queue_display_order: 1,
+  date_used: date_used,
+  is_required: false,
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+_QuestionOccurance2 = Repo.insert!(%QuestionOccurance{
+  question_id: 2,
+  queue_id: 1,
+  queue_display_order: 2,
+  date_used: date_used,
+  is_required: false,
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+_QuestionOccurance2a = Repo.insert!(%QuestionOccurance{
+  question_id: 4,
+  queue_id: 2,
+  queue_display_order: 1,
+  date_used: date_used,
+  is_required: false,
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+_QuestionOccurance3 = Repo.insert!(%QuestionOccurance{
+  question_id: 5,
+  queue_id: 2,
+  queue_display_order: 1,
+  date_used: date_used,
+  is_required: false,
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+_QuestionOccurance4 = Repo.insert!(%QuestionOccurance{
+  question_id: 6,
+  queue_id: 2,
+  queue_display_order: 2,
+  date_used: date_used,
+  is_required: false,
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+_QuestionOccurance5 = Repo.insert!(%QuestionOccurance{
+  question_id: 9,
+  queue_id: 3,
+  queue_display_order: 1,
+  date_used: date_used,
+  is_required: false,
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+_QuestionOccurance6 = Repo.insert!(%QuestionOccurance{
+  question_id: 10,
+  queue_id: 3,
+  queue_display_order: 2,
+  date_used: date_used,
+  is_required: false,
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+_QuestionOccurance7 = Repo.insert!(%QuestionOccurance{
+  question_id: 13,
+  queue_id: 4,
+  queue_display_order: 1,
+  date_used: date_used,
+  is_required: false,
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+_QuestionOccurance8 = Repo.insert!(%QuestionOccurance{
+  question_id: 14,
+  queue_id: 4,
+  queue_display_order: 2,
+  date_used: date_used,
+  is_required: false,
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+_QuestionOccurance9 = Repo.insert!(%QuestionOccurance{
+  question_id: 19,
+  queue_id: 5,
+  queue_display_order: 1,
+  date_used: date_used,
+  is_required: false,
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+_QuestionOccurance10 = Repo.insert!(%QuestionOccurance{
+  question_id: 20,
+  queue_id: 5,
+  queue_display_order: 2,
+  date_used: date_used,
+  is_required: false,
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+###########################################################################
+################         Test User Option Responses        ################
+###########################################################################
+# Insert QuestionOptionsResponse for user 6
+_user6_option_response = Repo.insert!(%QuestionOptionsResponse{
+  user_profile_id: 11,
+  question_occurance_id: 3,
+  option_response: "D",
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+# Insert QuestionOptionsResponse for user 7
+_user7_option_response = Repo.insert!(%QuestionOptionsResponse{
+  user_profile_id: 12,
+  question_occurance_id: 3,
+  option_response: "D",
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+## RESPONSE 8 IS MISSING ON PURPOSE ##
+
+# Insert QuestionOptionsResponse for user 9
+_user9_option_response = Repo.insert!(%QuestionOptionsResponse{
+  user_profile_id: 14,
+  question_occurance_id: 3,
+  option_response: "B",
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+# Insert QuestionOptionsResponse for user 10
+_user10_option_response = Repo.insert!(%QuestionOptionsResponse{
+  user_profile_id: 15,
+  question_occurance_id: 3,
+  option_response: "D",
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+# Insert QuestionOptionsResponse for user 11
+_user11_option_response = Repo.insert!(%QuestionOptionsResponse{
+  user_profile_id: 16,
+  question_occurance_id: 3,
+  option_response: "D",
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+# Insert QuestionOptionsResponse for user 12
+_user12_option_response = Repo.insert!(%QuestionOptionsResponse{
+  user_profile_id: 17,
+  question_occurance_id: 3,
+  option_response: "D",
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+# Insert QuestionOptionsResponse for user 13
+_user13_option_response = Repo.insert!(%QuestionOptionsResponse{
+  user_profile_id: 18,
+  question_occurance_id: 3,
+  option_response: "C",
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+# Insert QuestionOptionsResponse for user 14
+_user14_option_response = Repo.insert!(%QuestionOptionsResponse{
+  user_profile_id: 19,
+  question_occurance_id: 3,
+  option_response: "D",
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+# Insert QuestionOptionsResponse for user 15
+_user15_option_response = Repo.insert!(%QuestionOptionsResponse{
+  user_profile_id: 20,
+  question_occurance_id: 3,
+  option_response: "D",
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+# Insert QuestionOptionsResponse for user 16
+_user16_option_response = Repo.insert!(%QuestionOptionsResponse{
+  user_profile_id: 21,
+  question_occurance_id: 3,
+  option_response: "D",
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+# Insert QuestionOptionsResponse for user 17
+_user17_option_response = Repo.insert!(%QuestionOptionsResponse{
+  user_profile_id: 22,
+  question_occurance_id: 3,
+  option_response: "D",
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+# Insert QuestionOptionsResponse for user 18
+_user18_option_response = Repo.insert!(%QuestionOptionsResponse{
+  user_profile_id: 23,
+  question_occurance_id: 3,
+  option_response: "D",
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+## RESPONSE 19 IS MISSING ON PURPOSE ##
+
+# Insert QuestionOptionsResponse for user 20
+_user20_option_response = Repo.insert!(%QuestionOptionsResponse{
+  user_profile_id: 25,
+  question_occurance_id: 3,
+  option_response: "A",
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+# Insert QuestionOptionsResponse for user 21
+_user21_option_response = Repo.insert!(%QuestionOptionsResponse{
+  user_profile_id: 26,
+  question_occurance_id: 3,
+  option_response: "D",
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+# Insert QuestionOptionsResponse for user 22
+_user22_option_response = Repo.insert!(%QuestionOptionsResponse{
+  user_profile_id: 27,
+  question_occurance_id: 3,
+  option_response: "A",
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+# Insert QuestionOptionsResponse for user 23
+_user23_option_response = Repo.insert!(%QuestionOptionsResponse{
+  user_profile_id: 28,
+  question_occurance_id: 3,
+  option_response: "D",
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+# Insert QuestionOptionsResponse for user 24
+_user24_option_response = Repo.insert!(%QuestionOptionsResponse{
+  user_profile_id: 29,
+  question_occurance_id: 3,
+  option_response: "D",
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+# Insert QuestionOptionsResponse for user 25
+_user25_option_response = Repo.insert!(%QuestionOptionsResponse{
+  user_profile_id: 30,
+  question_occurance_id: 3,
+  option_response: "D",
   inserted_at: now,
   updated_at: now
 },
@@ -2022,134 +2162,6 @@ _QuestionToSet9 = Repo.insert!(%QuestionToSet{
 _QuestionToSet10 = Repo.insert!(%QuestionToSet{
   question_set_id: 5,
   question_id: 18,
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-###########################################################################
-################            Question Occurances            ################
-###########################################################################
-
-# Create date var from string
-{:ok, date_used} = Date.from_iso8601("2025-01-31")
-
-
-_QuestionOccurance1 = Repo.insert!(%QuestionOccurance{
-  question_id: 1,
-  queue_id: 1,
-  queue_display_order: 1,
-  date_used: date_used,
-  is_required: false,
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-_QuestionOccurance2 = Repo.insert!(%QuestionOccurance{
-  question_id: 2,
-  queue_id: 1,
-  queue_display_order: 2,
-  date_used: date_used,
-  is_required: false,
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-_QuestionOccurance3 = Repo.insert!(%QuestionOccurance{
-  question_id: 5,
-  queue_id: 2,
-  queue_display_order: 1,
-  date_used: date_used,
-  is_required: false,
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-_QuestionOccurance4 = Repo.insert!(%QuestionOccurance{
-  question_id: 6,
-  queue_id: 2,
-  queue_display_order: 2,
-  date_used: date_used,
-  is_required: false,
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-_QuestionOccurance5 = Repo.insert!(%QuestionOccurance{
-  question_id: 9,
-  queue_id: 3,
-  queue_display_order: 1,
-  date_used: date_used,
-  is_required: false,
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-_QuestionOccurance6 = Repo.insert!(%QuestionOccurance{
-  question_id: 10,
-  queue_id: 3,
-  queue_display_order: 2,
-  date_used: date_used,
-  is_required: false,
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-_QuestionOccurance7 = Repo.insert!(%QuestionOccurance{
-  question_id: 13,
-  queue_id: 4,
-  queue_display_order: 1,
-  date_used: date_used,
-  is_required: false,
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-_QuestionOccurance8 = Repo.insert!(%QuestionOccurance{
-  question_id: 14,
-  queue_id: 4,
-  queue_display_order: 2,
-  date_used: date_used,
-  is_required: false,
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-_QuestionOccurance9 = Repo.insert!(%QuestionOccurance{
-  question_id: 19,
-  queue_id: 5,
-  queue_display_order: 1,
-  date_used: date_used,
-  is_required: false,
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-_QuestionOccurance10 = Repo.insert!(%QuestionOccurance{
-  question_id: 20,
-  queue_id: 5,
-  queue_display_order: 2,
-  date_used: date_used,
-  is_required: false,
   inserted_at: now,
   updated_at: now
 },
