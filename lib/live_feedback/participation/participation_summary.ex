@@ -4,7 +4,7 @@ defmodule LiveFeedback.Participation.ParticipationSummary do
 
   schema "participation_summaries" do
     belongs_to :participation_request, LiveFeedback.Participation.ParticipationRequest
-    belongs_to :profile, LiveFeedback.Accounts.UserProfile
+    belongs_to :user_profile, LiveFeedback.Accounts.UserProfile
     field :percentage, :float
 
     timestamps(type: :utc_datetime)

@@ -15,7 +15,7 @@ alias LiveFeedback.Questions.{Question, QuestionOption, QuestionOptionsResponse,
 alias LiveFeedback.Courses.CoursePage
 alias LiveFeedback.Accounts.User
 alias LiveFeedback.Accounts.UserProfile
-alias LiveFeedback.Participation.{ParticipationRequest, ParticipationSummary}
+# alias LiveFeedback.Participation.{ParticipationRequest, ParticipationSummary}
 
 now = DateTime.utc_now() |> DateTime.truncate(:second)
 
@@ -1631,7 +1631,7 @@ _user25_user_profile = Repo.insert!(%UserProfile{
 ###########################################################################
 # Insert QuestionOptionsResponse for user 6
 _user6_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_id: 6,
+  user_profile_id: 11,
   question_id: 4,
   option_response: "D",
   inserted_at: now,
@@ -1642,7 +1642,7 @@ _user6_option_response = Repo.insert!(%QuestionOptionsResponse{
 
 # Insert QuestionOptionsResponse for user 7
 _user7_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_id: 7,
+  user_profile_id: 12,
   question_id: 4,
   option_response: "D",
   inserted_at: now,
@@ -1655,7 +1655,7 @@ _user7_option_response = Repo.insert!(%QuestionOptionsResponse{
 
 # Insert QuestionOptionsResponse for user 9
 _user9_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_id: 9,
+  user_profile_id: 14,
   question_id: 4,
   option_response: "B",
   inserted_at: now,
@@ -1666,7 +1666,7 @@ _user9_option_response = Repo.insert!(%QuestionOptionsResponse{
 
 # Insert QuestionOptionsResponse for user 10
 _user10_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_id: 10,
+  user_profile_id: 15,
   question_id: 4,
   option_response: "D",
   inserted_at: now,
@@ -1677,7 +1677,7 @@ _user10_option_response = Repo.insert!(%QuestionOptionsResponse{
 
 # Insert QuestionOptionsResponse for user 11
 _user11_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_id: 11,
+  user_profile_id: 16,
   question_id: 4,
   option_response: "D",
   inserted_at: now,
@@ -1688,7 +1688,7 @@ _user11_option_response = Repo.insert!(%QuestionOptionsResponse{
 
 # Insert QuestionOptionsResponse for user 12
 _user12_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_id: 12,
+  user_profile_id: 17,
   question_id: 4,
   option_response: "D",
   inserted_at: now,
@@ -1699,7 +1699,7 @@ _user12_option_response = Repo.insert!(%QuestionOptionsResponse{
 
 # Insert QuestionOptionsResponse for user 13
 _user13_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_id: 13,
+  user_profile_id: 18,
   question_id: 4,
   option_response: "C",
   inserted_at: now,
@@ -1710,7 +1710,7 @@ _user13_option_response = Repo.insert!(%QuestionOptionsResponse{
 
 # Insert QuestionOptionsResponse for user 14
 _user14_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_id: 14,
+  user_profile_id: 19,
   question_id: 4,
   option_response: "D",
   inserted_at: now,
@@ -1721,7 +1721,7 @@ _user14_option_response = Repo.insert!(%QuestionOptionsResponse{
 
 # Insert QuestionOptionsResponse for user 15
 _user15_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_id: 15,
+  user_profile_id: 20,
   question_id: 4,
   option_response: "D",
   inserted_at: now,
@@ -1732,7 +1732,7 @@ _user15_option_response = Repo.insert!(%QuestionOptionsResponse{
 
 # Insert QuestionOptionsResponse for user 16
 _user16_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_id: 16,
+  user_profile_id: 21,
   question_id: 4,
   option_response: "D",
   inserted_at: now,
@@ -1743,7 +1743,7 @@ _user16_option_response = Repo.insert!(%QuestionOptionsResponse{
 
 # Insert QuestionOptionsResponse for user 17
 _user17_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_id: 17,
+  user_profile_id: 22,
   question_id: 4,
   option_response: "D",
   inserted_at: now,
@@ -1754,7 +1754,7 @@ _user17_option_response = Repo.insert!(%QuestionOptionsResponse{
 
 # Insert QuestionOptionsResponse for user 18
 _user18_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_id: 18,
+  user_profile_id: 23,
   question_id: 4,
   option_response: "D",
   inserted_at: now,
@@ -1767,7 +1767,7 @@ _user18_option_response = Repo.insert!(%QuestionOptionsResponse{
 
 # Insert QuestionOptionsResponse for user 20
 _user20_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_id: 20,
+  user_profile_id: 25,
   question_id: 4,
   option_response: "A",
   inserted_at: now,
@@ -1778,7 +1778,7 @@ _user20_option_response = Repo.insert!(%QuestionOptionsResponse{
 
 # Insert QuestionOptionsResponse for user 21
 _user21_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_id: 21,
+  user_profile_id: 26,
   question_id: 4,
   option_response: "D",
   inserted_at: now,
@@ -1789,7 +1789,7 @@ _user21_option_response = Repo.insert!(%QuestionOptionsResponse{
 
 # Insert QuestionOptionsResponse for user 22
 _user22_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_id: 22,
+  user_profile_id: 27,
   question_id: 4,
   option_response: "A",
   inserted_at: now,
@@ -1800,7 +1800,7 @@ _user22_option_response = Repo.insert!(%QuestionOptionsResponse{
 
 # Insert QuestionOptionsResponse for user 23
 _user23_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_id: 23,
+  user_profile_id: 28,
   question_id: 4,
   option_response: "D",
   inserted_at: now,
@@ -1811,7 +1811,7 @@ _user23_option_response = Repo.insert!(%QuestionOptionsResponse{
 
 # Insert QuestionOptionsResponse for user 24
 _user24_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_id: 24,
+  user_profile_id: 29,
   question_id: 4,
   option_response: "D",
   inserted_at: now,
@@ -1822,7 +1822,7 @@ _user24_option_response = Repo.insert!(%QuestionOptionsResponse{
 
 # Insert QuestionOptionsResponse for user 25
 _user25_option_response = Repo.insert!(%QuestionOptionsResponse{
-  user_id: 25,
+  user_profile_id: 30,
   question_id: 4,
   option_response: "D",
   inserted_at: now,
@@ -1891,7 +1891,7 @@ _queue5 = Repo.insert!(%Queue{
 
 _QuestionSet1 = Repo.insert!(%QuestionSet{
   name: "Attendance Daily Questions",
-  description: "",
+  description: "History Questions",
   inserted_at: now,
   updated_at: now
 },
@@ -1918,7 +1918,7 @@ _QuestionSet3 = Repo.insert!(%QuestionSet{
 
 _QuestionSet4 = Repo.insert!(%QuestionSet{
   name: "Attendance Daily Questions",
-  description: "",
+  description: "Bowling Questions",
   inserted_at: now,
   updated_at: now
 },

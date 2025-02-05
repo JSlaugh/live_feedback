@@ -10,6 +10,6 @@ defmodule LiveFeedback.Repo.Migrations.CreateQueuesTable do
       timestamps(type: :utc_datetime)
     end
 
-    create index(:queues, [:course_page_id])
+    create unique_index(:queues, [:course_page_id, :name])
   end
 end

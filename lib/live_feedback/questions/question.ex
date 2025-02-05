@@ -11,6 +11,10 @@ defmodule LiveFeedback.Questions.Question do
     field :is_archived, :boolean, default: false
     field :is_required, :boolean, default: false
 
+    has_many :question_option, LiveFeedback.Questions.QuestionOption
+    has_many :question_options_response, LiveFeedback.Questions.QuestionOptionsResponse
+    many_to_many :question_set, LiveFeedback.Questions.QuestionSet, join_through: "questions_to_sets"
+
     timestamps(type: :utc_datetime)
   end
 

@@ -9,5 +9,6 @@ defmodule LiveFeedback.Repo.Migrations.CreateQuestionSetsTable do
       timestamps(type: :utc_datetime)
     end
 
+    create unique_index(:question_sets, [:name, :description])
   end
 end

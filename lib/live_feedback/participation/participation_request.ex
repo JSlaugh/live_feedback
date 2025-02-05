@@ -7,6 +7,8 @@ defmodule LiveFeedback.Participation.ParticipationRequest do
     field :participation_date, :date
     field :date_requested, :date
 
+    has_one :participation_summary, LiveFeedback.Participation.ParticipationSummary
+
     timestamps(type: :utc_datetime)
   end
 

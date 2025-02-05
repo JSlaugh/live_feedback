@@ -9,6 +9,8 @@ defmodule LiveFeedback.Questions.QuestionOccurance do
     field :date_used, :date
     field :is_required, :boolean, default: false
 
+    #has_many :messages, LiveFeedback.Messages.Message
+
     timestamps(type: :utc_datetime)
   end
 

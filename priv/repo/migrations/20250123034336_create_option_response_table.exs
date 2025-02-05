@@ -9,7 +9,5 @@ defmodule LiveFeedback.Repo.Migrations.CreateOptionResponseTable do
 
         timestamps(type: :utc_datetime)
       end
-
-      create unique_index(:question_options_responses, [:user_id, :question_id])
   end
 end

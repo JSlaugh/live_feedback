@@ -6,6 +6,8 @@ defmodule LiveFeedback.Questions.QuestionSet do
     field :name, :string
     field :description, :string
 
+    many_to_many :question, LiveFeedback.Questions.Question, join_through: "questions_to_sets"
+
     timestamps(type: :utc_datetime)
   end
 
@@ -13,6 +15,6 @@ defmodule LiveFeedback.Questions.QuestionSet do
   def changeset(queue, attrs) do
     queue
     |> cast(attrs, [:name, :description])
-    |> validate_required([:name])
+    |> validate_required([:name, :description])
   end
 end

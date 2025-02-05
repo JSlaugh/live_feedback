@@ -9,6 +9,10 @@ defmodule LiveFeedback.Accounts.UserProfile do
     field :display_name, :string
     field :custom_registration_id, :string
 
+    has_many :message, LiveFeedback.Messages.Message
+    has_many :question_options_response, LiveFeedback.Questions.QuestionOptionsResponse
+    has_many :participation_summary, LiveFeedback.Participation.ParticipationSummary
+
     timestamps(type: :utc_datetime)
   end
 
