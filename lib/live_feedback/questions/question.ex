@@ -10,6 +10,8 @@ defmodule LiveFeedback.Questions.Question do
     field :display_order, :integer
     field :is_archived, :boolean, default: false
 
+    has_many :question_options, LiveFeedback.Questions.QuestionOptions
+
     timestamps()
   end
 
