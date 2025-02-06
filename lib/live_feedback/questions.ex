@@ -18,7 +18,12 @@ defmodule LiveFeedback.Questions do
     |> Repo.all()
   end
 
+  def list_options_for_question(question_id) do
+    Repo.all(from o in QuestionOptions, where: o.question_id == ^question_id)
+  end
+
   def get_question!(id), do: Repo.get!(Question, id)
+  def get_question_option!(id), do: Repo.get!(QuestionOptions, id)
 
   def get_course_name(course_page_id) do
     from(course in CoursePage,
@@ -38,62 +43,106 @@ defmodule LiveFeedback.Questions do
     end
   end
 
-  def add_question(attrs) do
+  def add_question(attrs \\ %{}) do
     %Question{}
     |> Question.changeset(attrs)
     |> Repo.insert()
-  end
-
-  def update_question(id, attrs) do
-    id
-    |> Repo.get(Question)
-    |> Question.changeset(attrs)
-    |> Repo.update()
-  end
-
-
-  def add_option_to_question(attrs) do
-    %QuestionOptions{}
-    |> QuestionOptions.changeset(attrs)
-    |> Repo.insert()
-  end
-
-  # Update or add an option to the question
-  def update_or_add_option_to_question(attrs) do
-    case Repo.get_by(QuestionOptions, option_order: attrs["option_order"], question_id: attrs["question_id"]) do
-      nil -> add_option_to_question(attrs) # Add if it doesn't exist
-      option -> update_option(option, attrs) # Update if it exists
-    end
-  end
-
-  # Update an option
-  def update_option(option, attrs) do
-    option
-    |> QuestionOptions.changeset(attrs)
-    |> Repo.update()
-  end
-
-  # Delete an option for a question if it's no longer present
-  def delete_option_for_question(question_id, order) do
-    option = Repo.get_by(QuestionOptions, question_id: question_id, option_order: order)
-    if option, do: Repo.delete(option)
-  end
-
-
-
-
-  def delete_question(%Question{} = question) do
-    # Delete the question from the database
-    Repo.delete(question)
     |> case do
       {:ok, question} ->
-        # Broadcast the deletion event for questions
         topic = "questions:#{question.course_page_id}"
-        Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:deleted_question, question})
+        # Broadcast the new question to interested subscribers
+        Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:new_question, question})
         {:ok, question}
 
       {:error, changeset} ->
         {:error, changeset}
     end
   end
+
+
+  def update_question(%Question{} = question, attrs) do
+    question
+    |> Question.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def delete_question(%Question{} = question) do
+    Repo.transaction(fn ->
+      # Update display_order of questions with a greater order
+      from(q in Question,
+        where: q.course_page_id == ^question.course_page_id and q.display_order > ^question.display_order,
+        update: [set: [display_order: q.display_order - 1]]
+      )
+      |> Repo.update_all([])
+
+      # Delete the question
+      case Repo.delete(question) do
+        {:ok, question} ->
+          topic = "questions:#{question.course_page_id}"
+          Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:deleted_question, question})
+          {:ok, question}
+
+        {:error, changeset} ->
+          Repo.rollback(changeset)
+      end
+    end)
+  end
+
+
+  def add_option(attrs) do
+    %QuestionOptions{}
+    |> QuestionOptions.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def update_option(option_id, attrs) do
+    option = get_question_option!(option_id)
+    IO.inspect(option, label: "option to be updated")
+    option
+    |> QuestionOptions.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def delete_option(option_id) do
+    option = get_question_option!(option_id)
+    IO.inspect(option, label: "option to be deleted")
+    Repo.delete(option)
+  end
+
+  def move_question(question_id, direction) when direction in ["up", "down"] do
+    Repo.transaction(fn ->
+      # Get the question to move
+      question = Repo.get!(Question, question_id)
+
+      # Determine the target display order and find the adjacent question
+      {offset, comparison} =
+        case direction do
+          "up" -> {-1, question.display_order - 1}
+          "down" -> {1, question.display_order + 1}
+        end
+
+      adjacent_question =
+        Repo.one(
+          from q in Question,
+          where: q.course_page_id == ^question.course_page_id and q.display_order == ^comparison,
+          limit: 1
+        )
+
+      # If there's no adjacent question, do nothing
+      if adjacent_question do
+        # Swap their display_order values
+        Repo.update!(Ecto.Changeset.change(question, display_order: question.display_order + offset))
+        Repo.update!(Ecto.Changeset.change(adjacent_question, display_order: adjacent_question.display_order - offset))
+
+        # Broadcast update
+        topic = "questions:#{question.course_page_id}"
+        Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:swapped_questions, question, adjacent_question})
+
+        {:ok, {question, adjacent_question}}
+      else
+        {:error, if(direction == "up", do: :already_at_top, else: :already_at_bottom)}
+      end
+    end)
+  end
+
 end

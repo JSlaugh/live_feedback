@@ -35,9 +35,19 @@ defmodule LiveFeedbackWeb.QuestionLive.ViewQuestion do
     ~H"""
     <div phx-click="toggle_form" phx-key={"question_content_#{@question.id}"} phx-value-form={@question.id} id={"question_#{@question.id}"} class="flex justify-between items-center p-4 bg-gray-200 rounded-lg shadow-md hover:bg-gray-300 transition-all">
       <p class="text-gray-800"><%= @question.question_content %></p>
+      <div>
+        <div>
+          <button phx-click="move_question" phx-value-id={@question.id} phx-value-direction="up" class="hover:text-red-700 focus:outline-none">
+            <.icon name="hero-chevron-up" />
+          </button>
+          <button phx-click="move_question" phx-value-id={@question.id} phx-value-direction="down" class=" hover:text-red-700 focus:outline-none">
+            <.icon name="hero-chevron-down" />
+          </button>
+        </div>
       <button phx-click="delete_question" phx-value-id={@question.id} class="text-red-500 hover:text-red-700 focus:outline-none">
         <.icon name="hero-trash" />
       </button>
+      </div>
     </div>
     """
   end
@@ -54,6 +64,7 @@ defmodule LiveFeedbackWeb.QuestionLive.FormComponent do
       phx-submit={if @question.id == "new", do: "add_question", else: "edit_question"}
       class="mt-4 space-y-4"
       >
+      <input type="hidden" name="question_id" value={@question.id} phx-key={@question.id} />
         <!-- Question Content -->
         <.live_component module={LiveFeedbackWeb.QuestionLive.QuestionContent} question={@question} id={"question_content_component_#{@question.id}"} phx-key={"question_content_component_#{@question.id}"} />
 
@@ -116,7 +127,7 @@ defmodule LiveFeedbackWeb.QuestionLive.MultipleChoice do
         <tbody>
           <%= for {letter, index} <- Enum.with_index(["A", "B", "C", "D"], 1) do %>
             <% option = Enum.find(@question.question_options, fn o -> o.option_order == index end) ||
-                        %LiveFeedback.Questions.QuestionOptions{id: "new_#{index}", option_content: "", is_correct: false, option_order: index} %>
+                        %LiveFeedback.Questions.QuestionOptions{id: "#{letter}", option_content: "", is_correct: false, option_order: index} %>
             <tr>
               <td class="px-4 py-2"><%= letter %></td>
               <td class="px-4 py-2">
@@ -124,6 +135,7 @@ defmodule LiveFeedbackWeb.QuestionLive.MultipleChoice do
                   module={LiveFeedbackWeb.QuestionLive.OptionContent}
                   option={option}
                   question={@question}
+                  letter={letter}
                   id={"option_content_#{option.id}_#{@question.id}"}
                   phx-key={"option_content_#{option.id}_#{@question.id}"}
                 />
@@ -134,6 +146,7 @@ defmodule LiveFeedbackWeb.QuestionLive.MultipleChoice do
                   question={@question}
                   question_type={@question_type}
                   option={option}
+                  letter={letter}
                   id={"radio_checkbox_#{option.id}_#{@question.id}"}
                   phx_key={"radio_checkbox_#{option.id}_#{@question.id}"}
                 />
@@ -163,12 +176,12 @@ defmodule LiveFeedbackWeb.QuestionLive.TrueFalse do
         <tbody>
           <%= for {letter, index} <- Enum.with_index(["A", "B"], 1) do %>
             <% option = Enum.find(@question.question_options, fn o -> o.option_order == index end) ||
-                        %LiveFeedback.Questions.QuestionOptions{id: "new_#{index}", option_content: "", is_correct: false, option_order: index} %>
+                        %LiveFeedback.Questions.QuestionOptions{id: "#{letter}", option_content: "", is_correct: false, option_order: index} %>
             <tr>
               <td class="px-4 py-2"><%= if letter == "A", do: "True", else: "False" %></td>
               <td class="px-4 py-2 text-center">
                 <input type="radio"
-                       id={"correct_#{letter}_#{@question.id}"}
+                       id={"correct_#{letter}"}
                        name="answer"
                        value={letter}
                        class="h-5 w-5 text-blue-600 focus:ring-2 focus:ring-blue-500"
@@ -183,9 +196,6 @@ defmodule LiveFeedbackWeb.QuestionLive.TrueFalse do
   end
 end
 
-
-
-
 defmodule LiveFeedbackWeb.QuestionLive.RadioOrCheckbox do
   use Phoenix.LiveComponent
 
@@ -193,8 +203,8 @@ defmodule LiveFeedbackWeb.QuestionLive.RadioOrCheckbox do
     ~H"""
       <input type={if @question_type == "multiple_choice", do: "radio", else: "checkbox"}
        id={"correct_#{@option.id}"}
-       name={if @question_type == "multiple_choice", do: "answer", else: "correct_#{@option.id}"}
-       value={@option.option_content}
+       name={if @question_type == "multiple_choice", do: "answer", else: "correct_#{@letter}"}
+       value={@letter}
        class="h-5 w-5 text-blue-600 focus:ring-2 focus:ring-blue-500"
        checked={@option.is_correct} />
 
@@ -208,7 +218,7 @@ defmodule LiveFeedbackWeb.QuestionLive.OptionContent do
     ~H"""
     <input type="text"
        id={"option_#{@option.id}"}
-       name={"option_#{@option.id}"}
+       name={"option_#{@letter}"}
        class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
        value={@option.option_content} />
 
