@@ -9,10 +9,9 @@ defmodule LiveFeedback.Courses.CoursePage do
     belongs_to :user, LiveFeedback.Accounts.User
 
     has_many :queue, LiveFeedback.Questions.Queue
-    has_many :question, LiveFeedback.Questions.Question
+    has_many :question_set, LiveFeedback.Questions.QuestionSet
     has_many :participation_request, LiveFeedback.Participation.ParticipationRequest
     has_many :user_profile, LiveFeedback.Accounts.UserProfile
-    has_many :message, LiveFeedback.Messages.Message
 
     timestamps(type: :utc_datetime)
   end

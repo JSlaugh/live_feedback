@@ -12,7 +12,7 @@ defmodule LiveFeedback.Accounts.User do
     field :confirmed_at, :utc_datetime
 
     has_many :course_page, LiveFeedback.Courses.CoursePage
-    has_many :user_token, LiveFeedback.Accounts.UserToken
+    has_one :user_token, LiveFeedback.Accounts.UserToken
     has_many :user_profile, LiveFeedback.Accounts.UserProfile
 
     timestamps(type: :utc_datetime)

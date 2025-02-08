@@ -3,7 +3,6 @@ defmodule LiveFeedback.Repo.Migrations.ReplaceMessagesQuestionIdWithQuestionOccu
 
   def change do
     alter table(:messages) do
-      remove :question_id
       add :question_occurance_id, references(:question_occurances, on_delete: :delete_all)
     end
   end

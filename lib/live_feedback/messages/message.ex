@@ -7,7 +7,6 @@ defmodule LiveFeedback.Messages.Message do
     field :is_anonymous, :boolean, default: false
     field :anonymous_id, :string
     field :is_answered, :boolean, default: false
-    field :course_page_id, :id
     field :like_count, :integer, default: 0
 
     belongs_to :question_occurance, LiveFeedback.Questions.QuestionOccurance

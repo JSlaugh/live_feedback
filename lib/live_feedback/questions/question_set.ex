@@ -3,10 +3,12 @@ defmodule LiveFeedback.Questions.QuestionSet do
   import Ecto.Changeset
 
   schema "question_sets" do
+    belongs_to :user, LiveFeedback.Accounts.User
+    belongs_to :course_page, LiveFeedback.Courses.CoursePage
     field :name, :string
     field :description, :string
 
-    many_to_many :question, LiveFeedback.Questions.Question, join_through: "questions_to_sets"
+    has_many :question_template, LiveFeedback.Questions.QuestionTemplate
 
     timestamps(type: :utc_datetime)
   end

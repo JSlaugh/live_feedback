@@ -8,17 +8,17 @@ defmodule LiveFeedback.Questions do
   alias LiveFeedback.Messages.Message
   alias LiveFeedback.Messages.LikedBy
   alias LiveFeedback.Courses.CoursePage
-  alias LiveFeedback.Questions.Question
+  alias LiveFeedback.Questions.QuestionTemplate
 
   def list_questions_for_course(course_page_id) do
-    from(question in Question,
+    from(question in QuestionTemplate,
       where: question.course_page_id == ^course_page_id,
       order_by: [asc: question.display_order]
     )
     |> Repo.all()
   end
 
-  def get_question!(id), do: Repo.get!(Question, id)
+  def get_question!(id), do: Repo.get!(QuestionTemplate, id)
 
   def get_course_name(course_page_id) do
     from(course in CoursePage,
@@ -28,7 +28,7 @@ defmodule LiveFeedback.Questions do
   end
 
   def get_max_display_order(course_page_id) do
-    query = from question in Question,
+    query = from question in QuestionTemplate,
             where: question.course_page_id == ^course_page_id,
             select: max(question.display_order)
 
@@ -39,12 +39,12 @@ defmodule LiveFeedback.Questions do
   end
 
   def add_question(attrs) do
-    %Question{}
-    |> Question.changeset(attrs)
+    %QuestionTemplate{}
+    |> QuestionTemplate.changeset(attrs)
     |> Repo.insert()
   end
 
-  def delete_question(%Question{} = question) do
+  def delete_question(%QuestionTemplate{} = question) do
     # Delete the question from the database
     Repo.delete(question)
     |> case do
