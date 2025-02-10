@@ -5,25 +5,28 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
 
   @impl true
   def mount(%{"course_page_id" => course_page_id}, _session, socket) do
-    questions = Questions.list_questions_for_course(course_page_id)
+    #if connected?(socket), do: Questions.subscribe(course_page_id)
     {:ok,
      socket
      |> assign(:course_page_id, course_page_id)
      |> assign(:course_name, Questions.get_course_name(course_page_id))
      |> assign(:show_form, nil)
      |> assign(:question_type, "QA")
-     |> stream(:questions, questions)
+     |> assign(:show_add_form, false)
+     |> stream(:questions, Questions.list_questions_for_course(course_page_id))
     }
-
   end
 
-  defp load_questions(socket) do
-    questions = Questions.list_questions_for_course(socket.assigns.course_page_id)
-    stream(socket, :questions, questions, reset: false)
+  def handle_event("see_stream", _params, socket) do
+    # Inspect the stream data
+    #IO.inspect(Map.get(socket.assigns.streams, :ac), label: "My Stream Data")
+
+    {:noreply, socket}
   end
 
   @impl true
   def handle_event("add_question", params, socket) do
+    IO.inspect(Map.get(socket.assigns.streams, :questions), label: "My Stream Data")
     content = Map.get(params, "question_content", "")
     type = Map.get(params, "question_type", "")
 
@@ -80,12 +83,15 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
           # Add the option to the question
           Questions.add_option(option_attrs)
         end
-
-        # Return the updated socket with the new question streamed
+        question = Questions.get_question!(question.id)
+        IO.inspect(question, label: "New Questions")
         {:noreply,
          socket
          |> assign(show_form: "none")
-         |> put_flash(:info, "Question added successfully.")}  # Stream the newly added question
+         |> assign(show_add_form: false)
+         |> stream_insert(:questions, question)
+         |> put_flash(:info, "Question added successfully.")
+         }
 
       {:error, changeset} ->
         # In case of error, return the socket with an error message
@@ -94,24 +100,6 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
          |> put_flash(:error, "Failed to add question.")}
     end
   end
-
-  def handle_info({:new_question, question}, socket) do
-    # Check if the course page ID matches
-    if question.course_page_id == socket.assigns.course_page.id do
-      # Retrieve the sorted list of questions for this course page
-      sorted_questions =
-        Questions.get_questions_for_course_page_id(
-          socket.assigns.course_page.id,
-          socket.assigns.sort_by
-        )
-
-      # Stream the updated list of questions
-      {:noreply, stream(socket, :questions, sorted_questions, reset: true)}
-    else
-      {:noreply, socket}
-    end
-  end
-
 
   @impl true
   def handle_event("edit_question", params, socket) do
@@ -188,33 +176,27 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
           end
           #update
           if form_option_content != nil and existing_option_content != nil do
-            if form_option_content != existing_option_content or form_is_correct != existing_is_correct do
-              option_attrs = %{
-                "option_order" => i + 1,
-                "option_content" => form_option_content,
-                "is_correct" => form_is_correct,
-                "question_id" => question.id
-              }
-              # Update the option in the question
-              Questions.update_option(existing_option.id, option_attrs)
-            end
+            option_attrs = %{
+              "option_order" => i + 1,
+              "option_content" => form_option_content,
+              "is_correct" => form_is_correct,
+              "question_id" => question.id
+            }
+            # Update the option in the question
+            Questions.update_option(existing_option.id, option_attrs)
           end
           #delete
           if (form_option_content == nil && existing_option_content != nil) do
             Questions.delete_option(existing_option.id)
           end
-
-          IO.puts("Iteration #{i}:")
-          IO.puts("Existing Option - Content: #{existing_option_content}, Is Correct: #{existing_is_correct}")
-          IO.puts("Form Option - Content: #{form_option_content}, Is Correct: #{form_is_correct}")
         end
-
-        # Return the updated socket with the edited question streamed
+        question = Questions.get_question!(question.id)
         {:noreply,
         socket
         |> assign(show_form: "none")
         |> put_flash(:info, "Question updated successfully.")
-        |> stream(:questions, Questions.list_questions_for_course(socket.assigns.course_page_id))}  # Stream the updated question
+        |> stream_insert(:questions, question)
+      }
 
       {:error, changeset} ->
         # In case of error, return the socket with an error message
@@ -223,9 +205,6 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
         |> put_flash(:error, "Failed to update question.")}
     end
   end
-
-
-
 
   @impl true
   def handle_event("delete_question", %{"id" => id}, socket) do
@@ -236,59 +215,56 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     question = Questions.get_question!(id)
 
     case Questions.delete_question(question) do
-      {:ok, _deleted_question} ->
-        # Pass the whole question struct to the stream_delete
-        {:noreply, load_questions(socket)}
-
+      {:ok, deleted_question} ->
+        {:noreply,
+        socket
+        |> put_flash(:info, "Successfully deleted the question.")
+        |> stream(:questions, Questions.list_questions_for_course(socket.assigns.course_page_id), reset: true)}
       {:error, _changeset} ->
         # If deletion fails, show an error flash
         {:noreply, put_flash(socket, :error, "Failed to delete the question.")}
     end
   end
 
-  def handle_event("toggle_form", %{"form" => form}, socket) do
-    new_show_form =
-      if form== "add" && socket.assigns.show_form == "add" do
-        "none"  # Close the form if it's already open
-      else
-        form  # Open the form if it's closed
-      end
-
-    question_type =
-      case Integer.parse(form) do
-        {form_id, ""} ->
-          question = Questions.get_question!(form_id)
-          question.question_type  # Get the question type from the fetched question
-
-        _ ->
-          "QA"  # Default to "QA" if parsing fails
-      end
-
-      IO.inspect(new_show_form, label: "New show_form value")
+  def handle_event("toggle_new_form", _params, socket) do
     {:noreply,
-     socket
-     |> assign(show_form: new_show_form)
-     |> assign(question_type: question_type)
-     |> load_questions()}
+      socket
+      |> assign(show_add_form: !socket.assigns.show_add_form)
+      |> assign(:show_form, "none")
+      |> assign(:question_type, "QA")
+      |> stream(:questions, Questions.list_questions_for_course(socket.assigns.course_page_id), reset: false)}
   end
-
 
   def handle_event("typeChange", %{"question_type" => question_type}, socket) do
     {:noreply,
     socket
     |> assign(question_type: question_type)
-    |> load_questions()}
+    |> stream(:questions, Questions.list_questions_for_course(socket.assigns.course_page_id), reset: false)}
   end
+
 
   def handle_event("move_question", %{"id" => id, "direction" => direction}, socket) do
     case Questions.move_question(id, direction) do
       {:ok, {q1, q2}} ->
         {:noreply,
-         load_questions(socket)}
+         socket}
 
       {:error, _} ->
         {:noreply, socket} # No-op if already at the top/bottom
     end
   end
 
+  @impl true
+  def handle_info({:toggle_form, question_id}, socket) do
+    question = Questions.get_question!(question_id)
+    IO.inspect(question_id)
+    IO.inspect(socket.assigns.streams, label: "My Stream Data")
+
+    {:noreply,
+    socket
+    |> assign(:show_form, question_id)
+    |> assign(:show_add_form, false)
+    |> assign(:question_type, question.question_type)
+    |> stream(:questions, Questions.list_questions_for_course(socket.assigns.course_page_id), reset: false)}
+  end
 end

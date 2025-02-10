@@ -3,19 +3,21 @@
 <%= if Enum.count(@streams.questions) == 0 do %>
   <p class="text-gray-500">No questions available.</p>
 <% else %>
-  <div :for={{id, question} <- @streams.questions} id={id} phx-key={id} class="" phx-update="replace">
-      <.live_component
+<div id="question_box" phx-update="stream">
+  <div :for={{id, question} <- @streams.questions} id={id}>
+    <.live_component
       module={LiveFeedback.QuestionLive.QuestionComponent}
       question={question}
       question_type={@question_type}
-      phx-key={"question_#{id}"}
-      id={"question_#{id}"}
+      id={"question_#{question.id}"}
       show_form={@show_form}
+      stream={@streams.questions}
     />
   </div>
+</div>
 <% end %>
 
-<div class={if @show_form == "add", do: "block", else: "hidden"}>
+<div class={if @show_add_form, do: "block", else: "hidden"}>
   <.live_component
     module={LiveFeedbackWeb.QuestionLive.FormComponent}
     question_type={@question_type}
@@ -32,7 +34,7 @@
   </div>
 
   <!-- Button inside square box -->
-  <button phx-click="toggle_form" phx-value-form="add" class="relative z-10 inline-flex items-center justify-center p-0 w-8 h-8 bg-white border-2 border-gray-300 rounded-md">
+  <button phx-click="toggle_new_form" class="relative z-10 inline-flex items-center justify-center p-0 w-8 h-8 bg-white border-2 border-gray-300 rounded-md">
     <.icon name="hero-plus" class="text-gray-300 h-5 w-5 stroke-3" />
   </button>
 </div>

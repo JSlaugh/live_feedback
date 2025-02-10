@@ -3,18 +3,17 @@ defmodule LiveFeedback.QuestionLive.QuestionComponent do
 
   def render(assigns) do
     ~H"""
-    <div id={"question_wrapper_#{@question.id}"} phx-key={"question_wrapper_#{@question.id}"} class="w-full">
-      <div class={if @show_form == "#{@question.id}", do: "block", else: "hidden"}>
+    <div id={"question_wrapper_#{@question.id}"} class="w-full">
+      <div class={if "#{@show_form}" == "#{@question.id}", do: "block", else: "hidden"} id={"question_form_#{@question.id}"}>
         <.live_component
           module={LiveFeedbackWeb.QuestionLive.FormComponent}
           question={@question}
           question_type={@question_type}
           id={"form_#{@question.id}"}
-          phx-key={"form_#{@question.id}"}
         />
       </div>
 
-      <div class={if @show_form != "#{@question.id}", do: "block", else: "hidden"}>
+      <div class={if "#{@show_form}" != "#{@question.id}", do: "block", else: "hidden"} id={"question_view_#{@question.id}"} phx-target={@myself} phx-click="toggle_form">
         <.live_component
           module={LiveFeedbackWeb.QuestionLive.ViewQuestion}
           question={@question}
@@ -23,6 +22,12 @@ defmodule LiveFeedback.QuestionLive.QuestionComponent do
       </div>
     </div>
     """
+  end
+  @impl true
+  def handle_event("toggle_form", _params, socket) do
+    IO.inspect(socket, label: "My Stream Data")
+    send(self(), {:toggle_form, socket.assigns.question.id})
+    {:noreply, socket}
   end
 end
 
@@ -33,7 +38,9 @@ defmodule LiveFeedbackWeb.QuestionLive.ViewQuestion do
 
   def render(assigns) do
     ~H"""
-    <div phx-click="toggle_form" phx-key={"question_content_#{@question.id}"} phx-value-form={@question.id} id={"question_#{@question.id}"} class="flex justify-between items-center p-4 bg-gray-200 rounded-lg shadow-md hover:bg-gray-300 transition-all">
+    <div
+      id={"question_#{@question.id}"}
+      class="flex justify-between items-center p-4 bg-gray-200 rounded-lg shadow-md hover:bg-gray-300 transition-all">
       <p class="text-gray-800"><%= @question.question_content %></p>
       <div>
         <div>
@@ -44,13 +51,14 @@ defmodule LiveFeedbackWeb.QuestionLive.ViewQuestion do
             <.icon name="hero-chevron-down" />
           </button>
         </div>
-      <button phx-click="delete_question" phx-value-id={@question.id} class="text-red-500 hover:text-red-700 focus:outline-none">
-        <.icon name="hero-trash" />
-      </button>
+        <button phx-click="delete_question" phx-value-id={@question.id} class="text-red-500 hover:text-red-700 focus:outline-none">
+          <.icon name="hero-trash" />
+        </button>
       </div>
     </div>
     """
   end
+
 end
 
 defmodule LiveFeedbackWeb.QuestionLive.FormComponent do
@@ -59,7 +67,7 @@ defmodule LiveFeedbackWeb.QuestionLive.FormComponent do
   def render(assigns) do
     ~H"""
       <form
-      id="question_form"
+      id={"question_form_#{@question.id}"}
       phx-key={"question_form_#{@question.id}"}
       phx-submit={if @question.id == "new", do: "add_question", else: "edit_question"}
       class="mt-4 space-y-4"

@@ -9,6 +9,11 @@ defmodule LiveFeedback.Questions do
   alias LiveFeedback.Questions.Question
   alias LiveFeedback.Questions.QuestionOptions
 
+  def subscribe(course_page_id) do
+    topic = "questions:#{course_page_id}"
+    Phoenix.PubSub.subscribe(LiveFeedback.PubSub, topic)
+  end
+
   def list_questions_for_course(course_page_id) do
     from(question in Question,
       where: question.course_page_id == ^course_page_id,
@@ -22,7 +27,10 @@ defmodule LiveFeedback.Questions do
     Repo.all(from o in QuestionOptions, where: o.question_id == ^question_id)
   end
 
-  def get_question!(id), do: Repo.get!(Question, id)
+  def get_question!(id) do
+    Repo.get!(Question, id)
+    |> Repo.preload(:question_options)  # Preload the associated question options
+  end
   def get_question_option!(id), do: Repo.get!(QuestionOptions, id)
 
   def get_course_name(course_page_id) do
@@ -49,16 +57,12 @@ defmodule LiveFeedback.Questions do
     |> Repo.insert()
     |> case do
       {:ok, question} ->
-        topic = "questions:#{question.course_page_id}"
-        # Broadcast the new question to interested subscribers
-        Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:new_question, question})
         {:ok, question}
 
       {:error, changeset} ->
         {:error, changeset}
     end
   end
-
 
   def update_question(%Question{} = question, attrs) do
     question
@@ -69,17 +73,18 @@ defmodule LiveFeedback.Questions do
   def delete_question(%Question{} = question) do
     Repo.transaction(fn ->
       # Update display_order of questions with a greater order
-      from(q in Question,
-        where: q.course_page_id == ^question.course_page_id and q.display_order > ^question.display_order,
-        update: [set: [display_order: q.display_order - 1]]
-      )
-      |> Repo.update_all([])
+      if question.display_order < get_max_display_order(question.course_page_id) do
+        from(q in Question,
+          where: q.course_page_id == ^question.course_page_id and q.display_order > ^question.display_order,
+          update: [set: [display_order: q.display_order - 1]]
+        )
+        |> Repo.update_all([])
+      end
 
       # Delete the question
       case Repo.delete(question) do
         {:ok, question} ->
-          topic = "questions:#{question.course_page_id}"
-          Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:deleted_question, question})
+
           {:ok, question}
 
         {:error, changeset} ->
