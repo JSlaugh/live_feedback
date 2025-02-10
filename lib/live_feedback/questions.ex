@@ -8,6 +8,7 @@ defmodule LiveFeedback.Questions do
   alias LiveFeedback.Courses.CoursePage
   alias LiveFeedback.Questions.Question
   alias LiveFeedback.Questions.QuestionOptions
+  alias LiveFeedback.Questions.QuestionTemplate
 
   def subscribe(course_page_id) do
     topic = "questions:#{course_page_id}"
@@ -15,13 +16,14 @@ defmodule LiveFeedback.Questions do
   end
 
   def list_questions_for_course(course_page_id) do
-    from(question in Question,
+    from(question in QuestionTemplate,
       where: question.course_page_id == ^course_page_id,
       order_by: [asc: question.display_order],
       preload: [:question_options]  # Preload the associated question options
     )
     |> Repo.all()
   end
+
 
   def list_options_for_question(question_id) do
     Repo.all(from o in QuestionOptions, where: o.question_id == ^question_id)
@@ -31,7 +33,9 @@ defmodule LiveFeedback.Questions do
     Repo.get!(Question, id)
     |> Repo.preload(:question_options)  # Preload the associated question options
   end
+
   def get_question_option!(id), do: Repo.get!(QuestionOptions, id)
+
 
   def get_course_name(course_page_id) do
     from(course in CoursePage,
@@ -41,7 +45,7 @@ defmodule LiveFeedback.Questions do
   end
 
   def get_max_display_order(course_page_id) do
-    query = from question in Question,
+    query = from question in QuestionTemplate,
             where: question.course_page_id == ^course_page_id,
             select: max(question.display_order)
 

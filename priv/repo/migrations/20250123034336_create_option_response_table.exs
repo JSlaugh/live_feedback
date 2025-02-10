@@ -4,12 +4,10 @@ defmodule LiveFeedback.Repo.Migrations.CreateOptionResponseTable do
   def change do
       create table(:question_options_responses) do
         add :user_id, references(:users, on_delete: :nothing)
-        add :question_id, references(:questions, on_delete: :nothing)
-        add :option_response, :integer
-        timestamps()
-      end
+        add :question_template_id, references(:question_templates, on_delete: :nothing)
+        add :option_response, :string, size: 1
 
-      create index(:question_options_responses, [:user_id])
-      create index(:question_options_responses, [:question_id])
+        timestamps(type: :utc_datetime)
+      end
   end
 end
