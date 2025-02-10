@@ -6,7 +6,7 @@ defmodule LiveFeedback.Repo.Migrations.ReplaceQuestionOptionsResponseUserIdWithU
       remove :user_id
       add :user_profile_id, references(:user_profiles, on_delete: :nothing)
 
-      remove :question_template_id
+      remove :question_id
       add :question_occurance_id, references(:question_occurances, on_delete: :nothing)
 
     end

@@ -1,8 +1,8 @@
-defmodule LiveFeedback.Questions.QuestionTemplate do
+defmodule LiveFeedback.Questions.Question do
   use Ecto.Schema
   import Ecto.Changeset
 
-  schema "question_templates" do
+  schema "questions" do
     belongs_to :course_page, LiveFeedback.Courses.CoursePage
     belongs_to :user, LiveFeedback.Accounts.User
     field :url, :string
@@ -13,7 +13,7 @@ defmodule LiveFeedback.Questions.QuestionTemplate do
     field :is_required, :boolean, default: false
     belongs_to :question_set, LiveFeedback.Questions.QuestionSet
 
-    has_many :question_options_template, LiveFeedback.Questions.QuestionOptionsTemplate
+    has_many :question_option, LiveFeedback.Questions.QuestionOption
     has_many :question_options_response, LiveFeedback.Questions.QuestionOptionsResponse
 
     timestamps(type: :utc_datetime)
