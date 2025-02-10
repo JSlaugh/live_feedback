@@ -110,9 +110,14 @@ defmodule LiveFeedback.Questions do
 
   def delete_option(option_id) do
     option = get_question_option!(option_id)
-    IO.inspect(option, label: "option to be deleted")
     Repo.delete(option)
   end
+
+  def delete_all_options_for_question(question_id) do
+    from(o in QuestionOptions, where: o.question_id == ^question_id)
+    |> Repo.delete_all()
+  end
+
 
   def move_question(question_id, direction) when direction in ["up", "down"] do
     Repo.transaction(fn ->

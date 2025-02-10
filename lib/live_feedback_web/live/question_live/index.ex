@@ -84,7 +84,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
           Questions.add_option(option_attrs)
         end
         question = Questions.get_question!(question.id)
-        IO.inspect(question, label: "New Questions")
+
         {:noreply,
          socket
          |> assign(show_form: "none")
@@ -107,20 +107,12 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     content = Map.get(params, "question_content", "")
     type = Map.get(params, "question_type", "")
 
-    option_A =
-      if type == "true_false" do
-        "true"
-      else
-        Map.get(params, "option_A", "")
-      end
-    option_B =
-      if type == "true_false" do
-        "false"
-      else
-        Map.get(params, "option_B", "")
-      end
-    option_C = Map.get(params, "option_C", "")
-    option_D = Map.get(params, "option_D", "")
+
+    option_A = if type == "true_false", do: "true", else: Map.get(params, "option_A", "")
+    option_B = if type == "true_false", do: "false", else: Map.get(params, "option_B", "")
+
+    option_C = if type == "true_false", do: "", else: Map.get(params, "option_C", "")
+    option_D = if type == "true_false", do: "", else: Map.get(params, "option_D", "")
 
     answer = Map.get(params, "answer", "")
     correct_A = Map.get(params, "correct_A", "")
@@ -142,52 +134,57 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     # Attempt to update the question
     case Questions.update_question(question, attrs) do
       {:ok, question} ->
-        existing_options = Questions.list_options_for_question(question.id)
+        if type in ["free_response", "QA"] do
+          Questions.delete_all_options_for_question(question.id)
+        else
+          existing_options = Questions.list_options_for_question(question.id)
 
-        # Define the form options as a list of maps
-        form_options = [
-          %{option_content: option_A, is_correct: answer_A},
-          %{option_content: option_B, is_correct: answer_B},
-          %{option_content: option_C, is_correct: answer_C},
-          %{option_content: option_D, is_correct: answer_D}
-        ]
+          # Define the form options as a list of maps
+          form_options = [
+            %{option_content: option_A, is_correct: answer_A},
+            %{option_content: option_B, is_correct: answer_B},
+            %{option_content: option_C, is_correct: answer_C},
+            %{option_content: option_D, is_correct: answer_D}
+          ]
 
-        for i <- 0..3 do
-          # Get the options at index i, or default to nil values if not found
-          existing_option = Enum.at(existing_options, i, %{option_content: nil, is_correct: nil})
-          form_option = Enum.at(form_options, i, %{option_content: nil, is_correct: nil})
+          for i <- 0..3 do
+            # Get the options at index i, or default to nil values if not found
+            existing_option = Enum.at(existing_options, i, %{option_content: nil, is_correct: nil})
+            form_option = Enum.at(form_options, i, %{option_content: nil, is_correct: nil})
 
-          # Extract option_content and is_correct into separate variables
-          existing_option_content = Map.get(existing_option, :option_content)
-          existing_is_correct = Map.get(existing_option, :is_correct)
+            # Extract option_content and is_correct into separate variables
+            existing_option_content = Map.get(existing_option, :option_content)
+            existing_is_correct = Map.get(existing_option, :is_correct)
 
-          form_option_content = Map.get(form_option, :option_content)
-          form_is_correct = Map.get(form_option, :is_correct)
+            form_option_content = Map.get(form_option, :option_content)
+            form_is_correct = Map.get(form_option, :is_correct)
+            IO.inspect(form_option)
 
-          #add
-          if (form_option_content != nil && existing_option_content == nil) do
-            option_attrs = %{
-              "option_order" => i + 1,
-              "option_content" => form_option_content,
-              "is_correct" => form_is_correct,
-              "question_id" => question.id
-            }
-            Questions.add_option(option_attrs)
-          end
-          #update
-          if form_option_content != nil and existing_option_content != nil do
-            option_attrs = %{
-              "option_order" => i + 1,
-              "option_content" => form_option_content,
-              "is_correct" => form_is_correct,
-              "question_id" => question.id
-            }
-            # Update the option in the question
-            Questions.update_option(existing_option.id, option_attrs)
-          end
-          #delete
-          if (form_option_content == nil && existing_option_content != nil) do
-            Questions.delete_option(existing_option.id)
+            #add
+            if (form_option_content != nil && existing_option_content == nil) do
+              option_attrs = %{
+                "option_order" => i + 1,
+                "option_content" => form_option_content,
+                "is_correct" => form_is_correct,
+                "question_id" => question.id
+              }
+              Questions.add_option(option_attrs)
+            end
+            #update
+            if form_option_content != nil and existing_option_content != nil do
+              option_attrs = %{
+                "option_order" => i + 1,
+                "option_content" => form_option_content,
+                "is_correct" => form_is_correct,
+                "question_id" => question.id
+              }
+              # Update the option in the question
+              Questions.update_option(existing_option.id, option_attrs)
+            end
+            #delete
+            if (form_option_content == "" && existing_option_content != nil) do
+              Questions.delete_option(existing_option.id)
+            end
           end
         end
         question = Questions.get_question!(question.id)
