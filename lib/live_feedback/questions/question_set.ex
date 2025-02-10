@@ -8,7 +8,7 @@ defmodule LiveFeedback.Questions.QuestionSet do
     field :name, :string
     field :description, :string
 
-    has_many :question_template, LiveFeedback.Questions.QuestionTemplate
+    has_many :question, LiveFeedback.Questions.Question
 
     timestamps(type: :utc_datetime)
   end

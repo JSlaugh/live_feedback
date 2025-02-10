@@ -11,7 +11,7 @@
 # and so on) as they will fail if something goes wrong.
 
 alias LiveFeedback.Repo
-alias LiveFeedback.Questions.{QuestionTemplate, QuestionOptionsTemplate, QuestionOptionsResponse, Queue, QuestionSet, QuestionOccurance, QuestionOptionsOccurance}
+alias LiveFeedback.Questions.{Question, QuestionOption, QuestionOptionsResponse, Queue, QuestionSet, QuestionOccurance, QuestionOptionsOccurance}
 alias LiveFeedback.Courses.CoursePage
 alias LiveFeedback.Accounts.User
 alias LiveFeedback.Accounts.UserProfile
@@ -212,7 +212,7 @@ Repo.insert!(%CoursePage{
 ###########################################################################
 
 # User 1 Courses
-Repo.insert!(%QuestionTemplate{
+Repo.insert!(%Question{
   course_page_id: 1,
   url: nil,
   question_type: "QA",
@@ -225,7 +225,7 @@ Repo.insert!(%QuestionTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionTemplate{
+Repo.insert!(%Question{
   course_page_id: 1,
   url: nil,
   question_type: "multiple_choice",
@@ -238,7 +238,7 @@ Repo.insert!(%QuestionTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionTemplate{
+Repo.insert!(%Question{
   course_page_id: 2,
   url: nil,
   question_type: "QA",
@@ -251,7 +251,7 @@ Repo.insert!(%QuestionTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionTemplate{
+Repo.insert!(%Question{
   course_page_id: 2,
   url: nil,
   question_type: "multiple_choice",
@@ -265,7 +265,7 @@ Repo.insert!(%QuestionTemplate{
 )
 
 # User 2 Courses
-Repo.insert!(%QuestionTemplate{
+Repo.insert!(%Question{
   course_page_id: 3,
   url: nil,
   question_type: "QA",
@@ -278,7 +278,7 @@ Repo.insert!(%QuestionTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionTemplate{
+Repo.insert!(%Question{
   course_page_id: 3,
   url: nil,
   question_type: "multiple_choice",
@@ -291,7 +291,7 @@ Repo.insert!(%QuestionTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionTemplate{
+Repo.insert!(%Question{
   course_page_id: 4,
   url: nil,
   question_type: "QA",
@@ -304,7 +304,7 @@ Repo.insert!(%QuestionTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionTemplate{
+Repo.insert!(%Question{
   course_page_id: 4,
   url: nil,
   question_type: "multiple_choice",
@@ -318,7 +318,7 @@ Repo.insert!(%QuestionTemplate{
 )
 
 # User 3 Courses
-Repo.insert!(%QuestionTemplate{
+Repo.insert!(%Question{
   course_page_id: 5,
   url: nil,
   question_type: "QA",
@@ -331,7 +331,7 @@ Repo.insert!(%QuestionTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionTemplate{
+Repo.insert!(%Question{
   course_page_id: 5,
   url: nil,
   question_type: "multiple_choice",
@@ -344,7 +344,7 @@ Repo.insert!(%QuestionTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionTemplate{
+Repo.insert!(%Question{
   course_page_id: 6,
   url: nil,
   question_type: "QA",
@@ -357,7 +357,7 @@ Repo.insert!(%QuestionTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionTemplate{
+Repo.insert!(%Question{
   course_page_id: 6,
   url: nil,
   question_type: "multiple_choice",
@@ -371,7 +371,7 @@ Repo.insert!(%QuestionTemplate{
 )
 
 # User 4 Courses
-Repo.insert!(%QuestionTemplate{
+Repo.insert!(%Question{
   course_page_id: 7,
   url: nil,
   question_type: "QA",
@@ -384,7 +384,7 @@ Repo.insert!(%QuestionTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionTemplate{
+Repo.insert!(%Question{
   course_page_id: 7,
   url: nil,
   question_type: "multiple_choice",
@@ -397,7 +397,7 @@ Repo.insert!(%QuestionTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionTemplate{
+Repo.insert!(%Question{
   course_page_id: 8,
   url: nil,
   question_type: "QA",
@@ -410,7 +410,7 @@ Repo.insert!(%QuestionTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionTemplate{
+Repo.insert!(%Question{
   course_page_id: 8,
   url: nil,
   question_type: "multiple_choice",
@@ -424,7 +424,7 @@ Repo.insert!(%QuestionTemplate{
 )
 
 # User 5 Courses
-Repo.insert!(%QuestionTemplate{
+Repo.insert!(%Question{
   course_page_id: 9,
   url: nil,
   question_type: "QA",
@@ -437,7 +437,7 @@ Repo.insert!(%QuestionTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionTemplate{
+Repo.insert!(%Question{
   course_page_id: 9,
   url: nil,
   question_type: "multiple_choice",
@@ -450,7 +450,7 @@ Repo.insert!(%QuestionTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionTemplate{
+Repo.insert!(%Question{
   course_page_id: 10,
   url: nil,
   question_type: "QA",
@@ -463,7 +463,7 @@ Repo.insert!(%QuestionTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionTemplate{
+Repo.insert!(%Question{
   course_page_id: 10,
   url: nil,
   question_type: "multiple_choice",
@@ -481,8 +481,8 @@ Repo.insert!(%QuestionTemplate{
 ###########################################################################
 
 # Options for question 2
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 2,
+Repo.insert!(%QuestionOption{
+  question_id: 2,
   option_content: "Spare",
   option_order: "A",
   url: nil,
@@ -493,8 +493,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 2,
+Repo.insert!(%QuestionOption{
+  question_id: 2,
   option_content: "Strike",
   option_order: "B",
   url: nil,
@@ -505,8 +505,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 2,
+Repo.insert!(%QuestionOption{
+  question_id: 2,
   option_content: "Gutter Ball",
   option_order: "C",
   url: nil,
@@ -517,8 +517,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 2,
+Repo.insert!(%QuestionOption{
+  question_id: 2,
   option_content: "Slip",
   option_order: "D",
   url: nil,
@@ -530,8 +530,8 @@ Repo.insert!(%QuestionOptionsTemplate{
 )
 
 # Options for question 4
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 4,
+Repo.insert!(%QuestionOption{
+  question_id: 4,
   option_content: "x^2",
   option_order: "A",
   url: nil,
@@ -542,8 +542,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 4,
+Repo.insert!(%QuestionOption{
+  question_id: 4,
   option_content: "2x^2",
   option_order: "B",
   url: nil,
@@ -554,8 +554,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 4,
+Repo.insert!(%QuestionOption{
+  question_id: 4,
   option_content: "x^3",
   option_order: "C",
   url: nil,
@@ -566,8 +566,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 4,
+Repo.insert!(%QuestionOption{
+  question_id: 4,
   option_content: "x^2 + C",
   option_order: "D",
   url: nil,
@@ -579,8 +579,8 @@ Repo.insert!(%QuestionOptionsTemplate{
 )
 
 # Options for question 6
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 6,
+Repo.insert!(%QuestionOption{
+  question_id: 6,
   option_content: "Simile",
   option_order: "A",
   url: nil,
@@ -591,8 +591,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 6,
+Repo.insert!(%QuestionOption{
+  question_id: 6,
   option_content: "Metaphor",
   option_order: "B",
   url: nil,
@@ -603,8 +603,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 6,
+Repo.insert!(%QuestionOption{
+  question_id: 6,
   option_content: "Adjective",
   option_order: "C",
   url: nil,
@@ -615,8 +615,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 6,
+Repo.insert!(%QuestionOption{
+  question_id: 6,
   option_content: "Alliteration",
   option_order: "D",
   url: nil,
@@ -628,8 +628,8 @@ Repo.insert!(%QuestionOptionsTemplate{
 )
 
 # Options for question 8
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 8,
+Repo.insert!(%QuestionOption{
+  question_id: 8,
   option_content: "Liver",
   option_order: "A",
   url: nil,
@@ -640,8 +640,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 8,
+Repo.insert!(%QuestionOption{
+  question_id: 8,
   option_content: "Stomach",
   option_order: "B",
   url: nil,
@@ -652,8 +652,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 8,
+Repo.insert!(%QuestionOption{
+  question_id: 8,
   option_content: "Lung",
   option_order: "C",
   url: nil,
@@ -664,8 +664,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 8,
+Repo.insert!(%QuestionOption{
+  question_id: 8,
   option_content: "Brain",
   option_order: "D",
   url: nil,
@@ -677,8 +677,8 @@ Repo.insert!(%QuestionOptionsTemplate{
 )
 
 # Options for question 10
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 10,
+Repo.insert!(%QuestionOption{
+  question_id: 10,
   option_content: "D-Day",
   option_order: "A",
   url: nil,
@@ -689,8 +689,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 10,
+Repo.insert!(%QuestionOption{
+  question_id: 10,
   option_content: "Cold War",
   option_order: "B",
   url: nil,
@@ -701,8 +701,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 10,
+Repo.insert!(%QuestionOption{
+  question_id: 10,
   option_content: "Cuban Missile Crisis",
   option_order: "C",
   url: nil,
@@ -713,8 +713,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 10,
+Repo.insert!(%QuestionOption{
+  question_id: 10,
   option_content: "World War I",
   option_order: "D",
   url: nil,
@@ -726,8 +726,8 @@ Repo.insert!(%QuestionOptionsTemplate{
 )
 
 # Options for question 12
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 12,
+Repo.insert!(%QuestionOption{
+  question_id: 12,
   option_content: "Newton",
   option_order: "A",
   url: nil,
@@ -738,8 +738,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 12,
+Repo.insert!(%QuestionOption{
+  question_id: 12,
   option_content: "Pascal",
   option_order: "B",
   url: nil,
@@ -750,8 +750,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 12,
+Repo.insert!(%QuestionOption{
+  question_id: 12,
   option_content: "Joule",
   option_order: "C",
   url: nil,
@@ -762,8 +762,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 12,
+Repo.insert!(%QuestionOption{
+  question_id: 12,
   option_content: "Ampere",
   option_order: "D",
   url: nil,
@@ -775,8 +775,8 @@ Repo.insert!(%QuestionOptionsTemplate{
 )
 
 # Options for question 14
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 14,
+Repo.insert!(%QuestionOption{
+  question_id: 14,
   option_content: "Argon",
   option_order: "A",
   url: nil,
@@ -787,8 +787,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 14,
+Repo.insert!(%QuestionOption{
+  question_id: 14,
   option_content: "Oxygen",
   option_order: "B",
   url: nil,
@@ -799,8 +799,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 14,
+Repo.insert!(%QuestionOption{
+  question_id: 14,
   option_content: "Hydrogen",
   option_order: "C",
   url: nil,
@@ -811,8 +811,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 14,
+Repo.insert!(%QuestionOption{
+  question_id: 14,
   option_content: "Nitrogen",
   option_order: "D",
   url: nil,
@@ -824,8 +824,8 @@ Repo.insert!(%QuestionOptionsTemplate{
 )
 
 # Options for question 16
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 16,
+Repo.insert!(%QuestionOption{
+  question_id: 16,
   option_content: "Schizophrenia",
   option_order: "A",
   url: nil,
@@ -836,8 +836,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 16,
+Repo.insert!(%QuestionOption{
+  question_id: 16,
   option_content: "Dyslexia",
   option_order: "B",
   url: nil,
@@ -848,8 +848,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 16,
+Repo.insert!(%QuestionOption{
+  question_id: 16,
   option_content: "Asthma",
   option_order: "C",
   url: nil,
@@ -860,8 +860,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 16,
+Repo.insert!(%QuestionOption{
+  question_id: 16,
   option_content: "Diabetes",
   option_order: "D",
   url: nil,
@@ -873,8 +873,8 @@ Repo.insert!(%QuestionOptionsTemplate{
 )
 
 # Options for question 18
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 18,
+Repo.insert!(%QuestionOption{
+  question_id: 18,
   option_content: "Supply and Demand",
   option_order: "A",
   url: nil,
@@ -885,8 +885,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 18,
+Repo.insert!(%QuestionOption{
+  question_id: 18,
   option_content: "Opportunity Cost",
   option_order: "B",
   url: nil,
@@ -897,8 +897,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 18,
+Repo.insert!(%QuestionOption{
+  question_id: 18,
   option_content: "Elasticity",
   option_order: "C",
   url: nil,
@@ -909,8 +909,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 18,
+Repo.insert!(%QuestionOption{
+  question_id: 18,
   option_content: "Free Market",
   option_order: "D",
   url: nil,
@@ -922,8 +922,8 @@ Repo.insert!(%QuestionOptionsTemplate{
 )
 
 # Options for question 20
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 20,
+Repo.insert!(%QuestionOption{
+  question_id: 20,
   option_content: "Pablo Picasso",
   option_order: "A",
   url: nil,
@@ -934,8 +934,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 20,
+Repo.insert!(%QuestionOption{
+  question_id: 20,
   option_content: "Vincent van Gogh",
   option_order: "B",
   url: nil,
@@ -946,8 +946,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 20,
+Repo.insert!(%QuestionOption{
+  question_id: 20,
   option_content: "Leonardo da Vinci",
   option_order: "C",
   url: nil,
@@ -958,8 +958,8 @@ Repo.insert!(%QuestionOptionsTemplate{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsTemplate{
-  question_template_id: 20,
+Repo.insert!(%QuestionOption{
+  question_id: 20,
   option_content: "Claude Monet",
   option_order: "D",
   url: nil,
@@ -1689,7 +1689,7 @@ Repo.insert!(%Queue{
 
 
 Repo.insert!(%QuestionOccurance{
-  question_template_id: 1,
+  question_id: 1,
   queue_id: 1,
   queue_display_order: 1,
   date_used: date_used,
@@ -1706,7 +1706,7 @@ Repo.insert!(%QuestionOccurance{
 )
 
 Repo.insert!(%QuestionOccurance{
-  question_template_id: 2,
+  question_id: 2,
   queue_id: 1,
   queue_display_order: 2,
   date_used: date_used,
@@ -1723,7 +1723,7 @@ Repo.insert!(%QuestionOccurance{
 )
 
 Repo.insert!(%QuestionOccurance{
-  question_template_id: 4,
+  question_id: 4,
   queue_id: 2,
   queue_display_order: 1,
   date_used: date_used,
@@ -1740,7 +1740,7 @@ Repo.insert!(%QuestionOccurance{
 )
 
 Repo.insert!(%QuestionOccurance{
-  question_template_id: 5,
+  question_id: 5,
   queue_id: 2,
   queue_display_order: 1,
   date_used: date_used,
@@ -1757,7 +1757,7 @@ Repo.insert!(%QuestionOccurance{
 )
 
 Repo.insert!(%QuestionOccurance{
-  question_template_id: 6,
+  question_id: 6,
   queue_id: 2,
   queue_display_order: 2,
   date_used: date_used,
@@ -1774,7 +1774,7 @@ Repo.insert!(%QuestionOccurance{
 )
 
 Repo.insert!(%QuestionOccurance{
-  question_template_id: 9,
+  question_id: 9,
   queue_id: 3,
   queue_display_order: 1,
   date_used: date_used,
@@ -1791,7 +1791,7 @@ Repo.insert!(%QuestionOccurance{
 )
 
 Repo.insert!(%QuestionOccurance{
-  question_template_id: 10,
+  question_id: 10,
   queue_id: 3,
   queue_display_order: 2,
   date_used: date_used,
@@ -1808,7 +1808,7 @@ Repo.insert!(%QuestionOccurance{
 )
 
 Repo.insert!(%QuestionOccurance{
-  question_template_id: 13,
+  question_id: 13,
   queue_id: 4,
   queue_display_order: 1,
   date_used: date_used,
@@ -1825,7 +1825,7 @@ Repo.insert!(%QuestionOccurance{
 )
 
 Repo.insert!(%QuestionOccurance{
-  question_template_id: 14,
+  question_id: 14,
   queue_id: 4,
   queue_display_order: 2,
   date_used: date_used,
@@ -1842,7 +1842,7 @@ Repo.insert!(%QuestionOccurance{
 )
 
 Repo.insert!(%QuestionOccurance{
-  question_template_id: 19,
+  question_id: 19,
   queue_id: 5,
   queue_display_order: 1,
   date_used: date_used,
@@ -1859,7 +1859,7 @@ Repo.insert!(%QuestionOccurance{
 )
 
 Repo.insert!(%QuestionOccurance{
-  question_template_id: 20,
+  question_id: 20,
   queue_id: 5,
   queue_display_order: 2,
   date_used: date_used,
