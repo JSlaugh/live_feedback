@@ -8,6 +8,11 @@ defmodule LiveFeedback.Repo.Migrations.CreateQuestionOccurancesTable do
       add :queue_display_order, :integer
       add :date_used, :date
       add :is_required, :boolean, default: false
+      add :url, :string
+      add :question_type, :string, size: 50
+      add :question_content, :text
+      add :display_order, :integer
+      add :is_archived, :boolean
 
       timestamps(type: :utc_datetime)
     end
