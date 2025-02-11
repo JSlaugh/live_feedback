@@ -5,7 +5,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
 
   @impl true
   def mount(%{"course_page_id" => course_page_id, "queue" => queue_id}, _session, socket) do
-    #if connected?(socket), do: Questions.subscribe(course_page_id)
+    #if connected?(socket), do: Questions.subscribe(queue_id)
     {:ok,
      socket
      |> assign(:course_page_id, course_page_id)
@@ -14,6 +14,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
      |> assign(:show_form, nil)
      |> assign(:question_type, "QA")
      |> assign(:show_add_form, false)
+     |> assign(:max_question_num, Questions.get_max_display_order(queue_id))
      |> stream(:questions, Questions.list_questions_for_queue(queue_id))
     }
   end
@@ -59,11 +60,12 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
 
     # Prepare the attributes for the new question
     attrs = %{
-      "queue_id" => 1,
+      "queue_id" => socket.assigns.queue_id,
       "is_required" => false,
       "question_content" => content,
       "question_type" => type,
-      "queue_display_order" => Questions.get_max_display_order(socket.assigns.queue_id) + 1
+      "display_order" => Questions.get_max_display_order(socket.assigns.queue_id) + 1,
+      "is_archived" => false
     }
 
     # Attempt to add the question
@@ -91,7 +93,8 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
          socket
          |> assign(show_form: "none")
          |> assign(show_add_form: false)
-         |> stream_insert(:questions, question)
+         |> assign(:max_question_num, Questions.get_max_display_order(question.queue_id))
+         |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue_id), reset: false)
          |> put_flash(:info, "Question added successfully.")
          }
 
@@ -218,6 +221,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
       {:ok, deleted_question} ->
         {:noreply,
         socket
+        |> assign(:max_question_num, Questions.get_max_display_order(question.queue_id))
         |> put_flash(:info, "Successfully deleted the question.")
         |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue_id), reset: true)}
       {:error, _changeset} ->
@@ -247,7 +251,8 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     case Questions.move_question(id, direction) do
       {:ok, {q1, q2}} ->
         {:noreply,
-         socket}
+         socket
+         |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue_id), reset: true)}
 
       {:error, _} ->
         {:noreply, socket} # No-op if already at the top/bottom

@@ -10,8 +10,8 @@ defmodule LiveFeedback.Questions do
   alias LiveFeedback.Questions.QuestionOptionsOccurance
 
 
-  def subscribe(course_page_id) do
-    topic = "questions:#{course_page_id}"
+  def subscribe(queue_id) do
+    topic = "questions:#{queue_id}"
     Phoenix.PubSub.subscribe(LiveFeedback.PubSub, topic)
   end
 
@@ -149,7 +149,7 @@ defmodule LiveFeedback.Questions do
         Repo.update!(Ecto.Changeset.change(adjacent_question, display_order: adjacent_question.display_order - offset))
 
         # Broadcast update
-        topic = "questions:#{question.course_page_id}"
+        topic = "questions:#{question.queue_id}"
         Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:swapped_questions, question, adjacent_question})
 
         {:ok, {question, adjacent_question}}

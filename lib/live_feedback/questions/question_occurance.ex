@@ -25,8 +25,8 @@ defmodule LiveFeedback.Questions.QuestionOccurance do
   def changeset(question_occurance, attrs) do
     question_occurance
     |> cast(attrs, [:question_template_id, :queue_id, :queue_display_order, :date_used, :is_required, :url, :question_type, :question_content, :display_order, :is_archived])
-    |> validate_required([:queue_id, :queue_display_order, :is_required, :question_type, :question_content]) #took out url & question templeate id since it is not required
-    |> validate_number(:queue_display_order, greater_than: 0)
+    |> validate_required([:queue_id, :display_order, :is_required, :question_type, :question_content]) #took out url & question templeate id since it is not required
+    |> validate_number(:display_order, greater_than: 0) #changed queue_display_order -> display_order
     |> validate_length(:question_type, max: 50)
     |> foreign_key_constraint(:question_template_id)
     |> foreign_key_constraint(:queue_id)
