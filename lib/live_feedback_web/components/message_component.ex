@@ -4,10 +4,6 @@ defmodule LiveFeedbackWeb.MessageComponent do
   import LiveFeedbackWeb.CoreComponents
 
   def render (assigns) do
-    # Check to make sure that the message information is passed in
-
-    # Check to make sure that the page_admin information is passed in
-
     ~H"""
       <%!-- Message Box --%>
       <div id={"message-#{@message.id}"} class="">
@@ -92,6 +88,7 @@ defmodule LiveFeedbackWeb.MessageComponent do
 
     if page_admin || message.anonymous_id == anonymous_id do
       LiveFeedback.Messages.delete_message(message)
+      send(socket.assigns.parent_pid, {:selected_message_delete, message})
       {:noreply, socket}
     else
       {:noreply, put_flash(socket, :error, "You are not authorized to delete this message.")}
