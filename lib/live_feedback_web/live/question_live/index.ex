@@ -4,16 +4,17 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
   alias LiveFeedback.Questions
 
   @impl true
-  def mount(%{"course_page_id" => course_page_id}, _session, socket) do
+  def mount(%{"course_page_id" => course_page_id, "queue" => queue_id}, _session, socket) do
     #if connected?(socket), do: Questions.subscribe(course_page_id)
     {:ok,
      socket
      |> assign(:course_page_id, course_page_id)
+     |> assign(:queue_id, queue_id)
      |> assign(:course_name, Questions.get_course_name(course_page_id))
      |> assign(:show_form, nil)
      |> assign(:question_type, "QA")
      |> assign(:show_add_form, false)
-     |> stream(:questions, Questions.list_questions_for_course(course_page_id))
+     |> stream(:questions, Questions.list_questions_for_queue(queue_id))
     }
   end
 
@@ -58,10 +59,11 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
 
     # Prepare the attributes for the new question
     attrs = %{
-      "course_page_id" => socket.assigns.course_page_id,
+      "queue_id" => 1,
+      "is_required" => false,
       "question_content" => content,
       "question_type" => type,
-      "display_order" => Questions.get_max_display_order(socket.assigns.course_page_id) + 1
+      "queue_display_order" => Questions.get_max_display_order(socket.assigns.queue_id) + 1
     }
 
     # Attempt to add the question
@@ -69,16 +71,16 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
       {:ok, question} ->
         # Loop through each option and call add_option_to_question/1 if not empty
         for {option, correct, order} <- [
-              {option_A, answer_A, 1},
-              {option_B, answer_B, 2},
-              {option_C, answer_C, 3},
-              {option_D, answer_D, 4}
+              {option_A, answer_A, "A"},
+              {option_B, answer_B, "B"},
+              {option_C, answer_C, "C"},
+              {option_D, answer_D, "D"}
             ], option != "" do
           option_attrs = %{
             "option_order" => order,
             "option_content" => option,
             "is_correct" => correct,
-            "question_id" => question.id  # Associate with the newly added question
+            "question_occurance_id" => question.id  # Associate with the newly added question
           }
           # Add the option to the question
           Questions.add_option(option_attrs)
@@ -148,6 +150,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
           ]
 
           for i <- 0..3 do
+            option_letters = ["A", "B", "C", "D"]
             # Get the options at index i, or default to nil values if not found
             existing_option = Enum.at(existing_options, i, %{option_content: nil, is_correct: nil})
             form_option = Enum.at(form_options, i, %{option_content: nil, is_correct: nil})
@@ -163,20 +166,20 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
             #add
             if (form_option_content != nil && existing_option_content == nil) do
               option_attrs = %{
-                "option_order" => i + 1,
+                "option_order" => Enum.at(option_letters, i),
                 "option_content" => form_option_content,
                 "is_correct" => form_is_correct,
-                "question_id" => question.id
+                "question_occurance_id" => question.id
               }
               Questions.add_option(option_attrs)
             end
             #update
             if form_option_content != nil and existing_option_content != nil do
               option_attrs = %{
-                "option_order" => i + 1,
+                "option_order" => Enum.at(option_letters, i),
                 "option_content" => form_option_content,
                 "is_correct" => form_is_correct,
-                "question_id" => question.id
+                "question_occurance_id" => question.id
               }
               # Update the option in the question
               Questions.update_option(existing_option.id, option_attrs)
@@ -216,7 +219,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
         {:noreply,
         socket
         |> put_flash(:info, "Successfully deleted the question.")
-        |> stream(:questions, Questions.list_questions_for_course(socket.assigns.course_page_id), reset: true)}
+        |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue_id), reset: true)}
       {:error, _changeset} ->
         # If deletion fails, show an error flash
         {:noreply, put_flash(socket, :error, "Failed to delete the question.")}
@@ -229,14 +232,14 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
       |> assign(show_add_form: !socket.assigns.show_add_form)
       |> assign(:show_form, "none")
       |> assign(:question_type, "QA")
-      |> stream(:questions, Questions.list_questions_for_course(socket.assigns.course_page_id), reset: false)}
+      |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue_id), reset: false)}
   end
 
   def handle_event("typeChange", %{"question_type" => question_type}, socket) do
     {:noreply,
     socket
     |> assign(question_type: question_type)
-    |> stream(:questions, Questions.list_questions_for_course(socket.assigns.course_page_id), reset: false)}
+    |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue_id), reset: false)}
   end
 
 
@@ -254,14 +257,13 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
   @impl true
   def handle_info({:toggle_form, question_id}, socket) do
     question = Questions.get_question!(question_id)
-    IO.inspect(question_id)
-    IO.inspect(socket.assigns.streams, label: "My Stream Data")
+    #IO.inspect(socket.assigns.streams, label: "My Stream Data")
 
     {:noreply,
     socket
     |> assign(:show_form, question_id)
     |> assign(:show_add_form, false)
     |> assign(:question_type, question.question_type)
-    |> stream(:questions, Questions.list_questions_for_course(socket.assigns.course_page_id), reset: false)}
+    |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue_id), reset: false)}
   end
 end

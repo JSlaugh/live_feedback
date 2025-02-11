@@ -15,7 +15,7 @@ defmodule LiveFeedback.Questions.QuestionOccurance do
     field :is_archived, :boolean
 
 
-    has_many :question_options_responses, LiveFeedback.Questions.QuestionOptionsResponse
+    has_many :question_options_occurances, LiveFeedback.Questions.QuestionOptionsOccurance
     #has_many :messages, LiveFeedback.Messages.Message
 
     timestamps(type: :utc_datetime)
@@ -25,7 +25,7 @@ defmodule LiveFeedback.Questions.QuestionOccurance do
   def changeset(question_occurance, attrs) do
     question_occurance
     |> cast(attrs, [:question_template_id, :queue_id, :queue_display_order, :date_used, :is_required, :url, :question_type, :question_content, :display_order, :is_archived])
-    |> validate_required([:question_template_id, :queue_id, :queue_display_order, :is_required, :url, :question_type, :question_content])
+    |> validate_required([:queue_id, :queue_display_order, :is_required, :question_type, :question_content]) #took out url & question templeate id since it is not required
     |> validate_number(:queue_display_order, greater_than: 0)
     |> validate_length(:question_type, max: 50)
     |> foreign_key_constraint(:question_template_id)

@@ -6,16 +6,16 @@ defmodule LiveFeedbackWeb.CoursePageLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    if socket.assigns.current_user.is_admin do
-      {:ok, stream(socket, :course_pages, Courses.list_course_pages())}
-    else
+    #if socket.assigns.current_user.is_admin do
+      #{:ok, stream(socket, :course_pages, Courses.list_course_pages())}
+    #else
       {:ok,
        stream(
          socket,
          :course_pages,
          Courses.list_course_pages_by_user(socket.assigns.current_user.id)
        )}
-    end
+    #end
   end
 
   @impl true
@@ -45,6 +45,7 @@ defmodule LiveFeedbackWeb.CoursePageLive.Index do
   end
 
   defp apply_action(socket, :new, _params) do
+    IO.inspect(Map.get(socket.assigns.streams, :course_pages), label: "My Stream Data")
     socket
     |> assign(:page_title, "New Feedback page")
     |> assign(:course_page, %CoursePage{})

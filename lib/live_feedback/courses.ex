@@ -38,7 +38,7 @@ defmodule LiveFeedback.Courses do
 
   """
   def list_course_pages do
-    Repo.all(CoursePage)
+    Repo.all(CoursePage, preload: [:queue])
   end
 
   @doc """
@@ -127,6 +127,6 @@ defmodule LiveFeedback.Courses do
   end
 
   def list_course_pages_by_user(user_id) do
-    Repo.all(from cp in CoursePage, where: cp.user_id == ^user_id)
+    Repo.all(from cp in CoursePage, where: cp.user_id == ^user_id, preload: [:queue])
   end
 end

@@ -133,9 +133,9 @@ defmodule LiveFeedbackWeb.QuestionLive.MultipleChoice do
           </tr>
         </thead>
         <tbody>
-          <%= for {letter, index} <- Enum.with_index(["A", "B", "C", "D"], 1) do %>
-            <% option = Enum.find(@question.question_options, fn o -> o.option_order == index end) ||
-                        %LiveFeedback.Questions.QuestionOptions{id: "#{letter}", option_content: "", is_correct: false, option_order: index} %>
+          <%= for {letter, _index} <- Enum.with_index(["A", "B", "C", "D"]) do %>
+            <% option = Enum.find(@question.question_options_occurances, fn o -> o.option_order == letter end) ||
+                        %LiveFeedback.Questions.QuestionOptions{id: "#{letter}", option_content: "", is_correct: false, option_order: letter} %>
             <tr>
               <td class="px-4 py-2"><%= letter %></td>
               <td class="px-4 py-2">
@@ -183,7 +183,7 @@ defmodule LiveFeedbackWeb.QuestionLive.TrueFalse do
         </thead>
         <tbody>
           <%= for {letter, index} <- Enum.with_index(["A", "B"], 1) do %>
-            <% option = Enum.find(@question.question_options, fn o -> o.option_order == index end) ||
+            <% option = Enum.find(@question.question_options_occurances, fn o -> o.option_order == index end) ||
                         %LiveFeedback.Questions.QuestionOptions{id: "#{letter}", option_content: "", is_correct: false, option_order: index} %>
             <tr>
               <td class="px-4 py-2"><%= if letter == "A", do: "True", else: "False" %></td>

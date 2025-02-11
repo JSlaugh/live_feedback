@@ -6,35 +6,35 @@ defmodule LiveFeedback.Questions do
   alias LiveFeedback.Repo
 
   alias LiveFeedback.Courses.CoursePage
-  alias LiveFeedback.Questions.Question
-  alias LiveFeedback.Questions.QuestionOptions
-  alias LiveFeedback.Questions.QuestionTemplate
+  alias LiveFeedback.Questions.QuestionOccurance
+  alias LiveFeedback.Questions.QuestionOptionsOccurance
+
 
   def subscribe(course_page_id) do
     topic = "questions:#{course_page_id}"
     Phoenix.PubSub.subscribe(LiveFeedback.PubSub, topic)
   end
 
-  def list_questions_for_course(course_page_id) do
-    from(question in QuestionTemplate,
-      where: question.course_page_id == ^course_page_id,
+  def list_questions_for_queue(queue_id) do
+    from(question in QuestionOccurance,
+      where: question.queue_id == ^queue_id,
       order_by: [asc: question.display_order],
-      preload: [:question_options]  # Preload the associated question options
+      preload: [:question_options_occurances]
     )
     |> Repo.all()
   end
 
 
-  def list_options_for_question(question_id) do
-    Repo.all(from o in QuestionOptions, where: o.question_id == ^question_id)
+  def list_options_for_question(question_occurance_id) do
+    Repo.all(from o in QuestionOptionsOccurance, where: o.question_occurance_id == ^question_occurance_id)
   end
 
   def get_question!(id) do
-    Repo.get!(Question, id)
-    |> Repo.preload(:question_options)  # Preload the associated question options
+    Repo.get!(QuestionOccurance, id)
+    |> Repo.preload(:question_options_occurances) # Preload the associated question options
   end
 
-  def get_question_option!(id), do: Repo.get!(QuestionOptions, id)
+  def get_question_option!(id), do: Repo.get!(QuestionOptionsOccurance, id)
 
 
   def get_course_name(course_page_id) do
@@ -44,9 +44,9 @@ defmodule LiveFeedback.Questions do
       |> Repo.one()
   end
 
-  def get_max_display_order(course_page_id) do
-    query = from question in QuestionTemplate,
-            where: question.course_page_id == ^course_page_id,
+  def get_max_display_order(queue_id) do
+    query = from question in QuestionOccurance,
+            where: question.queue_id == ^queue_id,
             select: max(question.display_order)
 
     case Repo.one(query) do
@@ -56,8 +56,8 @@ defmodule LiveFeedback.Questions do
   end
 
   def add_question(attrs \\ %{}) do
-    %Question{}
-    |> Question.changeset(attrs)
+    %QuestionOccurance{}
+    |> QuestionOccurance.changeset(attrs)
     |> Repo.insert()
     |> case do
       {:ok, question} ->
@@ -68,18 +68,19 @@ defmodule LiveFeedback.Questions do
     end
   end
 
-  def update_question(%Question{} = question, attrs) do
+  def update_question(%QuestionOccurance{} = question, attrs) do
+    IO.inspect(attrs)
     question
-    |> Question.changeset(attrs)
+    |> QuestionOccurance.changeset(attrs)
     |> Repo.update()
   end
 
-  def delete_question(%Question{} = question) do
+  def delete_question(%QuestionOccurance{} = question) do
     Repo.transaction(fn ->
       # Update display_order of questions with a greater order
-      if question.display_order < get_max_display_order(question.course_page_id) do
-        from(q in Question,
-          where: q.course_page_id == ^question.course_page_id and q.display_order > ^question.display_order,
+      if question.display_order < get_max_display_order(question.queue_id) do
+        from(q in QuestionOccurance,
+          where: q.queue_id == ^question.queue_id and q.display_order > ^question.display_order,
           update: [set: [display_order: q.display_order - 1]]
         )
         |> Repo.update_all([])
@@ -88,7 +89,6 @@ defmodule LiveFeedback.Questions do
       # Delete the question
       case Repo.delete(question) do
         {:ok, question} ->
-
           {:ok, question}
 
         {:error, changeset} ->
@@ -99,8 +99,8 @@ defmodule LiveFeedback.Questions do
 
 
   def add_option(attrs) do
-    %QuestionOptions{}
-    |> QuestionOptions.changeset(attrs)
+    %QuestionOptionsOccurance{}
+    |> QuestionOptionsOccurance.changeset(attrs)
     |> Repo.insert()
   end
 
@@ -108,7 +108,7 @@ defmodule LiveFeedback.Questions do
     option = get_question_option!(option_id)
     IO.inspect(option, label: "option to be updated")
     option
-    |> QuestionOptions.changeset(attrs)
+    |> QuestionOptionsOccurance.changeset(attrs)
     |> Repo.update()
   end
 
@@ -117,16 +117,16 @@ defmodule LiveFeedback.Questions do
     Repo.delete(option)
   end
 
-  def delete_all_options_for_question(question_id) do
-    from(o in QuestionOptions, where: o.question_id == ^question_id)
+  def delete_all_options_for_question(question_occurance_id) do
+    from(o in QuestionOptionsOccurance, where: o.question_occurance_id == ^question_occurance_id)
     |> Repo.delete_all()
   end
 
 
-  def move_question(question_id, direction) when direction in ["up", "down"] do
+  def move_question(question_occurance_id, direction) when direction in ["up", "down"] do
     Repo.transaction(fn ->
       # Get the question to move
-      question = Repo.get!(Question, question_id)
+      question = Repo.get!(QuestionOccurance, question_occurance_id)
 
       # Determine the target display order and find the adjacent question
       {offset, comparison} =
@@ -137,8 +137,8 @@ defmodule LiveFeedback.Questions do
 
       adjacent_question =
         Repo.one(
-          from q in Question,
-          where: q.course_page_id == ^question.course_page_id and q.display_order == ^comparison,
+          from q in QuestionOccurance,
+          where: q.queue_id == ^question.queue_id and q.display_order == ^comparison,
           limit: 1
         )
 
