@@ -1,15 +1,15 @@
-defmodule LiveFeedback.Questions.QuestionOptions do
+defmodule LiveFeedback.Questions.QuestionOption do
   use Ecto.Schema
   import Ecto.Changeset
 
-  schema "questions" do
-    belongs_to :question_id, LiveFeedback.Questions.Question
+  schema "question_options" do
+    belongs_to :question, LiveFeedback.Questions.Question
     field :option_content, :string
-    field :option_order, :integer
+    field :option_order, :string
     field :url, :string
     field :is_correct, :boolean
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   @doc false
@@ -18,6 +18,7 @@ defmodule LiveFeedback.Questions.QuestionOptions do
     |> cast(attrs, [:question_id, :option_content, :option_order, :url, :is_correct])
     |> validate_required([:question_id, :option_content, :option_order])
     |> validate_length(:option_content, max: 500)
+    |> validate_length(:option_order, max: 1)
     |> validate_length(:url, max: 255)
     |> validate_inclusion(:is_correct, [true, false])
     |> foreign_key_constraint(:question_id)

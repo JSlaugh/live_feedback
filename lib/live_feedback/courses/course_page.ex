@@ -6,7 +6,12 @@ defmodule LiveFeedback.Courses.CoursePage do
     field :description, :string
     field :title, :string
     field :slug, :string
-    field :user_id, :id
+    belongs_to :user, LiveFeedback.Accounts.User
+
+    has_many :queue, LiveFeedback.Questions.Queue
+    has_many :question_set, LiveFeedback.Questions.QuestionSet
+    has_many :participation_request, LiveFeedback.Participation.ParticipationRequest
+    has_many :user_profile, LiveFeedback.Accounts.UserProfile
 
     timestamps(type: :utc_datetime)
   end
