@@ -1,8 +1,8 @@
-defmodule LiveFeedback.Questions.QuestionOccurance do
+defmodule LiveFeedback.Questions.QuestionOccurrence do
   use Ecto.Schema
   import Ecto.Changeset
 
-  schema "question_occurances" do
+  schema "question_occurrences" do
     belongs_to :question, LiveFeedback.Questions.Question
     belongs_to :queue, LiveFeedback.Questions.Queue
     field :queue_display_order, :integer
@@ -15,6 +15,7 @@ defmodule LiveFeedback.Questions.QuestionOccurance do
     field :is_archived, :boolean
 
 
+    has_many :question_options_occurrences, LiveFeedback.Questions.QuestionOptionsOccurrence
     has_many :question_options_responses, LiveFeedback.Questions.QuestionOptionsResponse
     #has_many :messages, LiveFeedback.Messages.Message
 
@@ -22,8 +23,8 @@ defmodule LiveFeedback.Questions.QuestionOccurance do
   end
 
   @doc false
-  def changeset(question_occurance, attrs) do
-    question_occurance
+  def changeset(question_occurrence, attrs) do
+    question_occurrence
     |> cast(attrs, [:question_id, :queue_id, :queue_display_order, :date_used, :is_required, :url, :question_type, :question_content, :display_order, :is_archived])
     |> validate_required([:question_id, :queue_id, :queue_display_order, :is_required, :url, :question_type, :question_content])
     |> validate_number(:queue_display_order, greater_than: 0)

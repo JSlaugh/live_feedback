@@ -9,7 +9,7 @@ defmodule LiveFeedback.Messages.Message do
     field :is_answered, :boolean, default: false
     field :like_count, :integer, default: 0
 
-    belongs_to :question_occurance, LiveFeedback.Questions.QuestionOccurance
+    belongs_to :question_occurrence, LiveFeedback.Questions.QuestionOccurrence
     belongs_to :user_profile, LiveFeedback.Accounts.UserProfile
     has_many :likes, LiveFeedback.Messages.LikedBy, on_delete: :delete_all
 

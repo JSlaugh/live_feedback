@@ -11,7 +11,7 @@
 # and so on) as they will fail if something goes wrong.
 
 alias LiveFeedback.Repo
-alias LiveFeedback.Questions.{Question, QuestionOption, QuestionOptionsResponse, Queue, QuestionSet, QuestionOccurance, QuestionOptionsOccurance}
+alias LiveFeedback.Questions.{Question, QuestionOption, QuestionOptionsResponse, Queue, QuestionSet, QuestionOccurrence, QuestionOptionsOccurrence}
 alias LiveFeedback.Courses.CoursePage
 alias LiveFeedback.Accounts.User
 alias LiveFeedback.Accounts.UserProfile
@@ -1681,14 +1681,14 @@ Repo.insert!(%Queue{
 )
 
 ###########################################################################
-################            Question Occurances            ################
+################            Question Occurrences            ################
 ###########################################################################
 
 # Create date var from string
 {:ok, date_used} = Date.from_iso8601("2025-01-31")
 
 
-Repo.insert!(%QuestionOccurance{
+Repo.insert!(%QuestionOccurrence{
   question_id: 1,
   queue_id: 1,
   queue_display_order: 1,
@@ -1705,7 +1705,7 @@ Repo.insert!(%QuestionOccurance{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOccurance{
+Repo.insert!(%QuestionOccurrence{
   question_id: 2,
   queue_id: 1,
   queue_display_order: 2,
@@ -1722,7 +1722,7 @@ Repo.insert!(%QuestionOccurance{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOccurance{
+Repo.insert!(%QuestionOccurrence{
   question_id: 4,
   queue_id: 2,
   queue_display_order: 1,
@@ -1739,7 +1739,7 @@ Repo.insert!(%QuestionOccurance{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOccurance{
+Repo.insert!(%QuestionOccurrence{
   question_id: 5,
   queue_id: 2,
   queue_display_order: 1,
@@ -1756,7 +1756,7 @@ Repo.insert!(%QuestionOccurance{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOccurance{
+Repo.insert!(%QuestionOccurrence{
   question_id: 6,
   queue_id: 2,
   queue_display_order: 2,
@@ -1773,7 +1773,7 @@ Repo.insert!(%QuestionOccurance{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOccurance{
+Repo.insert!(%QuestionOccurrence{
   question_id: 9,
   queue_id: 3,
   queue_display_order: 1,
@@ -1790,7 +1790,7 @@ Repo.insert!(%QuestionOccurance{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOccurance{
+Repo.insert!(%QuestionOccurrence{
   question_id: 10,
   queue_id: 3,
   queue_display_order: 2,
@@ -1807,7 +1807,7 @@ Repo.insert!(%QuestionOccurance{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOccurance{
+Repo.insert!(%QuestionOccurrence{
   question_id: 13,
   queue_id: 4,
   queue_display_order: 1,
@@ -1824,7 +1824,7 @@ Repo.insert!(%QuestionOccurance{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOccurance{
+Repo.insert!(%QuestionOccurrence{
   question_id: 14,
   queue_id: 4,
   queue_display_order: 2,
@@ -1841,7 +1841,7 @@ Repo.insert!(%QuestionOccurance{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOccurance{
+Repo.insert!(%QuestionOccurrence{
   question_id: 19,
   queue_id: 5,
   queue_display_order: 1,
@@ -1858,7 +1858,7 @@ Repo.insert!(%QuestionOccurance{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOccurance{
+Repo.insert!(%QuestionOccurrence{
   question_id: 20,
   queue_id: 5,
   queue_display_order: 2,
@@ -1876,12 +1876,12 @@ Repo.insert!(%QuestionOccurance{
 )
 
 ###########################################################################
-################        Question Options Occurances        ################
+################        Question Options Occurrences        ################
 ###########################################################################
 
 # Options for question 2
-Repo.insert!(%QuestionOptionsOccurance{
-  question_occurance_id: 2,
+Repo.insert!(%QuestionOptionsOccurrence{
+  question_occurrence_id: 2,
   option_content: "Spare",
   option_order: "A",
   url: nil,
@@ -1892,8 +1892,8 @@ Repo.insert!(%QuestionOptionsOccurance{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsOccurance{
-  question_occurance_id: 2,
+Repo.insert!(%QuestionOptionsOccurrence{
+  question_occurrence_id: 2,
   option_content: "Strike",
   option_order: "B",
   url: nil,
@@ -1904,8 +1904,8 @@ Repo.insert!(%QuestionOptionsOccurance{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsOccurance{
-  question_occurance_id: 2,
+Repo.insert!(%QuestionOptionsOccurrence{
+  question_occurrence_id: 2,
   option_content: "Gutter Ball",
   option_order: "C",
   url: nil,
@@ -1916,8 +1916,8 @@ Repo.insert!(%QuestionOptionsOccurance{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsOccurance{
-  question_occurance_id: 2,
+Repo.insert!(%QuestionOptionsOccurrence{
+  question_occurrence_id: 2,
   option_content: "Slip",
   option_order: "D",
   url: nil,
@@ -1929,8 +1929,8 @@ Repo.insert!(%QuestionOptionsOccurance{
 )
 
 # Options for question 4
-Repo.insert!(%QuestionOptionsOccurance{
-  question_occurance_id: 4,
+Repo.insert!(%QuestionOptionsOccurrence{
+  question_occurrence_id: 4,
   option_content: "x^2",
   option_order: "A",
   url: nil,
@@ -1941,8 +1941,8 @@ Repo.insert!(%QuestionOptionsOccurance{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsOccurance{
-  question_occurance_id: 4,
+Repo.insert!(%QuestionOptionsOccurrence{
+  question_occurrence_id: 4,
   option_content: "2x^2",
   option_order: "B",
   url: nil,
@@ -1953,8 +1953,8 @@ Repo.insert!(%QuestionOptionsOccurance{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsOccurance{
-  question_occurance_id: 4,
+Repo.insert!(%QuestionOptionsOccurrence{
+  question_occurrence_id: 4,
   option_content: "x^3",
   option_order: "C",
   url: nil,
@@ -1965,8 +1965,8 @@ Repo.insert!(%QuestionOptionsOccurance{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsOccurance{
-  question_occurance_id: 4,
+Repo.insert!(%QuestionOptionsOccurrence{
+  question_occurrence_id: 4,
   option_content: "x^2 + C",
   option_order: "D",
   url: nil,
@@ -1978,8 +1978,8 @@ Repo.insert!(%QuestionOptionsOccurance{
 )
 
 # Options for question 6
-Repo.insert!(%QuestionOptionsOccurance{
-  question_occurance_id: 6,
+Repo.insert!(%QuestionOptionsOccurrence{
+  question_occurrence_id: 6,
   option_content: "Simile",
   option_order: "A",
   url: nil,
@@ -1990,8 +1990,8 @@ Repo.insert!(%QuestionOptionsOccurance{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsOccurance{
-  question_occurance_id: 6,
+Repo.insert!(%QuestionOptionsOccurrence{
+  question_occurrence_id: 6,
   option_content: "Metaphor",
   option_order: "B",
   url: nil,
@@ -2002,8 +2002,8 @@ Repo.insert!(%QuestionOptionsOccurance{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsOccurance{
-  question_occurance_id: 6,
+Repo.insert!(%QuestionOptionsOccurrence{
+  question_occurrence_id: 6,
   option_content: "Adjective",
   option_order: "C",
   url: nil,
@@ -2014,8 +2014,8 @@ Repo.insert!(%QuestionOptionsOccurance{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsOccurance{
-  question_occurance_id: 6,
+Repo.insert!(%QuestionOptionsOccurrence{
+  question_occurrence_id: 6,
   option_content: "Alliteration",
   option_order: "D",
   url: nil,
@@ -2027,8 +2027,8 @@ Repo.insert!(%QuestionOptionsOccurance{
 )
 
 # Options for question 8
-Repo.insert!(%QuestionOptionsOccurance{
-  question_occurance_id: 8,
+Repo.insert!(%QuestionOptionsOccurrence{
+  question_occurrence_id: 8,
   option_content: "Liver",
   option_order: "A",
   url: nil,
@@ -2039,8 +2039,8 @@ Repo.insert!(%QuestionOptionsOccurance{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsOccurance{
-  question_occurance_id: 8,
+Repo.insert!(%QuestionOptionsOccurrence{
+  question_occurrence_id: 8,
   option_content: "Stomach",
   option_order: "B",
   url: nil,
@@ -2051,8 +2051,8 @@ Repo.insert!(%QuestionOptionsOccurance{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsOccurance{
-  question_occurance_id: 8,
+Repo.insert!(%QuestionOptionsOccurrence{
+  question_occurrence_id: 8,
   option_content: "Lung",
   option_order: "C",
   url: nil,
@@ -2063,8 +2063,8 @@ Repo.insert!(%QuestionOptionsOccurance{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsOccurance{
-  question_occurance_id: 8,
+Repo.insert!(%QuestionOptionsOccurrence{
+  question_occurrence_id: 8,
   option_content: "Brain",
   option_order: "D",
   url: nil,
@@ -2076,8 +2076,8 @@ Repo.insert!(%QuestionOptionsOccurance{
 )
 
 # Options for question 10
-Repo.insert!(%QuestionOptionsOccurance{
-  question_occurance_id: 10,
+Repo.insert!(%QuestionOptionsOccurrence{
+  question_occurrence_id: 10,
   option_content: "D-Day",
   option_order: "A",
   url: nil,
@@ -2088,8 +2088,8 @@ Repo.insert!(%QuestionOptionsOccurance{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsOccurance{
-  question_occurance_id: 10,
+Repo.insert!(%QuestionOptionsOccurrence{
+  question_occurrence_id: 10,
   option_content: "Cold War",
   option_order: "B",
   url: nil,
@@ -2100,8 +2100,8 @@ Repo.insert!(%QuestionOptionsOccurance{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsOccurance{
-  question_occurance_id: 10,
+Repo.insert!(%QuestionOptionsOccurrence{
+  question_occurrence_id: 10,
   option_content: "Cuban Missile Crisis",
   option_order: "C",
   url: nil,
@@ -2112,8 +2112,8 @@ Repo.insert!(%QuestionOptionsOccurance{
   on_conflict: :nothing
 )
 
-Repo.insert!(%QuestionOptionsOccurance{
-  question_occurance_id: 10,
+Repo.insert!(%QuestionOptionsOccurrence{
+  question_occurrence_id: 10,
   option_content: "World War I",
   option_order: "D",
   url: nil,
@@ -2130,7 +2130,7 @@ Repo.insert!(%QuestionOptionsOccurance{
 # Insert QuestionOptionsResponse for user 6
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 11,
-  question_occurance_id: 3,
+  question_occurrence_id: 3,
   option_response: "D",
   inserted_at: now,
   updated_at: now
@@ -2141,7 +2141,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 7
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 12,
-  question_occurance_id: 3,
+  question_occurrence_id: 3,
   option_response: "D",
   inserted_at: now,
   updated_at: now
@@ -2154,7 +2154,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 9
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 14,
-  question_occurance_id: 3,
+  question_occurrence_id: 3,
   option_response: "B",
   inserted_at: now,
   updated_at: now
@@ -2165,7 +2165,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 10
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 15,
-  question_occurance_id: 3,
+  question_occurrence_id: 3,
   option_response: "D",
   inserted_at: now,
   updated_at: now
@@ -2176,7 +2176,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 11
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 16,
-  question_occurance_id: 3,
+  question_occurrence_id: 3,
   option_response: "D",
   inserted_at: now,
   updated_at: now
@@ -2187,7 +2187,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 12
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 17,
-  question_occurance_id: 3,
+  question_occurrence_id: 3,
   option_response: "D",
   inserted_at: now,
   updated_at: now
@@ -2198,7 +2198,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 13
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 18,
-  question_occurance_id: 3,
+  question_occurrence_id: 3,
   option_response: "C",
   inserted_at: now,
   updated_at: now
@@ -2209,7 +2209,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 14
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 19,
-  question_occurance_id: 3,
+  question_occurrence_id: 3,
   option_response: "D",
   inserted_at: now,
   updated_at: now
@@ -2220,7 +2220,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 15
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 20,
-  question_occurance_id: 3,
+  question_occurrence_id: 3,
   option_response: "D",
   inserted_at: now,
   updated_at: now
@@ -2231,7 +2231,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 16
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 21,
-  question_occurance_id: 3,
+  question_occurrence_id: 3,
   option_response: "D",
   inserted_at: now,
   updated_at: now
@@ -2242,7 +2242,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 17
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 22,
-  question_occurance_id: 3,
+  question_occurrence_id: 3,
   option_response: "D",
   inserted_at: now,
   updated_at: now
@@ -2253,7 +2253,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 18
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 23,
-  question_occurance_id: 3,
+  question_occurrence_id: 3,
   option_response: "D",
   inserted_at: now,
   updated_at: now
@@ -2266,7 +2266,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 20
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 25,
-  question_occurance_id: 3,
+  question_occurrence_id: 3,
   option_response: "A",
   inserted_at: now,
   updated_at: now
@@ -2277,7 +2277,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 21
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 26,
-  question_occurance_id: 3,
+  question_occurrence_id: 3,
   option_response: "D",
   inserted_at: now,
   updated_at: now
@@ -2288,7 +2288,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 22
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 27,
-  question_occurance_id: 3,
+  question_occurrence_id: 3,
   option_response: "A",
   inserted_at: now,
   updated_at: now
@@ -2299,7 +2299,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 23
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 28,
-  question_occurance_id: 3,
+  question_occurrence_id: 3,
   option_response: "D",
   inserted_at: now,
   updated_at: now
@@ -2310,7 +2310,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 24
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 29,
-  question_occurance_id: 3,
+  question_occurrence_id: 3,
   option_response: "D",
   inserted_at: now,
   updated_at: now
@@ -2321,7 +2321,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 25
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 30,
-  question_occurance_id: 3,
+  question_occurrence_id: 3,
   option_response: "D",
   inserted_at: now,
   updated_at: now
