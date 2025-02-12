@@ -5,8 +5,8 @@ defmodule LiveFeedback.Questions.QuestionOccurance do
   schema "question_occurances" do
     belongs_to :question_template, LiveFeedback.Questions.QuestionTemplate
     belongs_to :queue, LiveFeedback.Questions.Queue
-    field :queue_display_order, :integer
-    field :date_used, :date
+    field :queue_display_order, :integer #take out
+    field :date_used, :date #take out
     field :is_required, :boolean, default: false
     field :url, :string
     field :question_type, :string
@@ -25,7 +25,7 @@ defmodule LiveFeedback.Questions.QuestionOccurance do
   def changeset(question_occurance, attrs) do
     question_occurance
     |> cast(attrs, [:question_template_id, :queue_id, :queue_display_order, :date_used, :is_required, :url, :question_type, :question_content, :display_order, :is_archived])
-    |> validate_required([:queue_id, :display_order, :is_required, :question_type, :question_content]) #took out url & question templeate id since it is not required
+    |> validate_required([:queue_id, :display_order, :is_required, :question_type, :question_content]) #took out url & question template id since it is not required
     |> validate_number(:display_order, greater_than: 0) #changed queue_display_order -> display_order
     |> validate_length(:question_type, max: 50)
     |> foreign_key_constraint(:question_template_id)

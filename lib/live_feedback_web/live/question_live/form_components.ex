@@ -65,7 +65,7 @@ defmodule LiveFeedbackWeb.QuestionLive.ViewQuestion do
         <div class="border-l border-gray-300 h-8 mx-2"></div>
         <button
           id={"delete_button_#{@question.id}"}
-          phx-click="delete_question"
+          phx-click="confirm_delete"
           phx-value-id={@question.id}
           class="text-red-500 hover:text-red-600 focus:outline-none">
           <.icon name="hero-trash" />
@@ -85,45 +85,59 @@ defmodule LiveFeedbackWeb.QuestionLive.FormComponent do
       id={"question_form_#{@question.id}"}
       phx-key={"question_form_#{@question.id}"}
       phx-submit={if @question.id == "new", do: "add_question", else: "edit_question"}
-      class="bg-white rounded-lg border border-gray-300 p-6 mb-4 shadow-sm"
+      class="relative bg-white rounded-lg border border-gray-300 p-6 mb-4 shadow-sm"
     >
       <input type="hidden" name="question_id" value={@question.id} phx-key={@question.id} />
-      <div class="flex gap-4 mb-4">
-        <!-- Question Content -->
-        <div class="flex-grow">
-          <.live_component module={LiveFeedbackWeb.QuestionLive.QuestionContent} question={@question} id={"question_content_component_#{@question.id}"} phx-key={"question_content_component_#{@question.id}"} />
-        </div>
+      <div class="space-y-4">
+        <div class="flex gap-4 mb-4">
+          <!-- Question Content -->
+          <div class="flex-grow">
+            <.live_component module={LiveFeedbackWeb.QuestionLive.QuestionContent} question={@question} id={"question_content_component_#{@question.id}"} phx-key={"question_content_component_#{@question.id}"} />
+          </div>
 
-        <!-- Question Type Selection -->
-        <div class="w-64">
-          <select
-            id={"question_type_#{@question.id}"}
-            phx-key={"question_type_#{@question.id}"}
-            name="question_type"
-            phx-change="typeChange"
-            class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="QA" selected={@question_type == "QA"}>Q&A</option>
-            <option value="free_response" selected={@question_type == "free_response"}>Free Response</option>
-            <option value="multiple_choice" selected={@question_type == "multiple_choice"}>Multiple Choice</option>
-            <option value="multi-select" selected={@question_type == "multi-select"}>Multi-Select</option>
-            <option value="true_false" selected={@question_type == "true_false"}>True/False</option>
-          </select>
+          <!-- Question Type Selection -->
+          <div class="w-48">
+            <select
+              id={"question_type_#{@question.id}"}
+              phx-key={"question_type_#{@question.id}"}
+              name="question_type"
+              phx-change="typeChange"
+              class="w-full px-3 py-2 h-[46px] bg-white border border-gray-300 rounded-md text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="QA" selected={@question_type == "QA"}>Q&A</option>
+              <option value="free_response" selected={@question_type == "free_response"}>Free Response</option>
+              <option value="multiple_choice" selected={@question_type == "multiple_choice"}>Multiple Choice</option>
+              <option value="multi-select" selected={@question_type == "multi-select"}>Multi-Select</option>
+              <option value="true_false" selected={@question_type == "true_false"}>True/False</option>
+            </select>
+          </div>
         </div>
-      </div>
 
       <!-- Render Options -->
-      <div id={"question_options_#{@question.id}"} phx-key={"question_options_#{@question.id}"} phx-update="replace">
-        <%= if @question_type == "multiple_choice" or @question_type == "multi-select" do %>
-          <.live_component module={LiveFeedbackWeb.QuestionLive.MultipleChoice} question_type={@question_type} question={@question} id={"MC_options_#{@question.id}"} phx-key={"MC_Options_#{@question.id}"} />
-        <% end %>
+        <div id={"question_options_#{@question.id}"} phx-key={"question_options_#{@question.id}"} phx-update="replace">
+          <%= if @question_type == "multiple_choice" or @question_type == "multi-select" do %>
+            <.live_component module={LiveFeedbackWeb.QuestionLive.MultipleChoice} question_type={@question_type} question={@question} id={"MC_options_#{@question.id}"} phx-key={"MC_Options_#{@question.id}"} />
+          <% end %>
 
-        <%= if @question_type == "true_false" do %>
-          <.live_component  module={LiveFeedbackWeb.QuestionLive.TrueFalse} question={@question} id={"TF_options_#{@question.id}"} phx-key={"TF_Options_#{@question.id}"} />
-        <% end %>
+          <%= if @question_type == "true_false" do %>
+            <.live_component  module={LiveFeedbackWeb.QuestionLive.TrueFalse} question={@question} id={"TF_options_#{@question.id}"} phx-key={"TF_Options_#{@question.id}"} />
+          <% end %>
+        </div>
+        <div class="pb-8"></div>
       </div>
 
-      <button type="submit" class="mt-4 py-2 px-4 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Save</button>
+      <!-- Required Toggle -->
+      <div class="absolute bottom-0 right-0 left-0 p-2 bg-white border-t border-gray-200">
+        <div class="flex justify-end items-center gap-4">
+          <.live_component
+            module={LiveFeedbackWeb.QuestionLive.RequiredToggle}
+            question={@question}
+            id={"required_toggle_component_#{@question.id}"}
+          />
+
+          <button type="submit" class="py-2 px-4 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Save</button>
+        </div>
+      </div>
     </form>
     """
   end
@@ -136,8 +150,7 @@ defmodule LiveFeedbackWeb.QuestionLive.QuestionContent do
     <div id={"content_input_#{@question.id}"} phx-key={"content_input_#{@question.id}"}>
       <input
         type="text"
-        id={"content_inputbox_#{@question.id}"}
-        phx-key={"content_inputbox_#{@question.id}"}
+        id={"content_inputBox_#{@question.id}"}
         name="question_content"
         placeholder="Question"
         class="w-full px-3 py-2 text-lg border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none"
@@ -232,6 +245,29 @@ defmodule LiveFeedbackWeb.QuestionLive.OptionContent do
      placeholder="Option text"
      class="w-full px-3 py-2 text-gray-700 border-b border-gray-300 focus:border-blue-500 focus:outline-none"
      value={@option.option_content} />
+    """
+  end
+end
+
+defmodule LiveFeedbackWeb.QuestionLive.RequiredToggle do
+  use Phoenix.LiveComponent
+
+  def render(assigns) do
+    ~H"""
+    <div class="flex items-center space-x-2" id={"required_toggle_#{@question.id}"}>
+      <label for={"required_toggle_input_#{@question.id}"} class="text-sm text-gray-700">Required</label>
+      <label class="relative inline-flex items-center cursor-pointer">
+        <input
+          type="checkbox"
+          id={"required_toggle_input_#{@question.id}"}
+          name="is_required"
+          checked={@question.is_required}
+          class="sr-only peer"
+        />
+        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
+        </div>
+      </label>
+    </div>
     """
   end
 end

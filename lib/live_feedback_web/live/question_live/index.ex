@@ -14,6 +14,8 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
      |> assign(:show_form, nil)
      |> assign(:question_type, "QA")
      |> assign(:show_add_form, false)
+     |> assign(:confirm_delete, false)
+     |> assign(:delete_id, nil)
      |> assign(:max_question_num, Questions.get_max_display_order(queue_id))
      |> stream(:questions, Questions.list_questions_for_queue(queue_id))
     }
@@ -31,6 +33,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     IO.inspect(Map.get(socket.assigns.streams, :questions), label: "My Stream Data")
     content = Map.get(params, "question_content", "")
     type = Map.get(params, "question_type", "")
+    is_required = Map.get(params, "is_required", false)
 
     option_A =
       if type == "true_false" do
@@ -65,7 +68,8 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
       "question_content" => content,
       "question_type" => type,
       "display_order" => Questions.get_max_display_order(socket.assigns.queue_id) + 1,
-      "is_archived" => false
+      "is_archived" => false,
+      "is_required" => is_required
     }
 
     # Attempt to add the question
@@ -108,9 +112,14 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
 
   @impl true
   def handle_event("edit_question", params, socket) do
+    IO.inspect(params)
     question = Questions.get_question!(Map.get(params, "question_id"))
     content = Map.get(params, "question_content", "")
     type = Map.get(params, "question_type", "")
+    is_required = case Map.get(params, "is_required", false) do
+      "on" -> true
+      _ -> false
+    end
 
 
     option_A = if type == "true_false", do: "true", else: Map.get(params, "option_A", "")
@@ -133,7 +142,8 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     # Prepare the attributes for the updated question
     attrs = %{
       "question_content" => content,
-      "question_type" => type
+      "question_type" => type,
+      "is_required" => is_required
     }
 
     # Attempt to update the question
@@ -210,6 +220,15 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
   end
 
   @impl true
+  def handle_event("confirm_delete", %{"id" => id}, socket) do
+    {:noreply,
+    socket
+    |> assign(:confirm_delete, true)
+    |> assign(:delete_id, id)
+  }
+  end
+
+  @impl true
   def handle_event("delete_question", %{"id" => id}, socket) do
     # Convert the ID to an integer
     id = String.to_integer(id)
@@ -221,12 +240,33 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
       {:ok, deleted_question} ->
         {:noreply,
         socket
-        |> assign(:max_question_num, Questions.get_max_display_order(question.queue_id))
+        |> assign(:max_question_num, Questions.get_max_display_order(socket.assigns.queue_id))
+        |> assign(:confirm_delete, false)
         |> put_flash(:info, "Successfully deleted the question.")
         |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue_id), reset: true)}
       {:error, _changeset} ->
         # If deletion fails, show an error flash
         {:noreply, put_flash(socket, :error, "Failed to delete the question.")}
+    end
+  end
+
+  def handle_event("archive_question",%{"id" => id}, socket) do
+    question = Questions.get_question!(id)
+    attrs = %{
+      "is_archived" => true
+    }
+    case Questions.update_question(question, attrs) do
+      {:ok, question} ->
+        {:noreply,
+          socket
+          |> assign(:confirm_delete, false)
+          |> put_flash(:info, "Question archived successfully.")
+          |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue_id), reset: false)
+        }
+      {:error, changeset} ->
+          {:noreply,
+          socket
+          |> put_flash(:error, "Failed to archive question.")}
     end
   end
 
@@ -263,12 +303,13 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
   def handle_info({:toggle_form, question_id}, socket) do
     question = Questions.get_question!(question_id)
     #IO.inspect(socket.assigns.streams, label: "My Stream Data")
-
     {:noreply,
     socket
-    |> assign(:show_form, question_id)
+    |> assign(:show_form, (if question_id != socket.assigns.show_form, do: question_id, else: nil))
     |> assign(:show_add_form, false)
     |> assign(:question_type, question.question_type)
     |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue_id), reset: false)}
   end
+
+
 end
