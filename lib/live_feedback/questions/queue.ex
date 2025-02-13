@@ -7,7 +7,7 @@ defmodule LiveFeedback.Questions.Queue do
     field :name, :string
     field :description, :string
 
-    has_many :question_occurance, LiveFeedback.Questions.QuestionOccurance
+    has_many :question_occurrence, LiveFeedback.Questions.QuestionOccurrence
 
     timestamps(type: :utc_datetime)
 
