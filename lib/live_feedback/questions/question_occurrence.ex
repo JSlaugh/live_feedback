@@ -9,6 +9,7 @@ defmodule LiveFeedback.Questions.QuestionOccurrence do
     field :url, :string
     field :question_type, :string
     field :question_content, :string
+    field :display_order, :integer
     field :set_display_order, :integer
     field :is_archived, :boolean
 

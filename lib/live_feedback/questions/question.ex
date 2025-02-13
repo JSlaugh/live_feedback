@@ -20,7 +20,7 @@ defmodule LiveFeedback.Questions.Question do
   @doc false
   def changeset(question, attrs) do
     question
-    |> cast(attrs, [:url, :question_type, :question_content, :display_order, :is_archived])
+    |> cast(attrs, [:url, :question_type, :question_content, :display_order])
     |> validate_required([:question_type, :question_content, :display_order])
     |> validate_length(:question_type, max: 50)
     |> validate_length(:question_content, max: 500)
