@@ -11,7 +11,7 @@
 # and so on) as they will fail if something goes wrong.
 
 alias LiveFeedback.Repo
-alias LiveFeedback.Questions.{Question, QuestionOption, QuestionOptionsResponse, Queue, QuestionSet, QuestionOccurrence, QuestionOptionsOccurrence}
+alias LiveFeedback.Questions.{Question, QuestionOption, QuestionOptionsResponse, Queue, QueueOccurrence, QuestionSet, QuestionOccurrence, QuestionOptionsOccurrence}
 alias LiveFeedback.Courses.CoursePage
 alias LiveFeedback.Accounts.User
 alias LiveFeedback.Accounts.UserProfile
@@ -208,12 +208,71 @@ Repo.insert!(%CoursePage{
 )
 
 ###########################################################################
+################               Question Sets               ################
+###########################################################################
+
+Repo.insert!(%QuestionSet{
+  course_page_id: 1,
+  user_id: 1,
+  name: "Attendance Daily Questions",
+  description: "History Questions",
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+Repo.insert!(%QuestionSet{
+  course_page_id: 3,
+  user_id: 2,
+  name: "Weekly Reading Report",
+  description: "",
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+Repo.insert!(%QuestionSet{
+  course_page_id: 5,
+  user_id: 3,
+  name: "Pre-Reading Questions",
+  description: "",
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+Repo.insert!(%QuestionSet{
+  course_page_id: 7,
+  user_id: 4,
+  name: "Attendance Daily Questions",
+  description: "Bowling Questions",
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+Repo.insert!(%QuestionSet{
+  course_page_id: 9,
+  user_id: 5,
+  name: "Daily Touchbase Questions",
+  description: "",
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+###########################################################################
 ################                  Questions                ################
 ###########################################################################
 
 # User 1 Courses
 Repo.insert!(%Question{
-  course_page_id: 1,
+  question_set_id: 1,
   url: nil,
   question_type: "QA",
   question_content: "What is a wombat?",
@@ -226,7 +285,7 @@ Repo.insert!(%Question{
 )
 
 Repo.insert!(%Question{
-  course_page_id: 1,
+  question_set_id: 1,
   url: nil,
   question_type: "multiple_choice",
   question_content: "Which of these is NOT a bowling term?",
@@ -239,7 +298,7 @@ Repo.insert!(%Question{
 )
 
 Repo.insert!(%Question{
-  course_page_id: 2,
+  question_set_id: nil,
   url: nil,
   question_type: "QA",
   question_content: "What is the derivative of x^2?",
@@ -252,7 +311,7 @@ Repo.insert!(%Question{
 )
 
 Repo.insert!(%Question{
-  course_page_id: 2,
+  question_set_id: nil,
   url: nil,
   question_type: "multiple_choice",
   question_content: "Which of the following is the integral of 2x?",
@@ -266,7 +325,7 @@ Repo.insert!(%Question{
 
 # User 2 Courses
 Repo.insert!(%Question{
-  course_page_id: 3,
+  question_set_id: 2,
   url: nil,
   question_type: "QA",
   question_content: "What is a thesis statement?",
@@ -279,7 +338,7 @@ Repo.insert!(%Question{
 )
 
 Repo.insert!(%Question{
-  course_page_id: 3,
+  question_set_id: 2,
   url: nil,
   question_type: "multiple_choice",
   question_content: "Which of the following is a literary device?",
@@ -292,7 +351,7 @@ Repo.insert!(%Question{
 )
 
 Repo.insert!(%Question{
-  course_page_id: 4,
+  question_set_id: nil,
   url: nil,
   question_type: "QA",
   question_content: "What is the function of the liver?",
@@ -305,7 +364,7 @@ Repo.insert!(%Question{
 )
 
 Repo.insert!(%Question{
-  course_page_id: 4,
+  question_set_id: nil,
   url: nil,
   question_type: "multiple_choice",
   question_content: "Which of the following is an organ in the human body?",
@@ -319,7 +378,7 @@ Repo.insert!(%Question{
 
 # User 3 Courses
 Repo.insert!(%Question{
-  course_page_id: 5,
+  question_set_id: 3,
   url: nil,
   question_type: "QA",
   question_content: "Who was the first president of the United States?",
@@ -332,7 +391,7 @@ Repo.insert!(%Question{
 )
 
 Repo.insert!(%Question{
-  course_page_id: 5,
+  question_set_id: 3,
   url: nil,
   question_type: "multiple_choice",
   question_content: "Which of the following was a major event in World War II?",
@@ -345,7 +404,7 @@ Repo.insert!(%Question{
 )
 
 Repo.insert!(%Question{
-  course_page_id: 6,
+  question_set_id: nil,
   url: nil,
   question_type: "QA",
   question_content: "What is Newton’s First Law?",
@@ -358,7 +417,7 @@ Repo.insert!(%Question{
 )
 
 Repo.insert!(%Question{
-  course_page_id: 6,
+  question_set_id: nil,
   url: nil,
   question_type: "multiple_choice",
   question_content: "Which of these is a unit of force?",
@@ -372,7 +431,7 @@ Repo.insert!(%Question{
 
 # User 4 Courses
 Repo.insert!(%Question{
-  course_page_id: 7,
+  question_set_id: 4,
   url: nil,
   question_type: "QA",
   question_content: "What is the atomic number of hydrogen?",
@@ -385,7 +444,7 @@ Repo.insert!(%Question{
 )
 
 Repo.insert!(%Question{
-  course_page_id: 7,
+  question_set_id: 4,
   url: nil,
   question_type: "multiple_choice",
   question_content: "Which of these is a noble gas?",
@@ -398,7 +457,7 @@ Repo.insert!(%Question{
 )
 
 Repo.insert!(%Question{
-  course_page_id: 8,
+  question_set_id: nil,
   url: nil,
   question_type: "QA",
   question_content: "What does a psychologist study?",
@@ -411,7 +470,7 @@ Repo.insert!(%Question{
 )
 
 Repo.insert!(%Question{
-  course_page_id: 8,
+  question_set_id: nil,
   url: nil,
   question_type: "multiple_choice",
   question_content: "Which of the following is a psychological disorder?",
@@ -425,7 +484,7 @@ Repo.insert!(%Question{
 
 # User 5 Courses
 Repo.insert!(%Question{
-  course_page_id: 9,
+  question_set_id: 5,
   url: nil,
   question_type: "QA",
   question_content: "What is supply and demand?",
@@ -438,7 +497,7 @@ Repo.insert!(%Question{
 )
 
 Repo.insert!(%Question{
-  course_page_id: 9,
+  question_set_id: 5,
   url: nil,
   question_type: "multiple_choice",
   question_content: "Which of these is a principle of microeconomics?",
@@ -451,7 +510,7 @@ Repo.insert!(%Question{
 )
 
 Repo.insert!(%Question{
-  course_page_id: 10,
+  question_set_id: nil,
   url: nil,
   question_type: "QA",
   question_content: "What are the primary colors?",
@@ -464,7 +523,7 @@ Repo.insert!(%Question{
 )
 
 Repo.insert!(%Question{
-  course_page_id: 10,
+  question_set_id: nil,
   url: nil,
   question_type: "multiple_choice",
   question_content: "Which of the following is a famous painter?",
@@ -1681,6 +1740,83 @@ Repo.insert!(%Queue{
 )
 
 ###########################################################################
+################         Question Queue Occurrences        ################
+###########################################################################
+
+presented_date = Date.from_iso8601!("2025-02-01")
+presented_date_2 = Date.from_iso8601!("2025-02-03")
+
+Repo.insert!(%QueueOccurrence{
+  queue_id: 1,
+  presented_date: presented_date
+},
+  on_conflict: :nothing
+)
+
+Repo.insert!(%QueueOccurrence{
+  queue_id: 1,
+  presented_date: presented_date_2
+},
+  on_conflict: :nothing
+)
+
+Repo.insert!(%QueueOccurrence{
+  queue_id: 2,
+  presented_date: presented_date
+},
+  on_conflict: :nothing
+)
+
+Repo.insert!(%QueueOccurrence{
+  queue_id: 2,
+  presented_date: presented_date_2
+},
+  on_conflict: :nothing
+)
+
+Repo.insert!(%QueueOccurrence{
+  queue_id: 3,
+  presented_date: presented_date
+},
+  on_conflict: :nothing
+)
+
+Repo.insert!(%QueueOccurrence{
+  queue_id: 3,
+  presented_date: presented_date_2
+},
+  on_conflict: :nothing
+)
+
+Repo.insert!(%QueueOccurrence{
+  queue_id: 4,
+  presented_date: presented_date
+},
+  on_conflict: :nothing
+)
+
+Repo.insert!(%QueueOccurrence{
+  queue_id: 4,
+  presented_date: presented_date_2
+},
+  on_conflict: :nothing
+)
+
+Repo.insert!(%QueueOccurrence{
+  queue_id: 5,
+  presented_date: presented_date
+},
+  on_conflict: :nothing
+)
+
+Repo.insert!(%QueueOccurrence{
+  queue_id: 5,
+  presented_date: presented_date_2
+},
+  on_conflict: :nothing
+)
+
+###########################################################################
 ################            Question Occurrences            ################
 ###########################################################################
 
@@ -1691,13 +1827,11 @@ Repo.insert!(%Queue{
 Repo.insert!(%QuestionOccurrence{
   question_id: 1,
   queue_id: 1,
-  queue_display_order: 1,
-  date_used: date_used,
   is_required: false,
   url: nil,
   question_type: "QA",
   question_content: "What is a wombat?",
-  display_order: 1,
+  set_display_order: 1,
   is_archived: false,
   inserted_at: now,
   updated_at: now
@@ -1708,13 +1842,11 @@ Repo.insert!(%QuestionOccurrence{
 Repo.insert!(%QuestionOccurrence{
   question_id: 2,
   queue_id: 1,
-  queue_display_order: 2,
-  date_used: date_used,
   is_required: false,
   url: nil,
   question_type: "multiple_choice",
   question_content: "What of these is NOT a bowling term?",
-  display_order: 2,
+  set_display_order: 2,
   is_archived: false,
   inserted_at: now,
   updated_at: now
@@ -1725,13 +1857,11 @@ Repo.insert!(%QuestionOccurrence{
 Repo.insert!(%QuestionOccurrence{
   question_id: 4,
   queue_id: 2,
-  queue_display_order: 1,
-  date_used: date_used,
   is_required: false,
   url: nil,
   question_type: "multiple_choice",
   question_content: "Which of the following is the integral of 2x?",
-  display_order: 2,
+  set_display_order: 2,
   is_archived: false,
   inserted_at: now,
   updated_at: now
@@ -1742,13 +1872,11 @@ Repo.insert!(%QuestionOccurrence{
 Repo.insert!(%QuestionOccurrence{
   question_id: 5,
   queue_id: 2,
-  queue_display_order: 1,
-  date_used: date_used,
   is_required: false,
   url: nil,
   question_type: "QA",
   question_content: "What is a thesis statement?",
-  display_order: 1,
+  set_display_order: 1,
   is_archived: false,
   inserted_at: now,
   updated_at: now
@@ -1759,13 +1887,11 @@ Repo.insert!(%QuestionOccurrence{
 Repo.insert!(%QuestionOccurrence{
   question_id: 6,
   queue_id: 2,
-  queue_display_order: 2,
-  date_used: date_used,
   is_required: false,
   url: nil,
   question_type: "multiple_choice",
   question_content: "Which of the following is a literary device?",
-  display_order: 2,
+  set_display_order: 2,
   is_archived: false,
   inserted_at: now,
   updated_at: now
@@ -1776,13 +1902,11 @@ Repo.insert!(%QuestionOccurrence{
 Repo.insert!(%QuestionOccurrence{
   question_id: 9,
   queue_id: 3,
-  queue_display_order: 1,
-  date_used: date_used,
   is_required: false,
   url: nil,
   question_type: "QA",
   question_content: "Who was the first president of the United States?",
-  display_order: 1,
+  set_display_order: 1,
   is_archived: false,
   inserted_at: now,
   updated_at: now
@@ -1793,13 +1917,11 @@ Repo.insert!(%QuestionOccurrence{
 Repo.insert!(%QuestionOccurrence{
   question_id: 10,
   queue_id: 3,
-  queue_display_order: 2,
-  date_used: date_used,
   is_required: false,
   url: nil,
   question_type: "multiple_choice",
   question_content: "Which of the following was a major even in World War II?",
-  display_order: 2,
+  set_display_order: 2,
   is_archived: false,
   inserted_at: now,
   updated_at: now
@@ -1810,13 +1932,11 @@ Repo.insert!(%QuestionOccurrence{
 Repo.insert!(%QuestionOccurrence{
   question_id: 13,
   queue_id: 4,
-  queue_display_order: 1,
-  date_used: date_used,
   is_required: false,
   url: nil,
   question_type: "QA",
   question_content: "What is the atomic number of hydrogen?",
-  display_order: 1,
+  set_display_order: 1,
   is_archived: false,
   inserted_at: now,
   updated_at: now
@@ -1827,13 +1947,11 @@ Repo.insert!(%QuestionOccurrence{
 Repo.insert!(%QuestionOccurrence{
   question_id: 14,
   queue_id: 4,
-  queue_display_order: 2,
-  date_used: date_used,
   is_required: false,
   url: nil,
   question_type: "multiple_choice",
   question_content: "Which of these is a noble gas?",
-  display_order: 2,
+  set_display_order: 2,
   is_archived: false,
   inserted_at: now,
   updated_at: now
@@ -1844,13 +1962,11 @@ Repo.insert!(%QuestionOccurrence{
 Repo.insert!(%QuestionOccurrence{
   question_id: 19,
   queue_id: 5,
-  queue_display_order: 1,
-  date_used: date_used,
   is_required: false,
   url: nil,
   question_type: "QA",
   question_content: "What are the primary colors?",
-  display_order: 1,
+  set_display_order: 1,
   is_archived: false,
   inserted_at: now,
   updated_at: now
@@ -1861,13 +1977,11 @@ Repo.insert!(%QuestionOccurrence{
 Repo.insert!(%QuestionOccurrence{
   question_id: 20,
   queue_id: 5,
-  queue_display_order: 2,
-  date_used: date_used,
   is_required: false,
   url: nil,
   question_type: "multiple_choice",
   question_content: "Which of the following is a famous painter?",
-  display_order: 2,
+  set_display_order: 2,
   is_archived: false,
   inserted_at: now,
   updated_at: now
@@ -2130,8 +2244,7 @@ Repo.insert!(%QuestionOptionsOccurrence{
 # Insert QuestionOptionsResponse for user 6
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 11,
-  question_occurrence_id: 3,
-  option_response: "D",
+  question_options_occurrence_id: 4,
   inserted_at: now,
   updated_at: now
 },
@@ -2141,8 +2254,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 7
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 12,
-  question_occurrence_id: 3,
-  option_response: "D",
+  question_options_occurrence_id: 4,
   inserted_at: now,
   updated_at: now
 },
@@ -2154,8 +2266,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 9
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 14,
-  question_occurrence_id: 3,
-  option_response: "B",
+  question_options_occurrence_id: 2,
   inserted_at: now,
   updated_at: now
 },
@@ -2165,8 +2276,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 10
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 15,
-  question_occurrence_id: 3,
-  option_response: "D",
+  question_options_occurrence_id: 4,
   inserted_at: now,
   updated_at: now
 },
@@ -2176,8 +2286,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 11
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 16,
-  question_occurrence_id: 3,
-  option_response: "D",
+  question_options_occurrence_id: 4,
   inserted_at: now,
   updated_at: now
 },
@@ -2187,8 +2296,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 12
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 17,
-  question_occurrence_id: 3,
-  option_response: "D",
+  question_options_occurrence_id: 4,
   inserted_at: now,
   updated_at: now
 },
@@ -2198,8 +2306,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 13
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 18,
-  question_occurrence_id: 3,
-  option_response: "C",
+  question_options_occurrence_id: 3,
   inserted_at: now,
   updated_at: now
 },
@@ -2209,8 +2316,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 14
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 19,
-  question_occurrence_id: 3,
-  option_response: "D",
+  question_options_occurrence_id: 4,
   inserted_at: now,
   updated_at: now
 },
@@ -2220,8 +2326,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 15
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 20,
-  question_occurrence_id: 3,
-  option_response: "D",
+  question_options_occurrence_id: 4,
   inserted_at: now,
   updated_at: now
 },
@@ -2231,8 +2336,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 16
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 21,
-  question_occurrence_id: 3,
-  option_response: "D",
+  question_options_occurrence_id: 4,
   inserted_at: now,
   updated_at: now
 },
@@ -2242,8 +2346,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 17
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 22,
-  question_occurrence_id: 3,
-  option_response: "D",
+  question_options_occurrence_id: 4,
   inserted_at: now,
   updated_at: now
 },
@@ -2253,8 +2356,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 18
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 23,
-  question_occurrence_id: 3,
-  option_response: "D",
+  question_options_occurrence_id: 4,
   inserted_at: now,
   updated_at: now
 },
@@ -2266,8 +2368,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 20
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 25,
-  question_occurrence_id: 3,
-  option_response: "A",
+  question_options_occurrence_id: 1,
   inserted_at: now,
   updated_at: now
 },
@@ -2277,8 +2378,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 21
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 26,
-  question_occurrence_id: 3,
-  option_response: "D",
+  question_options_occurrence_id: 4,
   inserted_at: now,
   updated_at: now
 },
@@ -2288,8 +2388,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 22
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 27,
-  question_occurrence_id: 3,
-  option_response: "A",
+  question_options_occurrence_id: 1,
   inserted_at: now,
   updated_at: now
 },
@@ -2299,8 +2398,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 23
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 28,
-  question_occurrence_id: 3,
-  option_response: "D",
+  question_options_occurrence_id: 4,
   inserted_at: now,
   updated_at: now
 },
@@ -2310,8 +2408,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 24
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 29,
-  question_occurrence_id: 3,
-  option_response: "D",
+  question_options_occurrence_id: 4,
   inserted_at: now,
   updated_at: now
 },
@@ -2321,57 +2418,7 @@ Repo.insert!(%QuestionOptionsResponse{
 # Insert QuestionOptionsResponse for user 25
 Repo.insert!(%QuestionOptionsResponse{
   user_profile_id: 30,
-  question_occurrence_id: 3,
-  option_response: "D",
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-###########################################################################
-################               Question Sets               ################
-###########################################################################
-
-Repo.insert!(%QuestionSet{
-  name: "Attendance Daily Questions",
-  description: "History Questions",
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-Repo.insert!(%QuestionSet{
-  name: "Weekly Reading Report",
-  description: "",
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-Repo.insert!(%QuestionSet{
-  name: "Pre-Reading Questions",
-  description: "",
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-Repo.insert!(%QuestionSet{
-  name: "Attendance Daily Questions",
-  description: "Bowling Questions",
-  inserted_at: now,
-  updated_at: now
-},
-  on_conflict: :nothing
-)
-
-Repo.insert!(%QuestionSet{
-  name: "Daily Touchbase Questions",
-  description: "",
+  question_options_occurrence_id: 4,
   inserted_at: now,
   updated_at: now
 },
