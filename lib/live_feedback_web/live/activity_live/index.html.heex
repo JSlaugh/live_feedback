@@ -1,0 +1,34 @@
+<.activity_template>
+  <:leftSidebar>
+    <div>Left Sidebar</div>
+  </:leftSidebar>
+  <:activity>
+    <div>
+      <h1>Example Question Section</h1>
+      <p>This might be the area where the box with the question might go.</p>
+    </div>
+    <div>
+      <h1>Activity Section</h1>
+      <h1>Example Activity</h1>
+      <.live_component
+        module={LiveFeedbackWeb.QaComponent}
+        id="example-activity"
+        page_admin={@page_admin}
+        course_page={@course_page}
+        sort_by={@sort_by}
+        streams={@streams}
+        anonymous_id={@anonymous_id}
+        live_action={@live_action}
+        message={@message}
+        page_title={@page_title}
+        parent_pid={self()}
+      />
+    </div>
+    <div>
+      <h1>This would be where the left and right arrows might go to move between questions.</h1>
+    </div>
+  </:activity>
+  <:rightSidebar>
+    <div>Right Sidebar</div>
+  </:rightSidebar>
+</.activity_template>
