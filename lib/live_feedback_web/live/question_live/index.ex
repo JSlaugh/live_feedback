@@ -28,13 +28,16 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     {:noreply, socket}
   end
 
+  #Add question
   @impl true
   def handle_event("add_question", params, socket) do
-    IO.inspect(Map.get(socket.assigns.streams, :questions), label: "My Stream Data")
+    #extract Parameters
     content = Map.get(params, "question_content", "")
     type = Map.get(params, "question_type", "")
     is_required = Map.get(params, "is_required", false)
 
+    #if option a/b account for t/f questions
+    #only grab the param if it exist, if not set to "" so the option can be ignored
     option_A =
       if type == "true_false" do
         "true"
@@ -50,12 +53,14 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     option_C = Map.get(params, "option_C", "")
     option_D = Map.get(params, "option_D", "")
 
+    #get correct answer. answer for radio buttons, correct_A-D for check box
     answer = Map.get(params, "answer", "")
     correct_A = Map.get(params, "correct_A", "") #change to select
     correct_B = Map.get(params, "correct_B", "")
     correct_C = Map.get(params, "correct_C", "")
     correct_D = Map.get(params, "correct_D", "")
 
+    #look for both radio button/check box responses and set variable to be passed to the option in the DB
     answer_A = if answer == "A" || correct_A == "A", do: true, else: false
     answer_B = if answer == "B" || correct_B == "B", do: true, else: false
     answer_C = if answer == "C" || correct_C == "C", do: true, else: false
@@ -75,7 +80,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     # Attempt to add the question
     case Questions.add_question(attrs) do
       {:ok, question} ->
-        # Loop through each option and call add_option_to_question/1 if not empty
+        # Loop through each option, create the cast compatible object, and add the question
         for {option, correct, order} <- [
               {option_A, answer_A, "A"},
               {option_B, answer_B, "B"},
@@ -91,14 +96,14 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
           # Add the option to the question
           Questions.add_option(option_attrs)
         end
+        #get the full question + options packaged together
         question = Questions.get_question!(question.id)
 
         {:noreply,
          socket
-         |> assign(show_form: "none")
-         |> assign(show_add_form: false)
-         |> assign(:max_question_num, Questions.get_max_display_order(question.queue_id))
-         |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue_id), reset: false)
+         |> assign(show_add_form: false) #close the form
+         |> assign(:max_question_num, socket.assigns.max_question_num + 1) #update the max question number since new question was added
+         |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue_id), reset: false) #update the entire stream so that the previous question also update their arrows for movement
          |> put_flash(:info, "Question added successfully.")
          }
 
@@ -110,9 +115,10 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     end
   end
 
+  #edit question
   @impl true
   def handle_event("edit_question", params, socket) do
-    IO.inspect(params)
+    #get parameters
     question = Questions.get_question!(Map.get(params, "question_id"))
     content = Map.get(params, "question_content", "")
     type = Map.get(params, "question_type", "")

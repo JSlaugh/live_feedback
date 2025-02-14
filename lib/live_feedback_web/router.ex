@@ -4,6 +4,8 @@ defmodule LiveFeedbackWeb.Router do
   import LiveFeedbackWeb.UserAuth
   alias CoursePageLive.Index, as: CoursePageLive
   alias FeedbackLive.Index, as: FeedbackLive
+  alias QuestionLive.Index, as: QuestionLive
+  alias SelectionLive.Index, as: SelectionLive
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -79,7 +81,7 @@ defmodule LiveFeedbackWeb.Router do
       live "/course_pages/:id/edit", CoursePageLive, :edit
       live "/course_pages/:id", CoursePageLive, :update
       live "/course_pages/:id/delete", CoursePageLive, :delete
-      live "/course_pages/:course_page_id/:queue/questions", QuestionLive.Index, :index
+      live "/course_pages/:course_page_id/:queue/questions", QuestionLive, :index
     end
   end
 
@@ -98,6 +100,7 @@ defmodule LiveFeedbackWeb.Router do
       on_mount: [{LiveFeedbackWeb.UserAuth, :mount_current_user}] do
       live "/page/:coursepage", FeedbackLive, :index
       live "/page/:coursepage/new", FeedbackLive, :new
+      live "/page/:coursepage/:queue", SelectionLive, :question
     end
   end
 end
