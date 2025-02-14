@@ -87,6 +87,23 @@ defmodule LiveFeedbackWeb.FeedbackLive.Index do
   end
 
   @impl true
+  def handle_event("sort_messages", %{"sort" => sort_by}, socket) do
+    # Ensure that sort_by is an atom
+    sort_by_atom = String.to_existing_atom(sort_by)
+
+    course_page_id = socket.assigns.course_page.id
+
+    # Fetch and update the sorted messages
+    sorted_messages = Messages.get_messages_for_course_page_id(course_page_id, sort_by_atom)
+
+    {:noreply,
+    socket
+    |> assign(:sort_by, sort_by_atom)  # Update the sort_by atom in the socket
+    |> stream(:messages, sorted_messages, reset: true)}  # Stream the sorted messages
+  end
+
+  # ------------ This is the action for the delete in the modal------------
+  @impl true
   def handle_event("delete_message", %{"id" => id}, socket) do
     message = Messages.get_message!(id)
 
@@ -100,40 +117,16 @@ defmodule LiveFeedbackWeb.FeedbackLive.Index do
   end
 
   @impl true
-  def handle_event("edit_message", %{"id" => id, "content" => content}, socket) do
-    message = Messages.get_message!(id)
+  def handle_info({:deleted_message, message}, socket) do
+    if message.course_page_id == socket.assigns.course_page.id do
+      socket =
+        socket
+        |> stream_delete(:messages, message)
+        |> push_patch(to: ~p"/page/#{socket.assigns.course_page.slug}")
 
-    if (socket.assigns.current_user && socket.assigns.current_user.is_admin) ||
-         message.anonymous_id == socket.assigns.anonymous_id do
-      Messages.update_message(id, %{"content" => content})
-      {:noreply, stream(socket, :messages, %{})}
+      {:noreply, socket}
     else
-      {:noreply, put_flash(socket, :error, "You are not authorized to edit this message.")}
-    end
-  end
-
-  @impl true
-  def handle_event("edit_message", %{"id" => id}, socket) do
-    message = Messages.get_message!(id)
-
-    {:noreply, assign(socket, live_action: :edit, message: message)}
-  end
-
-  @impl true
-  def handle_event("like_message", %{"id" => id, "value" => value}, socket) do
-    # Fetch the message and handle the like logic
-    message = Messages.get_message!(id)
-    anonymous_id = socket.assigns.anonymous_id
-
-    case Messages.toggle_like_message(message, anonymous_id) do
-      {:ok, updated_message} ->
-        # Update only the changed message in the stream
-        {:noreply, stream_insert(socket, :messages, updated_message)}
-
-      {:error, changeset} ->
-        # Log errors for debugging
-        IO.inspect(changeset.errors, label: "Changeset Errors")
-        {:noreply, socket}
+      {:noreply, socket}
     end
   end
 
@@ -164,64 +157,37 @@ defmodule LiveFeedbackWeb.FeedbackLive.Index do
 
 
   @impl true
-def handle_info({:deleted_message, message}, socket) do
-  if message.course_page_id == socket.assigns.course_page.id do
-    socket =
-      socket
-      |> stream_delete(:messages, message)
-      |> push_patch(to: ~p"/page/#{socket.assigns.course_page.slug}")
-
-    {:noreply, socket}
-  else
-    {:noreply, socket}
-  end
-end
-
-
-  @impl true
   def handle_info({:deleted_all_messages, _course_page}, socket) do
     {:noreply, stream(socket, :messages, [], reset: true)}
   end
 
-  @impl true
-def handle_info({:like_updated, updated_message}, socket) do
-  # Ensure that the message is for the current course page
-  if updated_message.course_page_id == socket.assigns.course_page.id do
-    # Insert the updated message into the stream to update the like count
-    {:noreply, stream_insert(socket, :messages, updated_message)}
-  else
-    {:noreply, socket}
+  # Focus Message Handle Event
+  def handle_info({:selected_message_focus, message}, socket) do
+    {:noreply,
+    socket
+    |> assign(:live_action, :focus)
+    |> assign(:message, message)}
   end
-end
 
-def handle_event("focus_message", %{"id" => id}, socket) do
-  message = LiveFeedback.Messages.get_message!(id)
+  # Edit Message Handle Event
+  def handle_info({:selected_message_edit, message}, socket) do
+    {:noreply, assign(socket, live_action: :edit, message: message)}
+  end
 
-  {:noreply,
-   socket
-   |> assign(:live_action, :focus)
-   |> assign(:message, message)}
-end
+  # Delete Message Handle Event
+  def handle_info({:selected_message_delete, message}, socket) do
+    {:noreply, stream_delete(socket, :messages, message)}
+  end
 
-def handle_event("toggle_qr_code", _params, socket) do
-  {:noreply, assign(socket, :qr_code_visible, !socket.assigns.qr_code_visible)}
-end
+  # Like Message Handle Event
+  def handle_info({:selected_message_liked, update_message}, socket) do
+    {:noreply, stream_insert(socket, :messages, update_message)}
+  end
 
-@impl true
-def handle_event("sort_messages", %{"sort" => sort_by}, socket) do
-  # Ensure that sort_by is an atom
-  sort_by_atom = String.to_existing_atom(sort_by)
-
-  course_page_id = socket.assigns.course_page.id
-
-  # Fetch and update the sorted messages
-  sorted_messages = Messages.get_messages_for_course_page_id(course_page_id, sort_by_atom)
-
-  {:noreply,
-   socket
-   |> assign(:sort_by, sort_by_atom)  # Update the sort_by atom in the socket
-   |> stream(:messages, sorted_messages, reset: true)}  # Stream the sorted messages
-end
+  #Toggle QR Code Handle Event
+  def handle_info({:update_toggle, toggle_bool}, socket) do
+    {:noreply, assign(socket, :qr_code_visible, toggle_bool)}
+  end
 
   @impl true
   def handle_info({LiveFeedbackWeb.FeedbackLive.FormComponent, {:saved, _message}}, socket) do
@@ -232,5 +198,4 @@ end
     {:noreply, socket}
     # end
   end
-
 end

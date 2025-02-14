@@ -87,6 +87,9 @@ defmodule LiveFeedbackWeb do
       import LiveFeedbackWeb.CoreComponents
       import LiveFeedbackWeb.Gettext
 
+      #Custom UI components
+      import LiveFeedbackWeb.CustomComponents
+
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS
 

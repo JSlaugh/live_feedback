@@ -4,8 +4,7 @@ defmodule LiveFeedback.Questions.QuestionOptionsResponse do
 
   schema "question_options_responses" do
     belongs_to :user_profile, LiveFeedback.Accounts.UserProfile
-    belongs_to :question_occurance, LiveFeedback.Questions.QuestionOccurance
-    field :option_response, :string
+    belongs_to :question_options_occurrence, LiveFeedback.Questions.QuestionOptionsOccurrence
 
     timestamps(type: :utc_datetime)
   end
@@ -13,10 +12,9 @@ defmodule LiveFeedback.Questions.QuestionOptionsResponse do
   @doc false
   def changeset(question_options_response, attrs) do
     question_options_response
-    |> cast(attrs, [:user_profile_id, :question_occurance_id, :option_response])
-    |> validate_required([:user_profile_id, :question_occurance_id])
-    |> validate_length(:option_response, max: 1)
+    |> cast(attrs, [:user_profile_id, :question_options_occurrence_id])
+    |> validate_required([:user_profile_id, :question_options_occurrence_id])
     |> foreign_key_constraint(:user_profile_id)
-    |> foreign_key_constraint(:question_occurance_id)
+    |> foreign_key_constraint(:question_options_occurrence_id)
   end
 end

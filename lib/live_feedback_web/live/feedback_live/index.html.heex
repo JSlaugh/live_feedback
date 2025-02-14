@@ -1,15 +1,14 @@
-<div class="max-w-full lg:grid lg:grid-cols-[1fr,3fr,1fr] lg:gap-4">
-  <div class="leftSidebar"></div>
-  
-  <div id="body" class="">
+<.activity_template>
+  <:leftSidebar></:leftSidebar>
+  <:activity>
     <.header>
       <h1 class="text-2xl font-title font-semibold ">
         Send a message <.icon name="hero-arrow-long-right" />
       </h1>
-      
+
       <p><%= @course_page.description %></p>
     </.header>
-    
+
     <%= if @page_admin do %>
       <.button phx-click="delete_all_messages" class="bg-red-600 hover:bg-red-600">
         Clear the Page
@@ -19,93 +18,52 @@
     <.link patch={~p"/page/#{@course_page.slug}/new"}>
       <.button>New Message</.button>
     </.link>
-    
+
     <div>
       <div class="my-2 lg:my-4">
         <form phx-change="sort_messages">
           <select id="sort" name="sort" class="p-2 border rounded-lg">
             <option value="oldest" selected={@sort_by == :oldest}>Oldest</option>
-            
+
             <option value="newest" selected={@sort_by == :newest}>Newest</option>
-            
+
             <option value="like_count" selected={@sort_by == :like_count}>Most Liked</option>
           </select>
         </form>
       </div>
     </div>
-    
+
     <div id="messages" phx-update="stream" class="block">
-      <div :for={{id, message} <- @streams.messages} id={id} class="">
-        <div class="bg-gray-200 p-4 rounded-lg flex flex-row justify-between">
-          <div>
-            <p class="break-all">
-              <%= message.content %>
-            </p>
-          </div>
-          
-          <div class="space-y-1 ml-1">
-            <!-- Button to Focus Message -->
-            <%= if @page_admin do %>
-              <button
-                phx-click="focus_message"
-                phx-value-id={message.id}
-                class="text-brand_navy underline"
-              >
-                <.icon name="hero-arrows-pointing-out" />
-              </button>
-            <% end %>
-            
-            <div>
-              <%= if @anonymous_id == message.anonymous_id do %>
-                <button phx-click="edit_message" phx-value-id={message.id} class="text-brand_navy">
-                  <.icon name="hero-pencil-square" />
-                </button>
-              <% end %>
-            </div>
-            
-            <div>
-              <%= if @page_admin || @anonymous_id == message.anonymous_id do %>
-                <button phx-click="delete_message" phx-value-id={message.id} class=" text-red-500">
-                  <.icon name="hero-trash" />
-                </button>
-              <% end %>
-            </div>
-          </div>
+      <%= for {id, message} <- @streams.messages do %>
+        <div id={id} class="">
+          <!-- Message Box LiveView Component -->
+          <.live_component
+            module={LiveFeedbackWeb.MessageComponent}
+            id={"message-#{id}"}
+            message={message}
+            anonymous_id={@anonymous_id}
+            page_admin={@page_admin}
+            parent_pid={self()}
+          />
         </div>
-        <!-- Display Like Count and Like Button -->
-        <div class="flex bg-brand_blue -mt-4 ml-4 w-14 p-1 mb-2 rounded-lg space-x-2  items-center">
-          <button
-            phx-click="like_message"
-            phx-value-id={message.id}
-            phx-value-value="like"
-            class="text-brand_navy"
-          >
-            <.icon name={
-              if LiveFeedback.Messages.has_liked_message?(message, @anonymous_id),
-                do: "hero-hand-thumb-up-solid",
-                else: "hero-hand-thumb-up"
-            } />
-          </button>
-           <span class="text-white"><%= message.like_count %></span>
-        </div>
-      </div>
+      <% end %>
     </div>
-  </div>
-  
-  <div id="rightSidebar" class="">
-    <div class="hidden lg:block">
-      <div class="">
-        <button phx-click="toggle_qr_code" class="p-2 mb-4 bg-brand_blue text-white rounded-lg">
-          <.icon name="hero-qr-code" />
-        </button>
-        
-        <%= if @qr_code_visible do %>
-          <%= raw(@qr_code_svg) %>
-        <% end %>
-      </div>
-    </div>
-  </div>
-</div>
+  </:activity>
+  <:rightSidebar>
+    <!-- QR Code -->
+    <.live_component
+      module={LiveFeedbackWeb.ToggleableImage}
+      id="qr-code"
+      visible_bool={@qr_code_visible}
+      icon="hero-qr-code"
+      parent_pid={self()}
+    >
+      <:innerblock>
+        <%= raw(@qr_code_svg) %>
+      </:innerblock>
+    </.live_component>
+  </:rightSidebar>
+</.activity_template>
 
 <.modal
   :if={@live_action == :focus}
@@ -117,7 +75,7 @@
     <div class="">
       <p class="text-lg break-all"><%= @message.content %></p>
     </div>
-    
+
     <div>
       <%= if @page_admin || @anonymous_id == @message.anonymous_id do %>
         <button phx-click="delete_message" phx-value-id={@message.id} class="ml-2 text-red-500">
