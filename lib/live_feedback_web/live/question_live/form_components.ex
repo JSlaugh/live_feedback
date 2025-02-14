@@ -169,7 +169,7 @@ defmodule LiveFeedbackWeb.QuestionLive.MultipleChoice do
     ~H"""
     <div id={"MC_options_#{@question.id}"} phx-key={"MC_Options_#{@question.id}"} class="space-y-3 mt-4">
       <%= for {letter, _index} <- Enum.with_index(["A", "B", "C", "D"]) do %>
-        <% option = Enum.find(@question.question_options_occurances, fn o -> o.option_order == letter end) ||
+        <% option = Enum.find(@question.question_options_occurrences, fn o -> o.option_order == letter end) ||
                     %LiveFeedback.Questions.QuestionOptions{id: "#{letter}", option_content: "", is_correct: false, option_order: letter} %>
         <div class="flex items-center gap-3 pl-2">
           <.live_component
@@ -203,7 +203,7 @@ defmodule LiveFeedbackWeb.QuestionLive.TrueFalse do
     ~H"""
     <div id={"TF_options_#{@question.id}"} phx-key={"TF_Options_#{@question.id}"} class="space-y-3 mt-4">
       <%= for {letter, index} <- Enum.with_index(["A", "B"], 1) do %>
-        <% option = Enum.find(@question.question_options_occurances, fn o -> o.option_order == index end) ||
+        <% option = Enum.find(@question.question_options_occurrences, fn o -> o.option_order == index end) ||
                     %LiveFeedback.Questions.QuestionOptions{id: "#{letter}", option_content: "", is_correct: false, option_order: index} %>
         <div class="flex items-center gap-3 pl-2">
           <input type="radio"

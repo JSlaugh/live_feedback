@@ -91,7 +91,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
             "option_order" => order,
             "option_content" => option,
             "is_correct" => correct,
-            "question_occurance_id" => question.id  # Associate with the newly added question
+            "question_occurrence_id" => question.id  # Associate with the newly added question
           }
           # Add the option to the question
           Questions.add_option(option_attrs)
@@ -188,7 +188,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
                 "option_order" => Enum.at(option_letters, i),
                 "option_content" => form_option_content,
                 "is_correct" => form_is_correct,
-                "question_occurance_id" => question.id
+                "question_occurrence_id" => question.id
               }
               Questions.add_option(option_attrs)
             end
@@ -198,7 +198,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
                 "option_order" => Enum.at(option_letters, i),
                 "option_content" => form_option_content,
                 "is_correct" => form_is_correct,
-                "question_occurance_id" => question.id
+                "question_occurrence_id" => question.id
               }
               # Update the option in the question
               Questions.update_option(existing_option.id, option_attrs)
