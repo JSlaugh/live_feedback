@@ -3,8 +3,8 @@ defmodule LiveFeedback.Repo.Migrations.TakeOutColumnsInQuestions do
 
   def change do
     alter table(:questions) do
-      remove :user_id
-      remove :course_page_id
+      remove_if_exists :user_id
+      remove_if_exists :course_page_id
     end
   end
 end
