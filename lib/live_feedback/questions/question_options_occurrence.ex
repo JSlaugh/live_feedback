@@ -9,6 +9,8 @@ defmodule LiveFeedback.Questions.QuestionOptionsOccurrence do
     field :url, :string
     field :is_correct, :boolean
 
+    has_many :question_options_responses, LiveFeedback.Questions.QuestionOptionsResponse
+
     timestamps(type: :utc_datetime)
   end
 
