@@ -1833,6 +1833,7 @@ Repo.insert!(%QuestionOccurrence{
   question_content: "What is a wombat?",
   set_display_order: 1,
   is_archived: false,
+  display_order: 1,
   inserted_at: now,
   updated_at: now
 },
@@ -1848,6 +1849,7 @@ Repo.insert!(%QuestionOccurrence{
   question_content: "What of these is NOT a bowling term?",
   set_display_order: 2,
   is_archived: false,
+  display_order: 2,
   inserted_at: now,
   updated_at: now
 },
@@ -1863,6 +1865,7 @@ Repo.insert!(%QuestionOccurrence{
   question_content: "Which of the following is the integral of 2x?",
   set_display_order: 2,
   is_archived: false,
+  display_order: 1,
   inserted_at: now,
   updated_at: now
 },
@@ -1878,6 +1881,7 @@ Repo.insert!(%QuestionOccurrence{
   question_content: "What is a thesis statement?",
   set_display_order: 1,
   is_archived: false,
+  display_order: 2,
   inserted_at: now,
   updated_at: now
 },
@@ -1893,6 +1897,7 @@ Repo.insert!(%QuestionOccurrence{
   question_content: "Which of the following is a literary device?",
   set_display_order: 2,
   is_archived: false,
+  display_order: 3,
   inserted_at: now,
   updated_at: now
 },
@@ -1908,6 +1913,7 @@ Repo.insert!(%QuestionOccurrence{
   question_content: "Who was the first president of the United States?",
   set_display_order: 1,
   is_archived: false,
+  display_order: 1,
   inserted_at: now,
   updated_at: now
 },
@@ -1923,6 +1929,7 @@ Repo.insert!(%QuestionOccurrence{
   question_content: "Which of the following was a major even in World War II?",
   set_display_order: 2,
   is_archived: false,
+  display_order: 2,
   inserted_at: now,
   updated_at: now
 },
@@ -1938,6 +1945,7 @@ Repo.insert!(%QuestionOccurrence{
   question_content: "What is the atomic number of hydrogen?",
   set_display_order: 1,
   is_archived: false,
+  display_order: 1,
   inserted_at: now,
   updated_at: now
 },
@@ -1953,6 +1961,7 @@ Repo.insert!(%QuestionOccurrence{
   question_content: "Which of these is a noble gas?",
   set_display_order: 2,
   is_archived: false,
+  display_order: 2,
   inserted_at: now,
   updated_at: now
 },
@@ -1968,6 +1977,7 @@ Repo.insert!(%QuestionOccurrence{
   question_content: "What are the primary colors?",
   set_display_order: 1,
   is_archived: false,
+  display_order: 1,
   inserted_at: now,
   updated_at: now
 },
@@ -1983,6 +1993,7 @@ Repo.insert!(%QuestionOccurrence{
   question_content: "Which of the following is a famous painter?",
   set_display_order: 2,
   is_archived: false,
+  display_order: 2,
   inserted_at: now,
   updated_at: now
 },

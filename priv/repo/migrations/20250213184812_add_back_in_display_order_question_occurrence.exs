@@ -3,7 +3,7 @@ defmodule LiveFeedback.Repo.Migrations.AddBackInDisplayOrderQuestionOccurrence d
 
   def change do
     alter table(:question_occurrences) do
-      add :dipslay_order, :integer
+      add :display_order, :integer
     end
   end
 end
