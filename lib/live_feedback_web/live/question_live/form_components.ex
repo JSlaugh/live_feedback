@@ -202,9 +202,9 @@ defmodule LiveFeedbackWeb.QuestionLive.TrueFalse do
   def render(assigns) do
     ~H"""
     <div id={"TF_options_#{@question.id}"} phx-key={"TF_Options_#{@question.id}"} class="space-y-3 mt-4">
-      <%= for {letter, index} <- Enum.with_index(["A", "B"], 1) do %>
-        <% option = Enum.find(@question.question_options_occurrences, fn o -> o.option_order == index end) ||
-                    %LiveFeedback.Questions.QuestionOptions{id: "#{letter}", option_content: "", is_correct: false, option_order: index} %>
+      <%= for {letter, _index} <- Enum.with_index(["A", "B"]) do %>
+        <% option = Enum.find(@question.question_options_occurrences, fn o -> o.option_order == letter end) ||
+                    %LiveFeedback.Questions.QuestionOptions{id: "#{letter}", option_content: "", is_correct: false, option_order: letter} %>
         <div class="flex items-center gap-3 pl-2">
           <input type="radio"
                  id={"correct_#{letter}"}
@@ -213,6 +213,7 @@ defmodule LiveFeedbackWeb.QuestionLive.TrueFalse do
                  class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                  checked={option.is_correct} />
           <label class="text-gray-700"><%= if letter == "A", do: "True", else: "False" %></label>
+          <p></p>
         </div>
       <% end %>
     </div>

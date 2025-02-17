@@ -10,7 +10,13 @@
 <.table
   id="course_pages"
   rows={@streams.course_pages}
-  row_click={fn {_id, course_page} -> JS.navigate(~p"/page/#{course_page.slug}") end}
+  row_click={fn {_id, course_page} ->
+    if course_page.queue != [] do
+      JS.navigate(~p"/page/#{course_page.id}/#{List.first(course_page.queue)}")
+    else
+      nil
+    end
+  end}
 >
   <:col :let={{_id, course_page}} label="Title"><%= course_page.title %></:col>
   <:col :let={{_id, course_page}} label="Description"><%= course_page.description %></:col>

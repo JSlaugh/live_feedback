@@ -6,8 +6,8 @@ defmodule LiveFeedback.Selection do
   alias LiveFeedback.Repo
 
   alias LiveFeedback.Courses.CoursePage
-  alias LiveFeedback.Questions.QuestionOccurance
-  alias LiveFeedback.Questions.QuestionOptionsOccurance
+  alias LiveFeedback.Questions.QuestionOccurrence
+  alias LiveFeedback.Questions.QuestionOptionsOccurrence
   alias LiveFeedback.Questions.QuestionOptionsResponse
   alias LiveFeedback.Accounts.UserProfile
 
@@ -19,9 +19,9 @@ defmodule LiveFeedback.Selection do
       |> Repo.one()
   end
   def get_question_from_queue(queue_id, question_num) do
-    from(question in QuestionOccurance,
+    from(question in QuestionOccurrence,
       where: question.queue_id == ^queue_id and question.display_order == ^question_num,
-      preload: [:question_options_occurances]
+      preload: [:question_options_occurrences]
     )
     |> Repo.one()
   end
@@ -40,9 +40,9 @@ defmodule LiveFeedback.Selection do
   end
 
   def get_profile_responses(profile_id, question_id) do
-    from(option in QuestionOptionsOccurance,
+    from(option in QuestionOptionsOccurrence,
       join: response in assoc(option, :question_options_responses),
-      where: option.question_occurance_id == ^question_id and response.user_profile_id == ^profile_id
+      where: option.question_occurrence_id == ^question_id and response.user_profile_id == ^profile_id
     )
     |> Repo.all()
   end

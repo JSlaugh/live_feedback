@@ -34,7 +34,7 @@ defmodule LiveFeedback.Questions do
     |> Repo.preload(:question_options_occurrences) # Preload the associated question options
   end
 
-  def get_question_option!(id), do: Repo.get!(QuestionOptionsoccurrence, id)
+  def get_question_option!(id), do: Repo.get!(QuestionOptionsOccurrence, id)
 
 
   def get_course_name(course_page_id) do

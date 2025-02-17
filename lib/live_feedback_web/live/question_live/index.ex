@@ -31,11 +31,14 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
   #Add question
   @impl true
   def handle_event("add_question", params, socket) do
+    IO.inspect(params)
     #extract Parameters
     content = Map.get(params, "question_content", "")
     type = Map.get(params, "question_type", "")
-    is_required = Map.get(params, "is_required", false)
-
+    is_required = case Map.get(params, "is_required", false) do
+      "on" -> true
+      _ -> false
+    end
     #if option a/b account for t/f questions
     #only grab the param if it exist, if not set to "" so the option can be ignored
     option_A =
@@ -69,7 +72,6 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     # Prepare the attributes for the new question
     attrs = %{
       "queue_id" => socket.assigns.queue_id,
-      "is_required" => false,
       "question_content" => content,
       "question_type" => type,
       "display_order" => Questions.get_max_display_order(socket.assigns.queue_id) + 1,
@@ -167,7 +169,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
             %{option_content: option_C, is_correct: answer_C},
             %{option_content: option_D, is_correct: answer_D}
           ]
-
+          IO.inspect(form_options)
           for i <- 0..3 do
             option_letters = ["A", "B", "C", "D"]
             # Get the options at index i, or default to nil values if not found
@@ -184,6 +186,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
 
             #add
             if (form_option_content != nil && existing_option_content == nil) do
+              IO.inspect("add")
               option_attrs = %{
                 "option_order" => Enum.at(option_letters, i),
                 "option_content" => form_option_content,
@@ -194,6 +197,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
             end
             #update
             if form_option_content != nil and existing_option_content != nil do
+              IO.inspect("edit")
               option_attrs = %{
                 "option_order" => Enum.at(option_letters, i),
                 "option_content" => form_option_content,
@@ -205,6 +209,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
             end
             #delete
             if (form_option_content == "" && existing_option_content != nil) do
+              IO.inspect("delete")
               Questions.delete_option(existing_option.id)
             end
           end

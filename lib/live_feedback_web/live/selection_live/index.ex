@@ -8,6 +8,7 @@ defmodule LiveFeedbackWeb.SelectionLive.Index do
     user_id = get_user_id(session)
     profile_id = Selection.get_profile_id(user_id, course_page_id).id
     first_question = Selection.get_question_from_queue(queue_id, 1)
+    #messages = (if first_question.question_type == "QA", do: Activity.get_messages_for_question(first_question.id), else: nil)
     {:ok,
      socket
      |> assign(:profile_id, profile_id)
@@ -24,7 +25,7 @@ defmodule LiveFeedbackWeb.SelectionLive.Index do
 
   def handle_event("select-answer", %{"id" => option_id}, socket) do
     question_type = socket.assigns.current_question.question_type
-    #if Enum.any?(socket.assigns.current_question.question_options_occurances, fn option -> option.id == String.to_integer(option_id))
+    #if Enum.any?(socket.assigns.current_question.question_options_occurrences, fn option -> option.id == String.to_integer(option_id))
       #|| (question_type != "multi-select" && ) do
     #end
 
