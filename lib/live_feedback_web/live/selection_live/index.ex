@@ -23,29 +23,53 @@ defmodule LiveFeedbackWeb.SelectionLive.Index do
     Map.get(session, "user_id")
   end
 
+  @impl true
   def handle_event("select-answer", %{"id" => option_id}, socket) do
     question_type = socket.assigns.current_question.question_type
-    #if Enum.any?(socket.assigns.current_question.question_options_occurrences, fn option -> option.id == String.to_integer(option_id))
-      #|| (question_type != "multi-select" && ) do
-    #end
-
-    attrs = %{
-      "user_profile_id" => socket.assigns.profile_id,
-      "question_option_id" => option_id
-    }
-    case Selection.add_response(attrs) do
-      {:ok, _response} ->
-        {:noreply,
-        socket
-        |> put_flash(:info, "successfully recorded response")
+    profile_responses = Selection.get_profile_responses(socket.assigns.profile_id, socket.assigns.current_question.id)
+    if Enum.any?(profile_responses, fn response -> response.question_options_occurrence_id == String.to_integer(option_id) end) do
+      Selection.delete_response_for_profile_for_question(socket.assigns.profile_id, option_id)
+      {:noreply, socket}
+    else
+      if question_type != "multi-select" do
+        if profile_responses != [] do
+          attrs = %{
+            "question_options_occurrence_id" => option_id
+          }
+          Selection.update_response_for_profile_for_question(socket.assigns.profile_id, socket.assigns.current_question.id, attrs)
+          {:noreply, socket}
+        else
+          attrs = %{
+            "user_profile_id" => socket.assigns.profile_id,
+            "question_options_occurrence_id" => option_id
+          }
+          case Selection.add_response(attrs) do
+            {:ok, _response} ->
+              {:noreply,
+              socket
+              |> put_flash(:info, "successfully recorded response")
+              }
+          end
+        end
+      else
+        attrs = %{
+          "user_profile_id" => socket.assigns.profile_id,
+          "question_options_occurrence_id" => option_id
         }
+        case Selection.add_response(attrs) do
+          {:ok, _response} ->
+            {:noreply,
+            socket
+            |> put_flash(:info, "successfully recorded response")
+            }
+        end
+      end
     end
   end
 
-  #determine if their is a response
-    #if it is the same as selected, delete it
-    #else
-      #if multiple choice || t/f, delete all other responses
-      #add new response
+  #case
+  #no response || (multi-select && response not in DB) -> add response
+  #same response in DB -> delete response
+  #different response -> update response
 
 end

@@ -26,12 +26,6 @@ defmodule LiveFeedback.Selection do
     |> Repo.one()
   end
 
-  def add_response(attrs) do
-      %QuestionOptionsResponse{}
-      |> QuestionOptionsResponse.changeset(attrs)
-      |> Repo.insert()
-  end
-
   def get_profile_id(user_id, course_page_id) do
     from(profile in UserProfile,
       where: profile.user_id == ^user_id and profile.course_page_id == ^course_page_id
@@ -40,11 +34,53 @@ defmodule LiveFeedback.Selection do
   end
 
   def get_profile_responses(profile_id, question_id) do
-    from(option in QuestionOptionsOccurrence,
-      join: response in assoc(option, :question_options_responses),
+    from(response in QuestionOptionsResponse,
+    join: option in QuestionOptionsOccurrence,
+    on: response.question_options_occurrence_id == option.id,
       where: option.question_occurrence_id == ^question_id and response.user_profile_id == ^profile_id
     )
     |> Repo.all()
   end
+
+  def add_response(attrs) do
+    %QuestionOptionsResponse{}
+    |> QuestionOptionsResponse.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def delete_response_for_profile_for_question(profile_id, option_id) do
+    from(response in QuestionOptionsResponse,
+    where: response.user_profile_id == ^profile_id and response.question_options_occurrence_id == ^option_id)
+    |> Repo.delete_all()
+  end
+
+  def delete_all_responses_for_profile_for_question(profile_id, question_id) do
+    from(response in QuestionOptionsResponse,
+    join: option in QuestionOptionsOccurrence,
+    on: response.question_options_occurrence_id == option.id,
+    where: response.user_profile_id == ^profile_id and
+           option.question_occurrence_id == ^question_id)
+  |> Repo.delete_all()
+  end
+
+  def update_response_for_profile_for_question(profile_id, question_id, attrs) do
+    query =
+      from(response in QuestionOptionsResponse,
+        join: option in QuestionOptionsOccurrence,
+        on: response.question_options_occurrence_id == option.id,
+        where: response.user_profile_id == ^profile_id and
+               option.question_occurrence_id == ^question_id
+      )
+
+    case Repo.one(query) do
+      nil -> {:error, "Response not found"}
+      response ->
+        response
+        |> QuestionOptionsResponse.changeset(attrs)
+        |> Repo.update()
+    end
+  end
+
+
 
 end
