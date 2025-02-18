@@ -14,7 +14,7 @@ defmodule LiveFeedback.Questions.QuestionOccurrence do
     field :is_archived, :boolean
 
 
-    has_many :question_options_occurrences, LiveFeedback.Questions.QuestionOptionsOccurrence
+    has_many :question_options_occurrences, LiveFeedback.Questions.QuestionOptionsOccurrence, on_delete: :delete_all
 
     timestamps(type: :utc_datetime)
   end

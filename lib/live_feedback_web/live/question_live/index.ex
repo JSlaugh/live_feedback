@@ -199,10 +199,8 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
             if form_option_content != nil and existing_option_content != nil do
               IO.inspect("edit")
               option_attrs = %{
-                "option_order" => Enum.at(option_letters, i),
                 "option_content" => form_option_content,
-                "is_correct" => form_is_correct,
-                "question_occurrence_id" => question.id
+                "is_correct" => form_is_correct
               }
               # Update the option in the question
               Questions.update_option(existing_option.id, option_attrs)

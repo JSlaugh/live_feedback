@@ -3,6 +3,7 @@ defmodule LiveFeedback.Selection do
   @behaviour Bodyguard.Policy
 
   import Ecto.Query, warn: false
+  alias LiveFeedback.Questions.Question
   alias LiveFeedback.Repo
 
   alias LiveFeedback.Courses.CoursePage
@@ -39,6 +40,14 @@ defmodule LiveFeedback.Selection do
     on: response.question_options_occurrence_id == option.id,
       where: option.question_occurrence_id == ^question_id and response.user_profile_id == ^profile_id
     )
+    |> Repo.all()
+  end
+
+  def get_question_responses(question_id) do
+    from(response in QuestionOptionsResponse,
+    join: option in QuestionOptionsOccurrence,
+    on: response.question_options_occurrence_id == option.id,
+      where: option.question_occurrence_id == ^question_id)
     |> Repo.all()
   end
 
