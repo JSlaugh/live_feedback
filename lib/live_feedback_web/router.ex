@@ -103,7 +103,7 @@ defmodule LiveFeedbackWeb.Router do
       on_mount: [{LiveFeedbackWeb.UserAuth, :mount_current_user}] do
       live "/page/:coursepage", FeedbackLive, :index
       live "/page/:coursepage/new", FeedbackLive, :new
-      live "/page/:coursepage/:queue", SelectionLive, :question
+      live "/page/:coursepage/:queue", ActivityLive.Index, :index
     end
   end
 end

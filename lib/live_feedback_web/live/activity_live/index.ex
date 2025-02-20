@@ -4,41 +4,66 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
   alias LiveFeedback.Messages
   alias LiveFeedback.Courses
   alias LiveFeedback.Messages.Message
+  alias LiveFeedback.Selection
   alias QRCode
 
   @impl true
-  def mount(_params, session, socket) do
-    #For testing purposes only
-    coursepageid = "test"  #This would normally be found in the params
+  def mount(%{"coursepage" => course_page_id, "queue" => queue_id}, session, socket) do
+    # Initial Setup
+    # Get Course Page Object -- We need CoursePageID, CourseTitle,
+    course_page = Courses.get_course_page!(course_page_id)
 
-    # Normal Stuff
-    course_page = Courses.get_course_page_by_slug!(coursepageid)
-    if connected?(socket), do: Messages.subscribe(course_page.id)
-    anonymous_id = get_anonymous_id(session)
+    # Get the UserID
+    user_id = get_user_id(session)
 
-    page_admin =
+    # Get ProfileID
+    profile_id = Selection.get_profile_id(user_id, course_page_id).id
+
+    # Get the First Question
+    first_question = Selection.get_question_from_queue(queue_id, 1)
+
+    # Determine if they are the Presenter or not
+    presenter =
       if socket.assigns.current_user do
         course_page.user_id == socket.assigns.current_user.id ||
-          socket.assigns.current_user.is_admin
+          socket.assigns.current_uers.is_admin
       else
         false
       end
 
-      qr_code_visible = page_admin
+    # Set the Visibility of the QR Code to be based on if they are a presenter or not
+    qr_code_visible = presenter
+
+    # Get the anonymous ID
+    anonymous_id = get_anonymous_id(session)
+
+    # Not sure if I need this but will leave it for now
+    # Subscribe to the Pubsub for this Course ID
+    if connected?(socket), do: Messages.subscribe(course_page.id)
+
+    messages = (if first_question.question_type == "QA", do: Messages.get_messages_for_question(first_question.id), else: nil)
 
     {:ok,
      socket
      |> assign(:anonymous_id, anonymous_id)
-     |> assign(:page_admin, page_admin)
+     |> assign(:page_admin, presenter)
      |> assign(:qr_code_visible, qr_code_visible)
      |> assign(:course_page, course_page)
      |> assign(:live_action, :index) # This needs to have a default value
      |> assign(:message, nil) # This needs to have a default value
      |> assign_new(:sort_by, fn -> :oldest end) # Use existing sort_by or default to :oldest
+     |> assign(:profile_id, profile_id)
+     |> assign(:current_question_num, 1)
+     |> assign(:current_question, first_question)
+     |> assign(:queue_id, queue_id)
      |> stream(
        :messages,
-       Messages.get_messages_for_course_page_id(course_page.id)
+       messages
      )}
+  end
+
+  def get_user_id(session) do
+    Map.get(session, "user_id")
   end
 
   def get_anonymous_id(session) do
@@ -60,14 +85,13 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      |> apply_action(socket.assigns.live_action, params)}
   end
 
-  defp apply_action(socket, :index, _params) do # The third arugment should be %{"coursepage" => coursepage}
-    coursepage = "test"  #This would normally be found in the params
-    course_page = Courses.get_course_page_by_slug!(coursepage)
+  defp apply_action(socket, :index, %{"coursepage" => course_page_id}) do
+    course_page = Courses.get_course_page!(course_page_id)
 
     socket
     |> assign(:page_title, "Live Feedback")
     |> assign(:course_page, course_page)
-    |> assign(:messages, Messages.get_messages_for_course_page_id(course_page.id))
+    |> assign(:messages, Messages.get_messages_for_question(socket.assigns.current_question.id))
   end
 
   # Handle Info for Sorting Messages -----------------------------------------------
@@ -80,7 +104,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
   end
 
   # Handle Info for Deleteing all Messages ------------------------------------------
-  def handle_info({:deleted_all_messages, course_page_id}, socket) do
+  def handle_info({:deleted_all_messages, question_occurrence_id}, socket) do
     {:noreply, stream(socket, :messages, [], reset: true)}
   end
 
@@ -115,6 +139,11 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
   # Handle Info for Editing a Message From the Message Component -------------------
   def handle_info({:selected_message_edit, message}, socket) do
     {:noreply, assign(socket, live_action: :edit, message: message)}
+  end
+
+  def handle_info({LiveFeedbackWeb.FeedbackLive.FormComponent, {:saved, _message}}, socket) do
+    messages = LiveFeedback.Repo.all(LiveFeedback.Messages.Message) # I think this should be moved but it does fix the issue.
+    {:noreply, stream(socket, :messages, messages)}
   end
 
   # Handle Info for Deleting a Message From the Message Component ------------------

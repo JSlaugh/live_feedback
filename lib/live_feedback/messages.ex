@@ -106,7 +106,7 @@ defmodule LiveFeedback.Messages do
     |> Repo.update()
     |> case do
       {:ok, message} ->
-        topic = "messages:#{message.course_page_id}"
+        topic = "messages:#{message.id}"
         Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:updated_message, message})
         {:ok, message}
 
@@ -131,7 +131,7 @@ defmodule LiveFeedback.Messages do
     Repo.delete(message)
     |> case do
       {:ok, message} ->
-        topic = "messages:#{message.course_page_id}"
+        topic = "messages:#{message.id}"
         Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:deleted_message, message})
         {:ok, message}
 
@@ -249,7 +249,7 @@ defp update_like_count(%Message{} = message, delta) do
   |> case do
     {:ok, updated_message} ->
       # Broadcast the updated message
-      topic = "messages:#{updated_message.course_page_id}"
+      topic = "messages:#{updated_message.id}"
       Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:updated_message, updated_message})
 
       {:ok, updated_message}
@@ -274,5 +274,25 @@ end
   def subscribe(course_page_id) do
     topic = "messages:#{course_page_id}"
     Phoenix.PubSub.subscribe(LiveFeedback.PubSub, topic)
+  end
+
+  def get_messages_for_question(question_id, sort_by \\ :oldest) do
+    sort_order =
+      case sort_by do
+        :newest -> [desc: :inserted_at]
+        :oldest -> [asc: :inserted_at]
+        :like_count -> [desc: :like_count]
+        _ -> [asc: :inserted_at] # Default to oldest
+      end
+
+    from(message in Message,
+    where: message.question_occurrence_id == ^question_id,
+    order_by: ^sort_order)
+    |> Repo.all()
+  end
+
+  def delete_all_messages_for_question_occurrence(question_id) do
+    from(message in Message, where: message.question_occurrence_id == ^question_id)
+    |> Repo.delete_all()
   end
 end
