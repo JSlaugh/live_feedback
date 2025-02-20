@@ -8,7 +8,7 @@ defmodule LiveFeedbackWeb.CoursePageLive.Index do
   def mount(_params, _session, socket) do
       {:ok,
       socket
-      |> assign(:present_mode, "join")
+      |> assign(:present_mode, "user")
       |> stream(
          :course_pages,
          Courses.list_course_pages_by_user(socket.assigns.current_user.id, "user")
