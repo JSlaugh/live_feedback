@@ -8,6 +8,7 @@ defmodule LiveFeedback.Questions do
   alias LiveFeedback.Courses.CoursePage
   alias LiveFeedback.Questions.QuestionOccurrence
   alias LiveFeedback.Questions.QuestionOptionsOccurrence
+  alias LiveFeedback.Questions.Queue
 
 
   def subscribe(queue_id) do
@@ -36,6 +37,7 @@ defmodule LiveFeedback.Questions do
 
   def get_question_option!(id), do: Repo.get!(QuestionOptionsOccurrence, id)
 
+  def get_queue!(id), do: Repo.get!(Queue, id)
 
   def get_course_name(course_page_id) do
     from(course in CoursePage,

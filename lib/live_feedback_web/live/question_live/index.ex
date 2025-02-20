@@ -4,8 +4,10 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
   alias LiveFeedback.Questions
 
   @impl true
-  def mount(%{"course_page_id" => course_page_id, "queue" => queue_id}, _session, socket) do
+  def mount(%{"queue" => queue_id}, _session, socket) do
     #if connected?(socket), do: Questions.subscribe(queue_id)
+    queue = Questions.get_queue!(queue_id)
+    course_page_id = queue.course_page_id
     {:ok,
      socket
      |> assign(:course_page_id, course_page_id)

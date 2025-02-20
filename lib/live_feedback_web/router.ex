@@ -6,6 +6,7 @@ defmodule LiveFeedbackWeb.Router do
   alias FeedbackLive.Index, as: FeedbackLive
   alias QuestionLive.Index, as: QuestionLive
   alias SelectionLive.Index, as: SelectionLive
+  alias QueueLive.Index, as: QueueLive
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -78,10 +79,12 @@ defmodule LiveFeedbackWeb.Router do
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
       live "/course_pages", CoursePageLive, :index
       live "/course_pages/new", CoursePageLive, :new
+      live "/course_pages/join", CoursePageLive, :join
       live "/course_pages/:id/edit", CoursePageLive, :edit
       live "/course_pages/:id", CoursePageLive, :update
       live "/course_pages/:id/delete", CoursePageLive, :delete
-      live "/course_pages/:course_page_id/:queue/questions", QuestionLive, :index
+      live "/course_pages/questions/:queue", QuestionLive, :index
+      live "/course_pages/queue/:course_page_id", QueueLive, :index
       # This is a test/template page
       live "/page/testtemplate", ActivityLive.Index, :index
       live "/page/testtemplate/new", ActivityLive.Index, :new
