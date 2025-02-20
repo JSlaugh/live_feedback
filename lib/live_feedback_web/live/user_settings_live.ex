@@ -72,13 +72,15 @@ defmodule LiveFeedbackWeb.UserSettingsLive do
           </.simple_form>
         </div>
 
-        <button
-          href={~p"/users/log_out"}
-          method="delete"
-          class="block mx-auto mt-10 phx-submit-loading:opacity-75 rounded-lg bg-red-600 hover:bg-red-700 py-2 px-4 text-base font-semibold text-white active:text-white/80"
-        >
-          Log Out
-        </button>
+        <li>
+          <.link
+            href={~p"/users/log_out"}
+            method="delete"
+            class="block text-center mx-auto mt-10 phx-submit-loading:opacity-75 rounded-lg bg-red-600 hover:bg-red-700 py-2 px-4 text-base font-semibold text-white active:text-white/80"
+          >
+            Log out
+          </.link>
+        </li>
       </div>
     </div>
     """
