@@ -1,32 +1,106 @@
 <.flash_group flash={@flash} />
-<div class="flex items-center justify-center min-h-screen px-4 py-10 sm:px-6 sm:py-28 lg:px-8 xl:px-28 xl:py-32">
-  <div class="w-full sm:max-w-xl mx-auto lg:mx-0">
-    <div class="flex justify-center mb-8">
-      <img src="/images/logo.svg" alt="Logo" class="w-auto h-32" />
+<div class="flex justify-center min-h-screen m-0 p-0">
+  <div class="w-full lg:mx-0">
+    <!--Header -->
+    <div class="w-full lg:mx-0">
+      <!--Header -->
+      <div class="m-8">
+        <div class="flex justify-center my-4">
+          <div class="flex justify-center items-center w-full m-0 p-0
+                  sm:w-[80%]
+                  lg:w-[80%]">
+            <img src={~p"/images/ChattrLiveLogo.png"} alt="Logo" class="m-0 p-0" />
+          </div>
+        </div>
+
+        <div class="flex max-sm:items-center flex-col gap-1">
+          <div class="max-sm:text-center max-sm:text-base sm:text-center sm:items-center sm:text-4xl pb-4 xl:pb-8 pt-2">
+            <h2>
+              Real time feedback <br /> Real time engagement <br /> Better classrooms <br />
+            </h2>
+          </div>
+
+
+            <div class="flex justify-center">
+              <%= if @current_user do %>
+                <!--will need to change the route for this when we change navigation-->
+                <a href={~p"/course_pages"}>
+                  <button class="bg-logo_red hover:bg-brand_dark_red text-white px-4 py-2 sm:py-4 rounded-xl font-semibold shadow-md max-sm:text-base md:text-2xl inline-block">
+                    Get Started
+                  </button>
+                </a>
+              <% else %>
+                <a href={~p"/users/register"}>
+                  <button class="bg-logo_red hover:bg-brand_dark_red text-white px-4 py-2 sm:py-4 rounded-xl font-semibold shadow-md max-sm:text-base md:text-2xl inline-block">
+                    Get Started
+                  </button>
+                </a>
+              <% end %>
+            </div>
+
+        </div>
+      </div>
     </div>
-    <h1 class="text-4xl font-bold text-gray-900">Welcome to Chattr Live</h1>
-    <p class="mt-4 text-lg text-gray-600">
-      This application lets you gather questions, allowing even the most shy members of your audience to give feedback and get their questions answered.
-    </p>
-    <h2 class="mt-8 text-2xl font-semibold text-gray-900">How to Get Started</h2>
-    <ol class="mt-4 text-lg text-gray-600 list-decimal list-inside pb-4">
-      <li>Register for an account and log in.</li>
-      <li>Manage your feedback pages by clicking the link above.</li>
-      <li>Create a new feedback page.</li>
-      <li>
-        Send out the link to your team, or show the page on the projector to start gathering feedback.
-      </li>
-    </ol>
-    <iframe
-      width="100%"
-      class="w-full h-[342px] sm:w-[600px]"
-      src="https://www.youtube.com/embed/-Fa6IM0pr6U"
-      title="Chattr Live Demo"
-      frameborder="0"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-      referrerpolicy="strict-origin-when-cross-origin"
-      allowfullscreen
-    >
-    </iframe>
+    <!-- How to get started -->
+    <div class="m-0 mt-8 p-10 w-full bg-brand_blue">
+      <div class="lg:grid lg:grid-cols-[1fr,1fr] px-8 max-sm: flex-col lg:flex-row lg:gap-4 lg:justify-between gap-8">
+        <!-- Text on the left -->
+        <div class="flex flex-col text-white justify-center">
+          <h3 class="text-2xl font-bold xl:text-4xl">How to Get Started</h3>
+
+          <ol class="mt-4 text-white list-decimal list-inside pb-4 md:text-xl xl:text-3xl">
+            <li>Register for an account and log in.</li>
+
+            <li>Manage your feedback pages by clicking the link above.</li>
+
+            <li>Create a new feedback page.</li>
+
+            <li>
+              Send out the link to your team, or show the page on the projector to start gathering feedback.
+            </li>
+          </ol>
+        </div>
+        <!-- Video on the right -->
+        <div class="sm:flex sm:justify-center sm:w-full">
+          <iframe
+            width="100%"
+            class="sm:w-full sm:h-[475px] max-w-[900px]"
+            src="https://www.youtube.com/embed/-Fa6IM0pr6U"
+            title="Chattr Live Demo"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen
+          >
+          </iframe>
+        </div>
+      </div>
+    </div>
+    <!-- Application About -->
+    <div class="m-0 px-10 py-12 w-full bg-brand_navy ">
+      <div class="max-sm:items-center flex-col gap-1">
+        <div class=" mt-4 text-white list-decimal list-inside pb-4 md:text-xl xl:text-3xl">
+          <p class="mx-auto text-center">
+            This application lets you gather questions, allowing even the most shy members of your audience to give feedback and get their questions answered.
+          </p>
+        </div>
+
+        <div class="mt-2 flex justify-center">
+          <%= if @current_user do %>
+            <a href={~p"/course_pages"}>
+              <button class="bg-logo_red hover:bg-brand_dark_red text-white px-4 py-4 rounded-xl font-semibold shadow-md max-sm:text-base md:text-2xl inline-block">
+                Go to Feedback Pages
+              </button>
+            </a>
+          <% else %>
+            <a href={~p"/users/register"}>
+              <button class="bg-logo_red hover:bg-brand_dark_red text-white px-4 py-2 sm:py-4 rounded-xl font-semibold shadow-md max-sm:text-base md:text-2xl inline-block">
+                Create an Account
+              </button>
+            </a>
+          <% end %>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
