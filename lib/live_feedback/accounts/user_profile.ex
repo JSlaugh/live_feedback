@@ -8,6 +8,7 @@ defmodule LiveFeedback.Accounts.UserProfile do
     field :role, :string
     field :display_name, :string
     field :custom_registration_id, :string
+    field :is_active, :boolean, default: true
 
     has_many :message, LiveFeedback.Messages.Message
     has_many :question_options_response, LiveFeedback.Questions.QuestionOptionsResponse
@@ -19,7 +20,7 @@ defmodule LiveFeedback.Accounts.UserProfile do
   @doc false
   def changeset(user_profile, attrs) do
     user_profile
-    |> cast(attrs, [:user_id, :course_page_id, :role, :display_name, :custom_registration_id])
+    |> cast(attrs, [:user_id, :course_page_id, :role, :display_name, :custom_registration_id, :is_active])
     |> validate_required([:user_id, :course_page_id])
     |> unique_constraint(:custom_registration_id) # Optional if needed to be unique
   end

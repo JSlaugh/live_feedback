@@ -14,7 +14,7 @@ defmodule LiveFeedback.Questions.QuestionOccurrence do
     field :is_archived, :boolean
 
 
-    has_many :question_options_occurrences, LiveFeedback.Questions.QuestionOptionsOccurrence
+    has_many :question_options_occurrences, LiveFeedback.Questions.QuestionOptionsOccurrence, on_delete: :delete_all
 
     timestamps(type: :utc_datetime)
   end
@@ -22,8 +22,8 @@ defmodule LiveFeedback.Questions.QuestionOccurrence do
   @doc false
   def changeset(question_occurrence, attrs) do
     question_occurrence
-    |> cast(attrs, [:question_id, :queue_id, :is_required, :url, :question_type, :question_content, :set_display_order, :is_archived])
-    |> validate_required([:question_id, :queue_id, :is_required, :question_type, :question_content])
+    |> cast(attrs, [:question_id, :queue_id, :is_required, :url, :question_type, :question_content,:display_order, :set_display_order, :is_archived])
+    |> validate_required([:queue_id, :is_required, :question_type, :question_content, :display_order])
     |> validate_length(:question_type, max: 50)
     |> foreign_key_constraint(:question_id)
     |> foreign_key_constraint(:queue_id)
