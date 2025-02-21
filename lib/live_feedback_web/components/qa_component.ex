@@ -2,40 +2,47 @@ defmodule LiveFeedbackWeb.QaComponent do
   use Phoenix.LiveComponent
 
   import LiveFeedbackWeb.CoreComponents
-
+  @impl true
   def render(assigns) do
     # Variables that need to passed into the activity
-    page_admin_check = Map.get(assigns, :page_admin)
-    course_page_check = Map.get(assigns, :coures_page) # These may need to be checked but they did break. Possibly because currently using default vales
-    sort_by_check = Map.get(assigns, :sort_by)
-    streams_check = Map.get(assigns, :streams)
-    anonymous_id_check = Map.get(assigns, :anonymous_id)
-    live_action_check = Map.get(assigns, :live_action)
-    message_check = Map.get(assigns, :message) # These may need to be checked but they did break. Possibly because currently using default vales
-    page_title_check = Map.get(assigns, :page_title)
-
-    if is_nil(page_admin_check) do
+    if not Map.has_key?(assigns, :page_admin) do
       raise ArgumentError, "page_admin attribute is required"
     end
 
-    if is_nil(sort_by_check) do
+    if not Map.has_key?(assigns, :course_page) do
+      raise ArgumentError, "course_page attribute is required"
+    end
+
+    if not Map.has_key?(assigns, :sort_by) do
       raise ArgumentError, "sort_by attribute is required"
     end
 
-    if is_nil(streams_check) do
+    if not Map.has_key?(assigns, :streams) do
       raise ArgumentError, "streams attribute is required"
     end
 
-    if is_nil(anonymous_id_check) do
+    if not Map.has_key?(assigns, :anonymous_id) do
       raise ArgumentError, "anonymous_id attribute is required"
     end
 
-    if is_nil(live_action_check) do
+    if not Map.has_key?(assigns, :live_action) do
       raise ArgumentError, "live_action attribute is required"
     end
 
-    if is_nil(page_title_check) do
+    if not Map.has_key?(assigns, :message) do
+      raise ArgumentError, "message attribute is required"
+    end
+
+    if not Map.has_key?(assigns, :page_title) do
       raise ArgumentError, "page_title attribute is required"
+    end
+
+    if not Map.has_key?(assigns, :current_question) do
+      raise ArgumentError, "current_question attribute is required"
+    end
+
+    if not Map.has_key?(assigns, :queue_id) do
+      raise ArgumentError, "queue_id attribute is required"
     end
 
     ~H"""
@@ -87,7 +94,7 @@ defmodule LiveFeedbackWeb.QaComponent do
           :if={@live_action == :focus}
           id="message-modal"
           show
-          on_cancel={Phoenix.LiveView.JS.patch("/page/testtemplate")}
+          on_cancel={Phoenix.LiveView.JS.patch("/page/#{@course_page.id}/#{@queue_id}")}
         >
         <%!-- on_cancel={Phoenix.LiveView.JS.patch("/page/#{@course_page.slug}")}  This is what it should be there when not on a test page --%>
           <div class="flex justify-between p-4 bg-brand_grey rounded-lg">
@@ -110,7 +117,7 @@ defmodule LiveFeedbackWeb.QaComponent do
           :if={@live_action in [:new, :edit]}
           id="message-modal"
           show
-          on_cancel={Phoenix.LiveView.JS.patch("/page/testtemplate")}
+          on_cancel={Phoenix.LiveView.JS.patch("/page/#{@course_page.id}/#{@queue_id}")}
         >
         <%!-- on_cancel={Phoenix.LiveView.JS.patch("/page/#{@course_page.slug}")} This is what should be there when not a test page --%>
           <.live_component
@@ -121,41 +128,41 @@ defmodule LiveFeedbackWeb.QaComponent do
             action={@live_action}
             message={@message}
             anonymous_id={@anonymous_id}
-            patch={"/page/#{@course_page.slug}"}
+            patch={"/page/#{@course_page.id}/#{@queue_id}"}
           />
         </.modal>
       </div>
     """
   end
 
-  # Sort Messages Handle Event
+  # Sort Messages Handle Event -- Updated for Question Occurrences
   @impl true
   def handle_event("sort_messages", %{"sort" => sort_by}, socket) do
     # Ensure that sort_by is an atom
     sort_by_atom = String.to_existing_atom(sort_by)
 
-    course_page_id = socket.assigns.course_page.id
+    current_question_id = socket.assigns.current_question.id
 
     # Fetch and update the sorted messages
-    sorted_messages = LiveFeedback.Messages.get_messages_for_course_page_id(course_page_id, sort_by_atom)
+    sorted_messages = LiveFeedback.Messages.get_messages_for_question(current_question_id, sort_by_atom)
 
     send(socket.assigns.parent_pid, {:sorted_messages, sort_by_atom, sorted_messages})
     {:noreply, socket}
   end
 
-  # Delete All Messages Handle Event
+  # Delete All Messages Handle Event -- Updated for Question Occurrences
   @impl true
   def handle_event("delete_all_messages", _params, socket) do
     if socket.assigns.page_admin do
-      LiveFeedback.Messages.delete_all_messages_for_course_page(socket.assigns.course_page)
-      send(socket.assigns.parent_pid, {:deleted_all_messages, socket.assigns.course_page.id})
+      LiveFeedback.Messages.delete_all_messages_for_question_occurrence(socket.assigns.current_question.id)
+      send(socket.assigns.parent_pid, {:deleted_all_messages, socket.assigns.current_question.id})
       {:noreply, socket}
     else
       {:noreply, socket}
     end
   end
 
-  # Delete Message Handle Event for Focus Modal
+  # Delete Message Handle Event for Focus Modal -- Updated for Question Occurrences
   @impl true
   def handle_event("delete_message", %{"id" => id}, socket) do
     message = LiveFeedback.Messages.get_message!(id)
@@ -170,19 +177,19 @@ defmodule LiveFeedbackWeb.QaComponent do
     end
   end
 
-  # Focus Message Handle Event ---Inside the MessageComponent---
+  # Focus Message Handle Event ---Inside the MessageComponent--- Updated for Question Occurrences
   def handle_info({:selected_message_focus, message}, socket) do
     send(socket.assigns.parent_pid, {:selected_message_focus, message})
     {:noreply, socket}
   end
 
-  # Like Message Handle Event ---Inside the MessageComponent---
+  # Like Message Handle Event ---Inside the MessageComponent--- Updated for Question Occurences
   def handle_info({:selected_message_liked, update_message}, socket) do
     send(socket.assigns.parent_pid, {:selected_message_liked, update_message})
     {:noreply, socket}
   end
 
-  # Edit Message Handle Event ---Inside the MessageComponent---
+  # Edit Message Handle Event ---Inside the MessageComponent--- Updated for Question Occurences
   def handle_info({:selected_message_edit, message}, socket) do
     send(socket.assigns.parent_pid, {:selected_message_edit, message})
     {:noreply, socket}
