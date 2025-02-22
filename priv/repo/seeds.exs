@@ -11,7 +11,7 @@
 # and so on) as they will fail if something goes wrong.
 
 alias LiveFeedback.Repo
-alias LiveFeedback.Questions.{Question, QuestionOption, QuestionOptionsResponse, Queue, QueueOccurrence, QuestionSet, QuestionOccurrence, QuestionOptionsOccurrence}
+alias LiveFeedback.Questions.{Question, QuestionOption, QuestionOptionsResponse, Queue, QuestionSet, QuestionOccurrence, QuestionOptionsOccurrence}
 alias LiveFeedback.Courses.CoursePage
 alias LiveFeedback.Accounts.User
 alias LiveFeedback.Accounts.UserProfile
@@ -1739,82 +1739,6 @@ Repo.insert!(%Queue{
   on_conflict: :nothing
 )
 
-###########################################################################
-################         Question Queue Occurrences        ################
-###########################################################################
-
-presented_date = Date.from_iso8601!("2025-02-01")
-presented_date_2 = Date.from_iso8601!("2025-02-03")
-
-Repo.insert!(%QueueOccurrence{
-  queue_id: 1,
-  presented_date: presented_date
-},
-  on_conflict: :nothing
-)
-
-Repo.insert!(%QueueOccurrence{
-  queue_id: 1,
-  presented_date: presented_date_2
-},
-  on_conflict: :nothing
-)
-
-Repo.insert!(%QueueOccurrence{
-  queue_id: 2,
-  presented_date: presented_date
-},
-  on_conflict: :nothing
-)
-
-Repo.insert!(%QueueOccurrence{
-  queue_id: 2,
-  presented_date: presented_date_2
-},
-  on_conflict: :nothing
-)
-
-Repo.insert!(%QueueOccurrence{
-  queue_id: 3,
-  presented_date: presented_date
-},
-  on_conflict: :nothing
-)
-
-Repo.insert!(%QueueOccurrence{
-  queue_id: 3,
-  presented_date: presented_date_2
-},
-  on_conflict: :nothing
-)
-
-Repo.insert!(%QueueOccurrence{
-  queue_id: 4,
-  presented_date: presented_date
-},
-  on_conflict: :nothing
-)
-
-Repo.insert!(%QueueOccurrence{
-  queue_id: 4,
-  presented_date: presented_date_2
-},
-  on_conflict: :nothing
-)
-
-Repo.insert!(%QueueOccurrence{
-  queue_id: 5,
-  presented_date: presented_date
-},
-  on_conflict: :nothing
-)
-
-Repo.insert!(%QueueOccurrence{
-  queue_id: 5,
-  presented_date: presented_date_2
-},
-  on_conflict: :nothing
-)
 
 ###########################################################################
 ################            Question Occurrences            ################
