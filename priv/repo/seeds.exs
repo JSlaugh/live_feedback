@@ -11,7 +11,7 @@
 # and so on) as they will fail if something goes wrong.
 
 alias LiveFeedback.Repo
-alias LiveFeedback.Questions.{Question, QuestionOption, QuestionOptionsResponse, Queue, QueueOccurrence, QuestionSet, QuestionOccurrence, QuestionOptionsOccurrence}
+alias LiveFeedback.Questions.{Question, QuestionOption, QuestionOptionsResponse, Queue, QuestionSet, QuestionOccurrence, QuestionOptionsOccurrence}
 alias LiveFeedback.Courses.CoursePage
 alias LiveFeedback.Accounts.User
 alias LiveFeedback.Accounts.UserProfile
@@ -98,6 +98,8 @@ Repo.insert!(%CoursePage{
   description: "Bowling for Beginners",
   slug: "swell108",
   user_id: 1,
+  is_custom_registration_id_required: false,
+  registration_id_label: "",
   inserted_at: now,
   updated_at: now,
 },
@@ -109,6 +111,8 @@ Repo.insert!(%CoursePage{
   description: "Calculus I",
   slug: "math201",
   user_id: 1,
+  is_custom_registration_id_required: false,
+  registration_id_label: "",
   inserted_at: now,
   updated_at: now
 },
@@ -121,6 +125,8 @@ Repo.insert!(%CoursePage{
   description: "English Composition",
   slug: "eng150",
   user_id: 2,
+  is_custom_registration_id_required: false,
+  registration_id_label: "",
   inserted_at: now,
   updated_at: now
 },
@@ -132,6 +138,8 @@ Repo.insert!(%CoursePage{
   description: "Human Anatomy",
   slug: "bio202",
   user_id: 2,
+  is_custom_registration_id_required: false,
+  registration_id_label: "",
   inserted_at: now,
   updated_at: now
 },
@@ -144,6 +152,8 @@ Repo.insert!(%CoursePage{
   description: "World History",
   slug: "hist210",
   user_id: 3,
+  is_custom_registration_id_required: false,
+  registration_id_label: "",
   inserted_at: now,
   updated_at: now
 },
@@ -155,6 +165,8 @@ Repo.insert!(%CoursePage{
   description: "Physics Fundamentals",
   slug: "phys101",
   user_id: 3,
+  is_custom_registration_id_required: false,
+  registration_id_label: "",
   inserted_at: now,
   updated_at: now
 },
@@ -167,6 +179,8 @@ Repo.insert!(%CoursePage{
   description: "General Chemistry",
   slug: "chem105",
   user_id: 4,
+  is_custom_registration_id_required: false,
+  registration_id_label: "",
   inserted_at: now,
   updated_at: now
 },
@@ -178,6 +192,8 @@ Repo.insert!(%CoursePage{
   description: "Introduction to Psychology",
   slug: "psyc200",
   user_id: 4,
+  is_custom_registration_id_required: false,
+  registration_id_label: "",
   inserted_at: now,
   updated_at: now
 },
@@ -190,6 +206,8 @@ Repo.insert!(%CoursePage{
   description: "Microeconomics",
   slug: "econ220",
   user_id: 5,
+  is_custom_registration_id_required: false,
+  registration_id_label: "",
   inserted_at: now,
   updated_at: now
 },
@@ -201,6 +219,8 @@ Repo.insert!(%CoursePage{
   description: "Introduction to Painting",
   slug: "art130",
   user_id: 5,
+  is_custom_registration_id_required: false,
+  registration_id_label: "",
   inserted_at: now,
   updated_at: now
 },
@@ -1037,7 +1057,7 @@ Repo.insert!(%QuestionOption{
 Repo.insert!(%UserProfile{
   user_id: 1,
   course_page_id: 1,
-  role: nil,
+  role: "owner",
   display_name: "Mace",
   custom_registration_id: "mperry",
   inserted_at: now,
@@ -1049,7 +1069,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 1,
   course_page_id: 2,
-  role: nil,
+  role: "owner",
   display_name: "Professor Perry",
   custom_registration_id: "perry101",
   inserted_at: now,
@@ -1062,7 +1082,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 2,
   course_page_id: 3,
-  role: nil,
+  role: "owner",
   display_name: "Maddy H.",
   custom_registration_id: "maddy_h2",
   inserted_at: now,
@@ -1074,7 +1094,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 2,
   course_page_id: 4,
-  role: nil,
+  role: "owner",
   display_name: "M. Hoyt",
   custom_registration_id: "maddy_math",
   inserted_at: now,
@@ -1087,7 +1107,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 3,
   course_page_id: 5,
-  role: nil,
+  role: "owner",
   display_name: "Joe the Historian",
   custom_registration_id: "hist_joe",
   inserted_at: now,
@@ -1099,7 +1119,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 3,
   course_page_id: 6,
-  role: nil,
+  role: "owner",
   display_name: "Newton’s Apprentice",
   custom_registration_id: "joeNewton",
   inserted_at: now,
@@ -1112,7 +1132,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 4,
   course_page_id: 7,
-  role: nil,
+  role: "owner",
   display_name: "Dr. Chem",
   custom_registration_id: "098765221",
   inserted_at: now,
@@ -1124,7 +1144,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 4,
   course_page_id: 8,
-  role: nil,
+  role: "owner",
   display_name: "Mr. Beep Beep",
   custom_registration_id: "mbusbriggs",
   inserted_at: now,
@@ -1137,7 +1157,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 5,
   course_page_id: 9,
-  role: nil,
+  role: "owner",
   display_name: "Enry Mateez",
   custom_registration_id: "henryLuvzEcon",
   inserted_at: now,
@@ -1149,7 +1169,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 5,
   course_page_id: 10,
-  role: nil,
+  role: "owner",
   display_name: "PicassoFan99",
   custom_registration_id: "hmat",
   inserted_at: now,
@@ -1429,7 +1449,7 @@ Repo.insert!(%User{
 Repo.insert!(%UserProfile{
   user_id: 6,
   course_page_id: 2,
-  role: nil,
+  role: "user",
   display_name: "BowlingChamp",
   custom_registration_id: "bc6",
   inserted_at: now,
@@ -1442,7 +1462,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 7,
   course_page_id: 2,
-  role: nil,
+  role: "user",
   display_name: "MathWhiz07",
   custom_registration_id: "mw07",
   inserted_at: now,
@@ -1455,7 +1475,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 8,
   course_page_id: 2,
-  role: nil,
+  role: "user",
   display_name: "LitLover88",
   custom_registration_id: "ll88",
   inserted_at: now,
@@ -1468,7 +1488,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 9,
   course_page_id: 2,
-  role: nil,
+  role: "user",
   display_name: "BioNerd42",
   custom_registration_id: "bn42",
   inserted_at: now,
@@ -1481,7 +1501,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 10,
   course_page_id: 2,
-  role: nil,
+  role: "user",
   display_name: "HistoryBuff99",
   custom_registration_id: "hb99",
   inserted_at: now,
@@ -1494,7 +1514,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 11,
   course_page_id: 2,
-  role: nil,
+  role: "user",
   display_name: "PhysicsGeek11",
   custom_registration_id: "pg11",
   inserted_at: now,
@@ -1507,7 +1527,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 12,
   course_page_id: 2,
-  role: nil,
+  role: "user",
   display_name: "GasMaster",
   custom_registration_id: "gm12",
   inserted_at: now,
@@ -1520,7 +1540,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 13,
   course_page_id: 2,
-  role: nil,
+  role: "user",
   display_name: "PsycheMajor",
   custom_registration_id: "pm13",
   inserted_at: now,
@@ -1533,7 +1553,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 14,
   course_page_id: 2,
-  role: nil,
+  role: "user",
   display_name: "EconGuru",
   custom_registration_id: "eg14",
   inserted_at: now,
@@ -1546,7 +1566,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 15,
   course_page_id: 2,
-  role: nil,
+  role: "user",
   display_name: "ArtisticSoul",
   custom_registration_id: "as15",
   inserted_at: now,
@@ -1559,7 +1579,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 16,
   course_page_id: 2,
-  role: nil,
+  role: "user",
   display_name: "TechWizard16",
   custom_registration_id: "tw16",
   inserted_at: now,
@@ -1572,7 +1592,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 17,
   course_page_id: 2,
-  role: nil,
+  role: "user",
   display_name: "SciFiFanatic",
   custom_registration_id: "sf17",
   inserted_at: now,
@@ -1585,7 +1605,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 18,
   course_page_id: 2,
-  role: nil,
+  role: "user",
   display_name: "CodeCracker",
   custom_registration_id: "cc18",
   inserted_at: now,
@@ -1598,7 +1618,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 19,
   course_page_id: 2,
-  role: nil,
+  role: "user",
   display_name: "ChessMaster",
   custom_registration_id: "cm19",
   inserted_at: now,
@@ -1611,7 +1631,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 20,
   course_page_id: 2,
-  role: nil,
+  role: "user",
   display_name: "MovieBuff20",
   custom_registration_id: "mb20",
   inserted_at: now,
@@ -1624,7 +1644,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 21,
   course_page_id: 2,
-  role: nil,
+  role: "user",
   display_name: "SportsAnalyst",
   custom_registration_id: "sa21",
   inserted_at: now,
@@ -1637,7 +1657,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 22,
   course_page_id: 2,
-  role: nil,
+  role: "user",
   display_name: "MusicGenius",
   custom_registration_id: "mg22",
   inserted_at: now,
@@ -1650,7 +1670,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 23,
   course_page_id: 2,
-  role: nil,
+  role: "user",
   display_name: "AstroExplorer",
   custom_registration_id: "ae23",
   inserted_at: now,
@@ -1663,7 +1683,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 24,
   course_page_id: 2,
-  role: nil,
+  role: "user",
   display_name: "Linguist24",
   custom_registration_id: "lg24",
   inserted_at: now,
@@ -1676,7 +1696,7 @@ Repo.insert!(%UserProfile{
 Repo.insert!(%UserProfile{
   user_id: 25,
   course_page_id: 2,
-  role: nil,
+  role: "user",
   display_name: "GamerPro",
   custom_registration_id: "gp25",
   inserted_at: now,
@@ -1688,11 +1708,15 @@ Repo.insert!(%UserProfile{
 ###########################################################################
 ################               Question Queues             ################
 ###########################################################################
+presented_date = Date.from_iso8601!("2025-02-01")
+presented_date_2 = Date.from_iso8601!("2025-02-03")
 
 Repo.insert!(%Queue{
   course_page_id: 1,
   name: "Monday Schedule",
   description: "",
+  presented_date: presented_date,
+  is_presenting: false,
   inserted_at: now,
   updated_at: now
 },
@@ -1703,6 +1727,8 @@ Repo.insert!(%Queue{
   course_page_id: 3,
   name: "Monday Schedule",
   description: "",
+  presented_date: presented_date_2,
+  is_presenting: false,
   inserted_at: now,
   updated_at: now
 },
@@ -1713,6 +1739,8 @@ Repo.insert!(%Queue{
   course_page_id: 5,
   name: "Wednesday Schedule",
   description: "",
+  presented_date: presented_date,
+  is_presenting: false,
   inserted_at: now,
   updated_at: now
 },
@@ -1723,6 +1751,8 @@ Repo.insert!(%Queue{
   course_page_id: 7,
   name: "Thursday Schedule",
   description: "",
+  presented_date: presented_date_2,
+  is_presenting: false,
   inserted_at: now,
   updated_at: now
 },
@@ -1733,88 +1763,14 @@ Repo.insert!(%Queue{
   course_page_id: 9,
   name: "Friday Schedule",
   description: "",
+  presented_date: presented_date,
+  is_presenting: false,
   inserted_at: now,
   updated_at: now
 },
   on_conflict: :nothing
 )
 
-###########################################################################
-################         Question Queue Occurrences        ################
-###########################################################################
-
-presented_date = Date.from_iso8601!("2025-02-01")
-presented_date_2 = Date.from_iso8601!("2025-02-03")
-
-Repo.insert!(%QueueOccurrence{
-  queue_id: 1,
-  presented_date: presented_date
-},
-  on_conflict: :nothing
-)
-
-Repo.insert!(%QueueOccurrence{
-  queue_id: 1,
-  presented_date: presented_date_2
-},
-  on_conflict: :nothing
-)
-
-Repo.insert!(%QueueOccurrence{
-  queue_id: 2,
-  presented_date: presented_date
-},
-  on_conflict: :nothing
-)
-
-Repo.insert!(%QueueOccurrence{
-  queue_id: 2,
-  presented_date: presented_date_2
-},
-  on_conflict: :nothing
-)
-
-Repo.insert!(%QueueOccurrence{
-  queue_id: 3,
-  presented_date: presented_date
-},
-  on_conflict: :nothing
-)
-
-Repo.insert!(%QueueOccurrence{
-  queue_id: 3,
-  presented_date: presented_date_2
-},
-  on_conflict: :nothing
-)
-
-Repo.insert!(%QueueOccurrence{
-  queue_id: 4,
-  presented_date: presented_date
-},
-  on_conflict: :nothing
-)
-
-Repo.insert!(%QueueOccurrence{
-  queue_id: 4,
-  presented_date: presented_date_2
-},
-  on_conflict: :nothing
-)
-
-Repo.insert!(%QueueOccurrence{
-  queue_id: 5,
-  presented_date: presented_date
-},
-  on_conflict: :nothing
-)
-
-Repo.insert!(%QueueOccurrence{
-  queue_id: 5,
-  presented_date: presented_date_2
-},
-  on_conflict: :nothing
-)
 
 ###########################################################################
 ################            Question Occurrences            ################
