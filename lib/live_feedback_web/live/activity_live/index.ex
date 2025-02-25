@@ -41,7 +41,10 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     # Subscribe to the Pubsub for this Course ID
     if connected?(socket), do: Messages.subscribe(course_page.id)
 
-    messages = (if first_question.question_type == "QA", do: Messages.get_messages_for_question(first_question.id), else: nil)
+    messages =
+      if first_question.question_type == "QA",
+        do: Messages.get_messages_for_question(first_question.id),
+        else: nil
 
     {:ok,
      socket
@@ -49,9 +52,12 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      |> assign(:page_admin, presenter)
      |> assign(:qr_code_visible, qr_code_visible)
      |> assign(:course_page, course_page)
-     |> assign(:live_action, :index) # This needs to have a default value
-     |> assign(:message, nil) # This needs to have a default value
-     |> assign_new(:sort_by, fn -> :oldest end) # Use existing sort_by or default to :oldest
+     # This needs to have a default value
+     |> assign(:live_action, :index)
+     # This needs to have a default value
+     |> assign(:message, nil)
+     # Use existing sort_by or default to :oldest
+     |> assign_new(:sort_by, fn -> :oldest end)
      |> assign(:profile_id, profile_id)
      |> assign(:current_question_num, 1)
      |> assign(:current_question, first_question)
@@ -98,33 +104,39 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
   @impl true
   def handle_info({:sorted_messages, sort_by_atom, sorted_messages}, socket) do
     {:noreply,
-    socket
-    |> assign(:sort_by, sort_by_atom)  # Update the sort_by atom in the socket
-    |> stream(:messages, sorted_messages, reset: true)}  # Stream the sorted messages
+     socket
+     # Update the sort_by atom in the socket
+     |> assign(:sort_by, sort_by_atom)
+     # Stream the sorted messages
+     |> stream(:messages, sorted_messages, reset: true)}
   end
 
   # Handle Info for Deleteing all Messages ------------------------------------------
+
   def handle_info({:deleted_all_messages, question_occurrence_id}, socket) do
     {:noreply, stream(socket, :messages, [], reset: true)}
   end
 
   # Handle Info for Deleting a Message From Focus Mode ------------------------------
   def handle_info({:deleted_message_modal, message}, socket) do
-    {:noreply, socket
-    |> assign(:live_action, :index)
-    |> stream_delete(:messages, message)}
+    {:noreply,
+     socket
+     |> assign(:live_action, :index)
+     |> stream_delete(:messages, message)}
   end
 
-  def handle_info({:deleted_message, message}, socket) do # This is needed for the pubsub in messages.ex
-   {:noreply, socket}
+  # This is needed for the pubsub in messages.ex
+
+  def handle_info({:deleted_message, message}, socket) do
+    {:noreply, socket}
   end
 
   # Handle Info for Focusing on a Message -------------------------------------------
   def handle_info({:selected_message_focus, message}, socket) do
     {:noreply,
-    socket
-    |> assign(:live_action, :focus)
-    |> assign(:message, message)}
+     socket
+     |> assign(:live_action, :focus)
+     |> assign(:message, message)}
   end
 
   # Handle Info for Liking a message -----------------------------------------------
@@ -132,7 +144,9 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     {:noreply, stream_insert(socket, :messages, update_message)}
   end
 
-  def handle_info({:updated_message, updated_message}, socket) do # This is needed for the pubsub in messages.ex
+  # This is needed for the pubsub in messages.ex
+
+  def handle_info({:updated_message, updated_message}, socket) do
     {:noreply, socket}
   end
 
@@ -142,7 +156,8 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
   end
 
   def handle_info({LiveFeedbackWeb.FeedbackLive.FormComponent, {:saved, _message}}, socket) do
-    messages = LiveFeedback.Repo.all(LiveFeedback.Messages.Message) # I think this should be moved but it does fix the issue.
+    # I think this should be moved but it does fix the issue.
+    messages = LiveFeedback.Repo.all(LiveFeedback.Messages.Message)
     {:noreply, stream(socket, :messages, messages)}
   end
 
