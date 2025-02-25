@@ -43,6 +43,7 @@ defmodule LiveFeedback.Selection do
     |> Repo.all()
   end
 
+  #get all responses for a question
   def get_question_responses(question_id) do
     from(response in QuestionOptionsResponse,
     join: option in QuestionOptionsOccurrence,
@@ -57,12 +58,14 @@ defmodule LiveFeedback.Selection do
     |> Repo.insert()
   end
 
+  #deletes specific response
   def delete_response_for_profile_for_question(profile_id, option_id) do
     from(response in QuestionOptionsResponse,
     where: response.user_profile_id == ^profile_id and response.question_options_occurrence_id == ^option_id)
     |> Repo.delete_all()
   end
 
+  #not currently being used
   def delete_all_responses_for_profile_for_question(profile_id, question_id) do
     from(response in QuestionOptionsResponse,
     join: option in QuestionOptionsOccurrence,
@@ -72,6 +75,7 @@ defmodule LiveFeedback.Selection do
   |> Repo.delete_all()
   end
 
+  #updates specific response
   def update_response_for_profile_for_question(profile_id, question_id, attrs) do
     query =
       from(response in QuestionOptionsResponse,
@@ -89,7 +93,4 @@ defmodule LiveFeedback.Selection do
         |> Repo.update()
     end
   end
-
-
-
 end

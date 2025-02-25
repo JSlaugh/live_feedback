@@ -4,6 +4,7 @@
   <p class="text-gray-500">No questions available.</p>
 <% else %>
 <div id="question_box" phx-update="stream">
+  <!-- loop through and display each question in stream -->
   <div :for={{id, question} <- @streams.questions} id={id}>
     <.live_component
       module={LiveFeedback.QuestionLive.QuestionComponent}
@@ -18,6 +19,7 @@
 </div>
 <% end %>
 
+<!-- #form for adding new question at bottom -->
 <%= if @show_add_form do %>
   <.live_component
     module={LiveFeedbackWeb.QuestionLive.FormComponent}
@@ -28,6 +30,7 @@
   />
 <% end %>
 
+<!-- #line and box with + icon for showing new form-->
 <div class="flex items-center justify-center my-4 relative w-full">
   <!-- Line -->
   <div class="absolute inset-0 flex items-center">
@@ -40,6 +43,7 @@
   </button>
 </div>
 
+<!-- #modal for confirming deletion -->
 <.modal
   :if={@confirm_delete}
   id="message-modal"

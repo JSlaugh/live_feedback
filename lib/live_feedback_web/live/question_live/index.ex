@@ -131,19 +131,24 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
       _ -> false
     end
 
-
+    #if t/f set A & B content to true/false, otherwise take the content from the form if exists
+    # leaving "" if nothing is passed so it can be ignored
     option_A = if type == "true_false", do: "true", else: Map.get(params, "option_A", "")
     option_B = if type == "true_false", do: "false", else: Map.get(params, "option_B", "")
 
     option_C = if type == "true_false", do: "", else: Map.get(params, "option_C", "")
     option_D = if type == "true_false", do: "", else: Map.get(params, "option_D", "")
 
+    #if radio button will come back with answer
+    #if checkbox will come back with the 4 correct options.
+    #use "" to ignore
     answer = Map.get(params, "answer", "")
     correct_A = Map.get(params, "correct_A", "")
     correct_B = Map.get(params, "correct_B", "")
     correct_C = Map.get(params, "correct_C", "")
     correct_D = Map.get(params, "correct_D", "")
 
+    #convert translate the two variables into the database friendly format
     answer_A = if answer == "A" || correct_A == "A", do: true, else: false
     answer_B = if answer == "B" || correct_B == "B", do: true, else: false
     answer_C = if answer == "C" || correct_C == "C", do: true, else: false
@@ -159,12 +164,16 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     # Attempt to update the question
     case Questions.update_question(question, attrs) do
       {:ok, question} ->
+        #deletes all options for a question if it is a question type without options
         if type in ["free_response", "QA"] do
           Questions.delete_all_options_for_question(question.id)
+
+        #if it has options handle updating them
         else
+          #get existing options from the database
           existing_options = Questions.list_options_for_question(question.id)
 
-          # Define the form options as a list of maps
+          #Convert form values into a comparable list
           form_options = [
             %{option_content: option_A, is_correct: answer_A},
             %{option_content: option_B, is_correct: answer_B},
@@ -172,8 +181,11 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
             %{option_content: option_D, is_correct: answer_D}
           ]
           IO.inspect(form_options)
+          #go through each option
           for i <- 0..3 do
+            #
             option_letters = ["A", "B", "C", "D"]
+
             # Get the options at index i, or default to nil values if not found
             existing_option = Enum.at(existing_options, i, %{option_content: nil, is_correct: nil})
             form_option = Enum.at(form_options, i, %{option_content: nil, is_correct: nil})
@@ -186,6 +198,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
             form_is_correct = Map.get(form_option, :is_correct)
             IO.inspect(form_option)
 
+            #if the option exists in the form but not in the database
             #add
             if (form_option_content != nil && existing_option_content == nil) do
               IO.inspect("add")
@@ -197,6 +210,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
               }
               Questions.add_option(option_attrs)
             end
+            #if option exists in the form and the database
             #update
             if form_option_content != nil and existing_option_content != nil do
               IO.inspect("edit")
@@ -207,6 +221,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
               # Update the option in the question
               Questions.update_option(existing_option.id, option_attrs)
             end
+            #if option doesn't exist in the form but does in the database
             #delete
             if (form_option_content == "" && existing_option_content != nil) do
               IO.inspect("delete")
@@ -214,22 +229,23 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
             end
           end
         end
+        #get the question again from the database to include updated options
         question = Questions.get_question!(question.id)
         {:noreply,
         socket
-        |> assign(show_form: "none")
+        |> assign(show_form: "none") #close form
         |> put_flash(:info, "Question updated successfully.")
         |> stream_insert(:questions, question)
       }
 
       {:error, changeset} ->
-        # In case of error, return the socket with an error message
         {:noreply,
         socket
         |> put_flash(:error, "Failed to update question.")}
     end
   end
 
+  #shows the modal to confirm delete and assigns the delete id for the modal to use
   @impl true
   def handle_event("confirm_delete", %{"id" => id}, socket) do
     {:noreply,
@@ -247,30 +263,32 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     # Fetch the question from the database
     question = Questions.get_question!(id)
 
+    #delete question
     case Questions.delete_question(question) do
       {:ok, deleted_question} ->
         {:noreply,
         socket
-        |> assign(:max_question_num, Questions.get_max_display_order(socket.assigns.queue_id))
-        |> assign(:confirm_delete, false)
+        |> assign(:max_question_num, Questions.get_max_display_order(socket.assigns.queue_id)) #replace max_question_num so the arrows can change
+        |> assign(:confirm_delete, false) #close modal
         |> put_flash(:info, "Successfully deleted the question.")
         |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue_id), reset: true)}
       {:error, _changeset} ->
-        # If deletion fails, show an error flash
         {:noreply, put_flash(socket, :error, "Failed to delete the question.")}
     end
   end
 
   def handle_event("archive_question",%{"id" => id}, socket) do
+    #get question from database
     question = Questions.get_question!(id)
     attrs = %{
       "is_archived" => true
     }
+    #update question with so it is archived
     case Questions.update_question(question, attrs) do
       {:ok, question} ->
         {:noreply,
           socket
-          |> assign(:confirm_delete, false)
+          |> assign(:confirm_delete, false) #close modal
           |> put_flash(:info, "Question archived successfully.")
           |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue_id), reset: false)
         }
@@ -281,24 +299,17 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     end
   end
 
-  def handle_event("toggle_new_form", _params, socket) do
-    {:noreply,
-      socket
-      |> assign(show_add_form: !socket.assigns.show_add_form)
-      |> assign(:show_form, "none")
-      |> assign(:question_type, "QA")
-      |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue_id), reset: false)}
-  end
-
+  #handle changing they type of question so the form updates
   def handle_event("typeChange", %{"question_type" => question_type}, socket) do
     {:noreply,
     socket
-    |> assign(question_type: question_type)
+    |> assign(question_type: question_type) #changes question type in socket
     |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue_id), reset: false)}
   end
 
-
+  #when the use presses the arrows to reorder questions in queue
   def handle_event("move_question", %{"id" => id, "direction" => direction}, socket) do
+    #sends question id and what direction it should go
     case Questions.move_question(id, direction) do
       {:ok, {q1, q2}} ->
         {:noreply,
@@ -310,17 +321,27 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     end
   end
 
+  #toggles the new form at the bottom of the page
+  def handle_event("toggle_new_form", _params, socket) do
+    {:noreply,
+      socket
+      |> assign(show_add_form: !socket.assigns.show_add_form) #toggles form
+      |> assign(:show_form, "none") #closes any other form being edited
+      |> assign(:question_type, "QA") #sets question_type back to default
+      |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue_id), reset: false)}
+  end
+
+  #toggles edit forms
   @impl true
   def handle_info({:toggle_form, question_id}, socket) do
+    #gets question
     question = Questions.get_question!(question_id)
     #IO.inspect(socket.assigns.streams, label: "My Stream Data")
     {:noreply,
     socket
-    |> assign(:show_form, (if question_id != socket.assigns.show_form, do: question_id, else: nil))
-    |> assign(:show_add_form, false)
-    |> assign(:question_type, question.question_type)
+    |> assign(:show_form, (if question_id != socket.assigns.show_form, do: question_id, else: nil)) #toggles on the right form
+    |> assign(:show_add_form, false) #closes the add form if open
+    |> assign(:question_type, question.question_type) #sets question type to that of the question so it is the right form when loaded
     |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue_id), reset: false)}
   end
-
-
 end

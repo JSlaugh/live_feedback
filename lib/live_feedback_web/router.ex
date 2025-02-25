@@ -107,6 +107,7 @@ defmodule LiveFeedbackWeb.Router do
       live "/page/:coursepage", FeedbackLive, :index
       live "/page/:coursepage/new", FeedbackLive, :new
       live "/page/:coursepage/:queue", ActivityLive.Index, :index
+      live "/page/:coursepage/:queue/selectionTest", SelectionLive, :index
     end
   end
 end
