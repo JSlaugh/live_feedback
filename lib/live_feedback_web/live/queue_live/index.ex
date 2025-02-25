@@ -8,7 +8,6 @@ defmodule LiveFeedbackWeb.QueueLive.Index do
     {:ok,
      socket
      |> stream(:queues, Queue.get_queues_for_course(course_page_id))
-    }
+     |> assign(:course_name, Queue.get_course_name(course_page_id))}
   end
-
 end
