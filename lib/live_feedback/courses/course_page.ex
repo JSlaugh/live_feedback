@@ -6,7 +6,7 @@ defmodule LiveFeedback.Courses.CoursePage do
     field :description, :string
     field :title, :string
     field :slug, :string
-    field :is_custom_registration_id_required, :boolean
+    field :is_custom_registration_id_required, :boolean, default: false
     field :registration_id_label, :string
     belongs_to :user, LiveFeedback.Accounts.User
 
