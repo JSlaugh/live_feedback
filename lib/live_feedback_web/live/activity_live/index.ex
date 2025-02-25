@@ -43,6 +43,8 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
 
     messages = (if first_question.question_type == "QA", do: Messages.get_messages_for_question(first_question.id), else: nil)
 
+    question_responses = Selection.get_question_responses(first_question.id)
+
     {:ok,
      socket
      |> assign(:anonymous_id, anonymous_id)
@@ -56,6 +58,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      |> assign(:current_question_num, 1)
      |> assign(:current_question, first_question)
      |> assign(:queue_id, queue_id)
+     |> assign(:responses, question_responses)
      |> stream(
        :messages,
        messages
@@ -92,6 +95,29 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     |> assign(:page_title, "Live Feedback")
     |> assign(:course_page, course_page)
     |> assign(:messages, Messages.get_messages_for_question(socket.assigns.current_question.id))
+  end
+
+  # Handle Event for moving to next question
+  @impl true
+  def handle_event("change_question", %{"direction" => direction}, socket) do
+    current_question_num = socket.assigns.current_question_num
+
+    next_question_num = if(direction=="next", do: current_question_num + 1, else: current_question_num - 1 )
+
+    next_question = Selection.get_question_from_queue(socket.assigns.queue_id, next_question_num)
+
+    question_responses = if(next_question.question_type != "QA",
+      do: Selection.get_question_responses(next_question.id), else: nil)
+
+    messages = if(next_question.question_type == "QA",
+      do: Messages.get_messages_for_question(next_question.id), else: [])
+
+    {:noreply,
+        socket
+        |> assign(:current_question_num, next_question_num)
+        |> assign(:current_question, next_question)
+        |> assign(:responses, question_responses)
+        |> stream(:messages, messages, reset: true)}
   end
 
   # Handle Info for Sorting Messages -----------------------------------------------
@@ -149,6 +175,12 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
   # Handle Info for Deleting a Message From the Message Component ------------------
   def handle_info({:selected_message_delete, message}, socket) do
     {:noreply, stream_delete(socket, :messages, message)}
+  end
+
+  # Handle Info for Refreshing Responses to Quiz Questions
+  def handle_info({:refresh_responses}, socket) do
+     question_responses = Selection.get_question_responses(socket.assigns.current_question.id)
+     {:noreply, assign(socket, :responses, question_responses)}
   end
 
   # Handle Info for testing purposes only ------------------------------------------
