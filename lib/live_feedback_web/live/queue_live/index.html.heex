@@ -4,7 +4,7 @@
     <h1 class="text-2xl font-semibold text-gray-900"><%= @course_name %> Queues</h1>
     
     <.link
-      navigate={~p"/queues/new"}
+      navigate={~p"/course_pages/queue/#{@course_page_id}/new"}
       class="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-700"
     >
       New Queue
@@ -50,3 +50,20 @@
     <% end %>
   </div>
 </div>
+
+<.modal
+  :if={@live_action in [:new]}
+  id="queue-modal"
+  show
+  on_cancel={JS.patch(~p"/course_pages/queue/#{@course_page_id}")}
+>
+  <!--  NEEDS WORK update to QueueLive and make a Separate form component-->
+  <.live_component
+    module={LiveFeedbackWeb.QueueLive.FormComponent}
+    id={@queue.id || :new}
+    title={@page_title}
+    action={@live_action}
+    queue={@queue}
+    patch={~p"/course_pages/queue/#{@course_page_id}/new"}
+  />
+</.modal>

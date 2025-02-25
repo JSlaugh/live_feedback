@@ -84,9 +84,11 @@ defmodule LiveFeedbackWeb.Router do
       live "/course_pages/:id", CoursePageLive, :update
       live "/course_pages/:id/delete", CoursePageLive, :delete
       live "/course_pages/questions/:queue", QuestionLive, :index
+      # Queues
       live "/course_pages/queue/:course_page_id", QueueLive, :index
+      live "/course_pages/queue/:course_page_id/new", QueueLive, :new
       # This is a test/template page
-      live "/queues/new", QueueLive, :new
+
       live "/page/testtemplate", ActivityLive.Index, :index
       live "/page/testtemplate/new", ActivityLive.Index, :new
     end
