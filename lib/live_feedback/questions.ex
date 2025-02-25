@@ -7,7 +7,7 @@ defmodule LiveFeedback.Questions do
   alias LiveFeedback.Courses.CoursePage
   alias LiveFeedback.Questions.QuestionOccurrence
   alias LiveFeedback.Questions.QuestionOptionsOccurrence
-  alias LiveFeedback.Questions.Queue
+  alias LiveFeedback.Queues.Queue
 
   def subscribe(queue_id) do
     topic = "questions:#{queue_id}"

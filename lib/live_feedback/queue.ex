@@ -1,9 +1,9 @@
-defmodule LiveFeedback.Queue do
+defmodule LiveFeedback.Queues do
   import Ecto.Query, warn: false
   alias LiveFeedback.Repo
 
   alias LiveFeedback.Courses.CoursePage
-  alias LiveFeedback.Questions.Queue
+  alias LiveFeedback.Queues.Queue
 
   def get_queues_for_course(course_id) do
     from(queue in Queue,
