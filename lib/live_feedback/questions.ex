@@ -59,7 +59,7 @@ defmodule LiveFeedback.Questions do
             select: max(question.display_order)
 
     case Repo.one(query) do
-      nil -> 1 # If first question, return 1
+      nil -> 0 # If first question, return 0
       max_display_order -> max_display_order  # Return the maximum display_order
     end
   end
