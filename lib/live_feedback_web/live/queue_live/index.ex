@@ -40,12 +40,18 @@ defmodule LiveFeedbackWeb.QueueLive.Index do
 
   @impl true
   def handle_event("delete_queue", %{"id" => id}, socket) do
-    {:noreply, delete_queue(socket, id)}
+    delete_queue(socket, id)
   end
 
-  def delete_queue(socket, id) do
+  defp delete_queue(socket, id) do
     queue = Queues.get_queue(id)
-    Queues.delete_queue(queue)
-    stream_delete(socket, :queues, queue)
+
+    with :ok <- Bodyguard.permit(Queues, :delete_queue, socket.assigns.current_user, queue) do
+      Queues.delete_queue(queue)
+      {:noreply, stream_delete(socket, :queues, queue)}
+    else
+      {:error, _reason} ->
+        {:noreply, put_flash(socket, :error, "You are not authorized to delete this queue")}
+    end
   end
 end

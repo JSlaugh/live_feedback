@@ -4,7 +4,20 @@ defmodule LiveFeedback.Queues do
 
   alias LiveFeedback.Courses.CoursePage
   alias LiveFeedback.Queues.Queue
+  alias LiveFeedback.Accounts.User
 
+  @doc """
+   Authorization for deleting a queue
+  """
+
+  def authorize(:delete_queue, %User{id: user_id}, %Queue{} = queue) do
+    queue = Repo.preload(queue, :course_page)
+    if queue.course_page.user_id == user_id, do: :ok, else: :error
+  end
+
+  def authorize(:delete_queue, _user, _queue), do: :error
+
+  @spec get_queue(any()) :: any()
   @doc """
    get a single queue
   """
@@ -70,6 +83,10 @@ defmodule LiveFeedback.Queues do
     end
   end
 
+  @spec delete_queue(%{
+          :__struct__ => atom() | %{:__changeset__ => any(), optional(any()) => any()},
+          optional(any()) => any()
+        }) :: {:error, <<_::208>>} | {:ok, any()}
   @doc """
   Deletes a queue.
   """
