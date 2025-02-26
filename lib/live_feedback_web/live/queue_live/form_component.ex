@@ -49,6 +49,7 @@ defmodule LiveFeedbackWeb.QueueLive.FormComponent do
   end
 
   def handle_event("save", %{"queue" => queue_params}, socket) do
+    queue_params = Map.put(queue_params, "course_page_id", socket.assigns.course_page_id)
     save_queue(socket, socket.assigns.action, queue_params)
   end
 

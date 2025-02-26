@@ -6,6 +6,14 @@ defmodule LiveFeedback.Queues do
   alias LiveFeedback.Queues.Queue
 
   @doc """
+   get a single queue
+  """
+
+  def get_queue(id) do
+    Repo.get!(Queue, id)
+  end
+
+  @doc """
   Returns the list of queues for a course.
   """
   def get_queues_for_course(course_id) do
@@ -48,13 +56,13 @@ defmodule LiveFeedback.Queues do
   Creates a queue.
   """
   def create_queue(attrs \\ %{}) do
+    IO.inspect(attrs, label: "Queue Params")
+
     %Queue{}
     |> Queue.changeset(attrs)
     |> Repo.insert()
     |> case do
       {:ok, queue} ->
-        topic = "queues:#{queue.course_page_id}"
-        Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:new_queue, queue})
         {:ok, queue}
 
       {:error, changeset} ->
@@ -65,16 +73,14 @@ defmodule LiveFeedback.Queues do
   @doc """
   Deletes a queue.
   """
-  def delete_queue(%Queue{} = queue) do
+  def delete_queue(queue) do
     Repo.delete(queue)
     |> case do
-      {:ok, _} ->
-        topic = "queues:#{queue.course_page_id}"
-        Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:deleted_queue, queue})
+      {:ok, queue} ->
         {:ok, queue}
 
-      {:error, changeset} ->
-        {:error, changeset}
+      {:error, _} ->
+        {:error, "Queue could not be deleted"}
     end
   end
 
