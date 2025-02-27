@@ -7,6 +7,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
   alias LiveFeedback.Queue
   alias LiveFeedback.Messages.Message
   alias LiveFeedback.Selection
+  alias LiveFeedback.Activity
   alias QRCode
 
   @impl true
@@ -30,11 +31,11 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     end
 
     # Get the UserID
-    user_id = get_user_id(session)
+    user_id = Map.get(session, "user_id")
     # Get ProfileID
     profile = Selection.get_profile_id(user_id, course_page.id)
     # Get the anonymous ID
-    anonymous_id = get_anonymous_id(session)
+    anonymous_id = Map.get(session, "anonymous_id")
 
     # Determine if they are the Presenter or not
     presenter = (if profile.role == "owner", do: true, else: false)
@@ -67,14 +68,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      )}
   end
 
-  def get_user_id(session) do
-    Map.get(session, "user_id")
-  end
-
-  def get_anonymous_id(session) do
-    Map.get(session, "anonymous_id")
-  end
-
+  # This is always ran after the mount function
   @impl true
   def handle_params(params, url, socket) do
     url =
@@ -87,19 +81,24 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     {:noreply,
      socket
      |> assign(:qr_code_svg, qr_code_svg)
-     |> apply_action(socket.assigns.live_action, params)}
+     |> apply_action(socket.assigns.live_action)}
   end
 
-  defp apply_action(socket, :index, %{"coursepage" => slug}) do
-    course_page = Courses.get_course_page_by_slug!(slug)
+  defp apply_action(socket, :index) do
+    page_title =
+      if socket.assigns.current_question == nil do
+        "#{socket.assigns.course_page.title} is Not Currently Presenting"
+      else
+        "#{socket.assigns.course_page.title}: Question #{socket.assigns.current_question_num}"
+      end
 
     socket
-    |> assign(:page_title, "Live Feedback")
-    |> assign(:course_page, course_page)
-    |> assign(:messages, if(socket.assigns.current_question != nil, do: Messages.get_messages_for_question(socket.assigns.current_question.id), else: []))
+    |> assign(:page_title, page_title)
   end
 
-  # Handle Event for moving to next question
+  # We do not have a apply_action for :new (This may or may not be something we need to add based on how we do new messages)
+
+  # Handle Event for changing question
   @impl true
   def handle_event("change_question", %{"direction" => direction}, socket) do
     current_question_num = socket.assigns.current_question_num
@@ -185,7 +184,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      {:noreply, assign(socket, :responses, question_responses)}
   end
 
-  # Handle Info for testing purposes only ------------------------------------------
+  # Handle Info for testing/troubleshooting purposes only ------------------------------------------
   def handle_info(msg, socket) do
     IO.inspect(msg, label: "Unhandled message")
     {:noreply, socket}

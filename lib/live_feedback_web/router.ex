@@ -3,7 +3,6 @@ defmodule LiveFeedbackWeb.Router do
 
   import LiveFeedbackWeb.UserAuth
   alias CoursePageLive.Index, as: CoursePageLive
-  alias FeedbackLive.Index, as: FeedbackLive
   alias QuestionLive.Index, as: QuestionLive
   alias SelectionLive.Index, as: SelectionLive
   alias QueueLive.Index, as: QueueLive
