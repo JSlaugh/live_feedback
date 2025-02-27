@@ -2,6 +2,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
   use LiveFeedbackWeb, :live_view
 
   alias LiveFeedback.Questions
+  alias LiveFeedback.Queue
 
   @impl true
   def mount(%{"queue" => queue_id}, _session, socket) do
@@ -11,15 +12,15 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     {:ok,
      socket
      |> assign(:course_page_id, course_page_id)
-     |> assign(:queue_id, queue_id)
+     |> assign(:queue, queue)
      |> assign(:course_name, Questions.get_course_name(course_page_id))
      |> assign(:show_form, nil)
      |> assign(:question_type, "QA")
      |> assign(:show_add_form, false)
      |> assign(:confirm_delete, false)
      |> assign(:delete_id, nil)
-     |> assign(:max_question_num, Questions.get_max_display_order(queue_id))
-     |> stream(:questions, Questions.list_questions_for_queue(queue_id))
+     |> assign(:max_question_num, Questions.get_max_display_order(queue.id))
+     |> stream(:questions, Questions.list_questions_for_queue(queue.id))
     }
   end
 
@@ -73,10 +74,10 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
 
     # Prepare the attributes for the new question
     attrs = %{
-      "queue_id" => socket.assigns.queue_id,
+      "queue_id" => socket.assigns.queue.id,
       "question_content" => content,
       "question_type" => type,
-      "display_order" => Questions.get_max_display_order(socket.assigns.queue_id) + 1,
+      "display_order" => Questions.get_max_display_order(socket.assigns.queue.id) + 1,
       "is_archived" => false,
       "is_required" => is_required
     }
@@ -107,7 +108,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
          socket
          |> assign(show_add_form: false) #close the form
          |> assign(:max_question_num, socket.assigns.max_question_num + 1) #update the max question number since new question was added
-         |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue_id), reset: false) #update the entire stream so that the previous question also update their arrows for movement
+         |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue.id), reset: false) #update the entire stream so that the previous question also update their arrows for movement
          |> put_flash(:info, "Question added successfully.")
          }
 
@@ -268,10 +269,10 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
       {:ok, deleted_question} ->
         {:noreply,
         socket
-        |> assign(:max_question_num, Questions.get_max_display_order(socket.assigns.queue_id)) #replace max_question_num so the arrows can change
+        |> assign(:max_question_num, Questions.get_max_display_order(socket.assigns.queue.id)) #replace max_question_num so the arrows can change
         |> assign(:confirm_delete, false) #close modal
         |> put_flash(:info, "Successfully deleted the question.")
-        |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue_id), reset: true)}
+        |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue.id), reset: true)}
       {:error, _changeset} ->
         {:noreply, put_flash(socket, :error, "Failed to delete the question.")}
     end
@@ -290,7 +291,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
           socket
           |> assign(:confirm_delete, false) #close modal
           |> put_flash(:info, "Question archived successfully.")
-          |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue_id), reset: false)
+          |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue.id), reset: false)
         }
       {:error, changeset} ->
           {:noreply,
@@ -304,7 +305,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     {:noreply,
     socket
     |> assign(question_type: question_type) #changes question type in socket
-    |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue_id), reset: false)}
+    |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue.id), reset: false)}
   end
 
   #when the use presses the arrows to reorder questions in queue
@@ -314,7 +315,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
       {:ok, {q1, q2}} ->
         {:noreply,
          socket
-         |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue_id), reset: true)}
+         |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue.id), reset: true)}
 
       {:error, _} ->
         {:noreply, socket} # No-op if already at the top/bottom
@@ -328,7 +329,22 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
       |> assign(show_add_form: !socket.assigns.show_add_form) #toggles form
       |> assign(:show_form, "none") #closes any other form being edited
       |> assign(:question_type, "QA") #sets question_type back to default
-      |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue_id), reset: false)}
+      |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue.id), reset: false)}
+  end
+
+  @impl true
+  def handle_event("toggle_present", %{"queue_id" => queue_id}, socket) do
+    case Queue.toggle_present_queue(socket.assigns.course_page_id, queue_id) do
+      {:ok, message} ->
+        topic = "#{socket.assigns.course_page_id}"
+        Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:toggle_update, message})
+        {:noreply,
+          socket
+          |> assign(:queue, Questions.get_queue!(queue_id))
+          |> put_flash(:info, message)}
+      {:error, _reason} ->
+        {:noreply, put_flash(socket, :error, "Something went wrong")}
+    end
   end
 
   #toggles edit forms
@@ -342,6 +358,8 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     |> assign(:show_form, (if question_id != socket.assigns.show_form, do: question_id, else: nil)) #toggles on the right form
     |> assign(:show_add_form, false) #closes the add form if open
     |> assign(:question_type, question.question_type) #sets question type to that of the question so it is the right form when loaded
-    |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue_id), reset: false)}
+    |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue.id), reset: false)}
   end
+
+
 end

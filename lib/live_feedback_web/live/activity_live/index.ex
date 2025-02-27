@@ -113,12 +113,28 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     messages = if(next_question.question_type == "QA",
       do: Messages.get_messages_for_question(next_question.id), else: [])
 
+    topic = "#{socket.assigns.course_page.id}"
+    Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:change_question, next_question_num, next_question, question_responses, messages})
+
+    {:noreply, socket}
+  end
+
+  def handle_info({:change_question, next_question_num, next_question, question_responses, messages}, socket) do
     {:noreply,
-        socket
-        |> assign(:current_question_num, next_question_num)
-        |> assign(:current_question, next_question)
-        |> assign(:responses, question_responses)
-        |> stream(:messages, messages, reset: true)}
+     socket
+     |> assign(:current_question_num, next_question_num)
+     |> assign(:current_question, next_question)
+     |> assign(:responses, question_responses)
+     |> stream(:messages, messages, reset: true)}
+  end
+
+  # Handle Info for PubSub Update --------------------------------------------------
+  def handle_info({:toggle_update, _value}, socket) do
+    IO.inspect("here")
+    slug = socket.assigns.course_page.slug
+    IO.inspect(slug)
+    # Force remount by returning :noreply with new assigns
+    {:noreply, redirect(socket, to: ~p"/page/#{slug}")}
   end
 
   # Handle Info for Sorting Messages -----------------------------------------------

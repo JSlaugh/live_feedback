@@ -1,4 +1,5 @@
-<.back_button to={~p"/course_pages/queue/#{@queue_id}"} text="Back" />
+<.back_button to={~p"/course_pages/#{@course_page_id}/queues"} text="Back" />
+<button phx-click="toggle_present" phx-value-queue_id={@queue.id}> <%= (if @queue.is_presenting, do: "End Presentation", else: "Start Presentation") %></button>
 <h1 class="text-xl font-bold mb-4"><%= @course_name %> Questions:</h1>
 
 <%= if Enum.count(@streams.questions) == 0 do %>
