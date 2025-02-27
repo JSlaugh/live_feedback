@@ -3,14 +3,33 @@
     <div>Left Sidebar</div>
   </:leftSidebar>
   <:activity>
-    <div>
-      <h1>Example Question Section</h1>
-      <p>This might be the area where the box with the question might go.</p>
-    </div>
-    <div>
-      <h1>Activity Section</h1>
-      <h1>Example Activity</h1>
-      <%= if @current_question.question_type == "QA" do %>
+  <%= if @current_question != nil do %>
+  <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+    <h1 class="text-2xl font-bold text-indigo-800 mb-4 border-b pb-3">
+      <%= @current_question.question_content %>
+    </h1>
+  </div>
+  <% end %>
+  <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+    <%= cond do %>
+      <% @current_question == nil -> %>
+        <div class="bg-gray-50 border-l-4 border-gray-300 p-4">
+          <p class="text-gray-700 italic">Nothing is currently being presented</p>
+        </div>
+      <% @current_question.is_required == true and @profile_id == nil -> %>
+        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <.icon name="hero-exclamation-triangle" class="h-5 w-5 text-yellow-400" />
+            </div>
+            <div class="ml-3">
+              <p class="text-sm text-yellow-700">
+                This question is being tracked, you must login to continue.
+              </p>
+            </div>
+          </div>
+        </div>
+      <% @current_question.question_type == "QA" -> %>
         <.live_component
         module={LiveFeedbackWeb.QaComponent}
         id="example-activity"
@@ -26,7 +45,7 @@
         queue_id={@queue_id}
         parent_pid={self()}
         />
-      <% else %>
+      <% @current_question.question_type in ["multiple_choice", "multi-select", "TF"] -> %>
         <.live_component
         module={LiveFeedbackWeb.QuizComponent}
         id="example-activity2"
@@ -35,19 +54,40 @@
         responses={@responses}
         parent_pid={self()}
         />
+      <% true -> %>
+
+    <% end %>
+  </div>
+  <div class="flex justify-between items-center mt-8 mb-4">
+    <div>
+      <%= if @current_question_num != 1 do %>
+        <button class="inline-flex items-center px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-200 shadow-sm" phx-click="change_question" phx-value-direction="previous">
+          <.icon name="hero-chevron-left" class="h-5 w-5 mr-2" />
+          <span>Previous</span>
+        </button>
+      <% else %>
+        <div class="w-24"></div> <!-- Spacer to maintain layout when button is hidden -->
       <% end %>
     </div>
-     <div class="flex justify-between items-center mt-8 mb-4">
-      <button class="p-2 rounded-full bg-gray-100 hover:bg-gray-200" phx-click="change_question" phx-value-direction="previous">
-        <.icon name="hero-chevron-left" />
-        <span class="sr-only">Previous Question</span>
-      </button>
-      <button class="p-2 rounded-full bg-gray-100 hover:bg-gray-200" phx-click="change_question" phx-value-direction="next">
-        <.icon name="hero-chevron-right" />
-        <span class="sr-only">Next Question</span>
-      </button>
+
+    <%= if @current_question != nil do %>
+    <div class="text-sm text-gray-500 font-medium">
+      Question <%= @current_question_num %> of <%= @max_question_num %>
     </div>
-  </:activity>
+    <% end %>
+
+    <div>
+      <%= if @current_question != nil and @current_question_num != @max_question_num do %>
+        <button class="inline-flex items-center px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-200 shadow-sm" phx-click="change_question" phx-value-direction="next">
+          <span>Next</span>
+          <.icon name="hero-chevron-right" class="h-5 w-5 ml-2" />
+        </button>
+      <% else %>
+        <div class="w-24"></div> <!-- Spacer to maintain layout when button is hidden -->
+      <% end %>
+    </div>
+  </div>
+</:activity>
   <:rightSidebar>
     <div>Right Sidebar</div>
   </:rightSidebar>

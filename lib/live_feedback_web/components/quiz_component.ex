@@ -20,7 +20,7 @@ defmodule LiveFeedbackWeb.QuizComponent do
     end
 
     ~H"""
-      <div class="h-screen p-8 flex flex-col">
+      <div class=" p-8 flex flex-col">
         <div class="grid grid-cols-2 gap-6 max-w-4xl mx-auto h-[65vh] w-[65vw]">
           <!-- #Check if this option matches a response for this profile -->
           <%= for {option, index} <- Enum.with_index(@current_question.question_options_occurrences) do %>

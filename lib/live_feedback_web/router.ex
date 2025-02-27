@@ -104,8 +104,9 @@ defmodule LiveFeedbackWeb.Router do
 
     live_session :feedback,
       on_mount: [{LiveFeedbackWeb.UserAuth, :mount_current_user}] do
-      live "/page/:coursepage", FeedbackLive, :index
-      live "/page/:coursepage/new", FeedbackLive, :new
+      live "/page/:coursepage", ActivityLive.Index, :index
+      live "/page/:coursepage/new", ActivityLive.Index, :new
+      #test routes
       live "/page/:coursepage/:queue", ActivityLive.Index, :index
       live "/page/:coursepage/:queue/selectionTest", SelectionLive, :index
     end
