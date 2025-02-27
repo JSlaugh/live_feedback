@@ -1,3 +1,4 @@
+<.back_button to={~p"/course_pages/queue/#{@queue_id}"} text="Back" />
 <h1 class="text-xl font-bold mb-4"><%= @course_name %> Questions:</h1>
 
 <%= if Enum.count(@streams.questions) == 0 do %>

@@ -32,19 +32,12 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     # Get the UserID
     user_id = get_user_id(session)
     # Get ProfileID
-    profile_id = Selection.get_profile_id(user_id, course_page.id).id
+    profile = Selection.get_profile_id(user_id, course_page.id)
     # Get the anonymous ID
     anonymous_id = get_anonymous_id(session)
 
     # Determine if they are the Presenter or not
-    presenter =
-      if socket.assigns.current_user do
-        course_page.user_id == socket.assigns.current_user.id ||
-          socket.assigns.current_users.is_admin
-      else
-        false
-      end
-
+    presenter = (if profile.role == "owner", do: true, else: false)
     # Set the Visibility of the QR Code to be based on if they are a presenter or not
     qr_code_visible = presenter
 
@@ -62,7 +55,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      |> assign(:live_action, :index) # This needs to have a default value
      |> assign(:message, nil) # This needs to have a default value
      |> assign_new(:sort_by, fn -> :oldest end) # Use existing sort_by or default to :oldest
-     |> assign(:profile_id, profile_id)
+     |> assign(:profile_id, profile.id)
      |> assign(:current_question_num, 1)
      |> assign(:max_question_num, max_question_num)
      |> assign(:current_question, first_question)

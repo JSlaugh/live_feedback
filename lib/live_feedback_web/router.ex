@@ -80,14 +80,22 @@ defmodule LiveFeedbackWeb.Router do
       live "/course_pages", CoursePageLive, :index
       live "/course_pages/new", CoursePageLive, :new
       live "/course_pages/join", CoursePageLive, :join
+      live "/course_pages/host", CoursePageLive, :host
       live "/course_pages/:id/edit", CoursePageLive, :edit
       live "/course_pages/:id", CoursePageLive, :update
       live "/course_pages/:id/delete", CoursePageLive, :delete
-      live "/course_pages/questions/:queue", QuestionLive, :index
-      live "/course_pages/queue/:course_page_id", QueueLive, :index
       # This is a test/template page
       live "/page/testtemplate", ActivityLive.Index, :index
       live "/page/testtemplate/new", ActivityLive.Index, :new
+    end
+
+    live_session :require_course_owner,
+    on_mount: [
+      {LiveFeedbackWeb.UserAuth, :ensure_authenticated},  # Ensure user is logged in
+      {LiveFeedbackWeb.UserAuth, :require_course_owner}   # Ensure user is course owner
+    ] do
+    live "/course_pages/:id/:queue/questions", QuestionLive, :index
+    live "/course_pages/:id/queues/", QueueLive, :index
     end
   end
 

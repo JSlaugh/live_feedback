@@ -116,7 +116,7 @@ defmodule LiveFeedbackWeb.QuestionLive.FormComponent do
               class="w-full px-3 py-2 h-[46px] bg-white border border-gray-300 rounded-md text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="QA" selected={@question_type == "QA"}>Q&A</option>
-              <option value="free_response" selected={@question_type == "free_response"}>Free Response</option>
+              <!--<option value="free_response" selected={@question_type == "free_response"}>Free Response</option> activity type not currently offered-->
               <option value="multiple_choice" selected={@question_type == "multiple_choice"}>Multiple Choice</option>
               <option value="multi-select" selected={@question_type == "multi-select"}>Multi-Select</option>
               <option value="true_false" selected={@question_type == "true_false"}>True/False</option>

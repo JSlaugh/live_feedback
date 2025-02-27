@@ -6,22 +6,22 @@
       <h1 class="text-2xl font-bold">My Feedback Pages</h1>
 
       <div class="flex space-x-4">
-        <button phx-click="toggle_course_list" phx-value-role="user"
+        <.link navigate={~p"/course_pages"}
           class={if @present_mode == "user" do
             "px-4 py-2 font-medium border-b-2 border-blue-500 text-blue-600"
           else
             "px-4 py-2 font-medium border-b-2 border-transparent text-gray-400 hover:text-gray-600"
           end}>
           Join
-        </button>
-        <button phx-click="toggle_course_list" phx-value-role="owner"
+        </.link>
+        <.link navigate={~p"/course_pages/host"}
           class={if @present_mode == "owner" do
             "px-4 py-2 font-medium border-b-2 border-blue-500 text-blue-600"
           else
             "px-4 py-2 font-medium border-b-2 border-transparent text-gray-400 hover:text-gray-600"
           end}>
           Present
-        </button>
+        </.link>
       </div>
     </div>
 
@@ -46,7 +46,7 @@
   rows={@streams.course_pages}
   row_click={fn {_id, course_page} ->
     if @present_mode == "owner" do
-      JS.navigate(~p"/course_pages/queue/#{course_page.id}")
+      JS.navigate(~p"/course_pages/#{course_page.id}/queues/")
     else
       JS.navigate(~p"/page/#{course_page.slug}")
     end
