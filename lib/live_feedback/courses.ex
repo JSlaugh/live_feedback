@@ -4,6 +4,7 @@ defmodule LiveFeedback.Courses do
   """
 
   import Ecto.Query, warn: false
+  alias LiveFeedback.Accounts.UserProfile
   alias LiveFeedback.Repo
 
   alias LiveFeedback.Courses.CoursePage
@@ -75,6 +76,34 @@ defmodule LiveFeedback.Courses do
     |> Repo.insert()
   end
 
+  def join_class(attrs \\ %{}) do
+    # Check if a UserProfile already exists for the user and course
+    case Repo.get_by(UserProfile,
+           user_id: attrs["user_id"],
+           course_page_id: attrs["course_page_id"]
+         ) do
+      nil ->
+        # No existing profile, so insert a new one
+        %UserProfile{}
+        |> UserProfile.changeset(attrs)
+        |> Repo.insert()
+
+      %UserProfile{role: "owner"} ->
+        # If the user is an owner, return an error
+        {:error, "You are the owner of this course and cannot join as a participant."}
+
+      %UserProfile{is_active: true} ->
+        # If the user is already active, return an error
+        {:error, "You are already an active participant in this course."}
+
+      user_profile ->
+        # Profile exists, so update it
+        user_profile
+        |> UserProfile.changeset(attrs)
+        |> Repo.update()
+    end
+  end
+
   @doc """
   Updates a course_page.
 
@@ -109,6 +138,22 @@ defmodule LiveFeedback.Courses do
     Repo.delete(course_page)
   end
 
+  def leave_course_page(course_page_id, user_id) do
+    profile =
+      Repo.one(
+        from profile in UserProfile,
+          where: profile.user_id == ^user_id and profile.course_page_id == ^course_page_id
+      )
+
+    if profile.is_active do
+      profile
+      |> UserProfile.changeset(%{"is_active" => false})
+      |> Repo.update()
+    else
+      {:error, "Profile not found"}
+    end
+  end
+
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking course_page changes.
 
@@ -126,7 +171,26 @@ defmodule LiveFeedback.Courses do
     Repo.get_by(CoursePage, slug: slug)
   end
 
-  def list_course_pages_by_user(user_id) do
-    Repo.all(from cp in CoursePage, where: cp.user_id == ^user_id)
+  def get_course_page_by_slug(slug) do
+    case Repo.get_by(CoursePage, slug: slug) do
+      nil -> {:error, :not_found}
+      course -> {:ok, course}
+    end
+  end
+
+  def list_course_pages_by_user(user_id, role) do
+    Repo.all(
+      from cp in CoursePage,
+        join: profile in UserProfile,
+        on: profile.course_page_id == cp.id,
+        where: profile.user_id == ^user_id and profile.role == ^role and profile.is_active == true
+    )
+  end
+
+  def get_profile_for_course(user_id, course_page_id) do
+    Repo.one(
+      from profile in UserProfile,
+        where: profile.user_id == ^user_id and profile.course_page_id == ^course_page_id
+    )
   end
 end

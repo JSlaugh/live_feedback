@@ -7,8 +7,10 @@ defmodule LiveFeedbackWeb.Plugs.AssignAnonymousId do
     case get_session(conn, :anonymous_id) do
       nil ->
         anonymous_id = generate_anonymous_id(conn)
+        user_id = get_user_id(conn)
         conn
         |> put_session(:anonymous_id, anonymous_id)
+        |> put_session(:user_id, user_id)
       _anonymous_id ->
         conn
     end

@@ -20,5 +20,5 @@ defmodule LiveFeedbackWeb.Gettext do
 
   See the [Gettext Docs](https://hexdocs.pm/gettext) for detailed usage.
   """
-  use Gettext, otp_app: :live_feedback
+  use Gettext.Backend, otp_app: :live_feedback
 end

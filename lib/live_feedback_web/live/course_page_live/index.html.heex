@@ -1,35 +1,115 @@
 <.header>
-  My Feedback Pages
-  <:actions>
-    <.link patch={~p"/course_pages/new"}>
-      <.button>New Feedback page</.button>
-    </.link>
-  </:actions>
+  <div class="w-full border-b border-gray-200">
+    <div class="container mx-auto px-4 py-4">
+      <!-- Top section with title and navigation -->
+      <div class="flex flex-col mb-4">
+        <div>
+          <h1 class="text-2xl font-bold mb-4">
+            <%= if @present_mode == "owner" do %>
+              My Feedback Pages
+            <% else %>
+              Saved Pages
+            <% end %>
+          </h1>
+          <!-- Action button section -->
+        </div>
+
+        <div class="flex justify-between ">
+          <div class="flex items-center">
+            <%= if @present_mode == "owner" do %>
+              <.link
+                patch={~p"/course_pages/new"}
+                class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded"
+              >
+                <button>Create Class</button>
+              </.link>
+            <% else %>
+              <.link
+                patch={~p"/course_pages/join"}
+                class="bg-blue-500 hover:bg-blue-600 text-white  p-2 rounded"
+              >
+                <button>Join Class</button>
+              </.link>
+            <% end %>
+          </div>
+
+          <div>
+            <.link navigate={~p"/course_pages"}
+
+              class={
+                if @present_mode == "user" do
+                  "px-4 py-2 font-medium border-b-2 border-blue-500 text-blue-600"
+                else
+                  "px-4 py-2 font-medium border-b-2 border-transparent text-gray-400 hover:text-gray-600"
+                end
+              }
+            >
+              Join
+            </.link>
+
+            <.link navigate={~p"/course_pages/host"}
+
+              class={
+                if @present_mode == "owner" do
+                  "px-4 py-2 font-medium border-b-2 border-blue-500 text-blue-600"
+                else
+                  "px-4 py-2 font-medium border-b-2 border-transparent text-gray-400 hover:text-gray-600"
+                end
+              }
+            >
+              Host
+            </.link>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </.header>
 
 <.table
   id="course_pages"
   rows={@streams.course_pages}
-  row_click={fn {_id, course_page} -> JS.navigate(~p"/page/#{course_page.slug}") end}
+  row_click={
+    fn {_id, course_page} ->
+      if @present_mode == "owner" do
+        JS.navigate(~p"/course_pages/#{course_page.id}/queues")
+      else
+        JS.navigate(~p"/page/#{course_page.slug}")
+      end
+    end
+  }
 >
   <:col :let={{_id, course_page}} label="Title"><%= course_page.title %></:col>
-  <:col :let={{_id, course_page}} label="Description"><%= course_page.description %></:col>
-  <:col :let={{_id, course_page}} label="Slug"><%= course_page.slug %></:col>
-  <:action :let={{_id, course_page}}>
-    <div class="sr-only">
-      <.link navigate={~p"/course_pages/#{course_page}"}>Show</.link>
-    </div>
-    <.link patch={~p"/course_pages/#{course_page}/questions"}>Questions</.link>
-    <.link patch={~p"/course_pages/#{course_page}/edit"}>Edit</.link>
 
+  <:col :let={{_id, course_page}} label="Description"><%= course_page.description %></:col>
+
+  <:col :let={{_id, course_page}} label="Slug"><%= course_page.slug %></:col>
+
+  <:action :let={{_id, course_page}}>
+    <%= if @present_mode == "owner" do %>
+      <.link patch={~p"/course_pages/#{course_page}/edit"}>
+        <.icon name="hero-pencil-square" class="text-blue-500" />
+      </.link>
+    <% end %>
   </:action>
+
   <:action :let={{id, course_page}}>
-    <.link
-      phx-click={JS.push("delete", value: %{id: course_page.id}) |> hide("##{id}")}
-      data-confirm="Are you sure?"
-    >
-      Delete
-    </.link>
+    <%= if @present_mode == "owner" do %>
+      <.link
+        phx-click={JS.push("delete", value: %{id: course_page.id}) |> hide("##{id}")}
+        data-confirm="Are you sure you want to delete this class?"
+      >
+        <.icon name="hero-trash" class="text-red-500" />
+      </.link>
+    <% else %>
+      <.link
+        phx-click={JS.push("leave", value: %{id: course_page.id}) |> hide("##{id}")}
+        data-confirm="Are you sure you want to leave this class?"
+        class="text-red-500"
+      >
+        Leave
+      </.link>
+    <% end %>
   </:action>
 </.table>
 
@@ -37,11 +117,28 @@
   :if={@live_action in [:new, :edit]}
   id="course_page-modal"
   show
+  on_cancel={JS.patch(~p"/course_pages/host")}
+>
+  <.live_component
+    module={LiveFeedbackWeb.CoursePageLive.NewCourseFormComponent}
+    id={@course_page.id || :new}
+    title={@page_title}
+    action={@live_action}
+    course_page={@course_page}
+    current_user={@current_user}
+    patch={~p"/course_pages/host"}
+  />
+</.modal>
+
+<.modal
+  :if={@live_action in [:join]}
+  id="course_page-join-modal"
+  show
   on_cancel={JS.patch(~p"/course_pages")}
 >
   <.live_component
-    module={LiveFeedbackWeb.CoursePageLive.FormComponent}
-    id={@course_page.id || :new}
+    module={LiveFeedbackWeb.CoursePageLive.JoinCourseFormComponent}
+    id={:join}
     title={@page_title}
     action={@live_action}
     course_page={@course_page}

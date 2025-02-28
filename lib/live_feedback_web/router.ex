@@ -3,7 +3,9 @@ defmodule LiveFeedbackWeb.Router do
 
   import LiveFeedbackWeb.UserAuth
   alias CoursePageLive.Index, as: CoursePageLive
-  alias FeedbackLive.Index, as: FeedbackLive
+  alias QuestionLive.Index, as: QuestionLive
+  alias SelectionLive.Index, as: SelectionLive
+  alias QueueLive.Index, as: QueueLive
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -76,18 +78,30 @@ defmodule LiveFeedbackWeb.Router do
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
       live "/course_pages", CoursePageLive, :index
       live "/course_pages/new", CoursePageLive, :new
+      live "/course_pages/join", CoursePageLive, :join
+      live "/course_pages/host", CoursePageLive, :host
       live "/course_pages/:id/edit", CoursePageLive, :edit
       live "/course_pages/:id", CoursePageLive, :update
       live "/course_pages/:id/delete", CoursePageLive, :delete
-      live "/course_pages/:course_page_id/questions", QuestionLive.Index, :index
-      live "/course_pages/:course_page_id/participation", ParticipationLive.Index, :index
-
-      # Download the participation (attendance) summary data
-      get "/course_pages/:course_page_id/participation/export", ParticipationController, :download_csv
 
       # This is a test/template page
+
       live "/page/testtemplate", ActivityLive.Index, :index
       live "/page/testtemplate/new", ActivityLive.Index, :new
+    end
+
+    live_session :require_course_owner,
+    on_mount: [
+      {LiveFeedbackWeb.UserAuth, :ensure_authenticated},  # Ensure user is logged in
+      {LiveFeedbackWeb.UserAuth, :require_course_owner}   # Ensure user is course owner
+    ] do
+    live "/course_pages/:id/:queue/questions", QuestionLive, :index
+    live "/course_pages/:id/queues/", QueueLive, :index
+    live "/course_pages/:id/queues/new", QueueLive, :new
+
+    # Download the participation (attendance) summary data
+    live "/course_pages/:course_page_id/participation", ParticipationLive.Index, :index
+    get "/course_pages/:course_page_id/participation/export", ParticipationController, :download_csv
     end
   end
 
@@ -104,8 +118,13 @@ defmodule LiveFeedbackWeb.Router do
 
     live_session :feedback,
       on_mount: [{LiveFeedbackWeb.UserAuth, :mount_current_user}] do
-      live "/page/:coursepage", FeedbackLive, :index
-      live "/page/:coursepage/new", FeedbackLive, :new
+      live "/page/:coursepage", ActivityLive.Index, :index
+      live "/page/:coursepage/new", ActivityLive.Index, :new
+      #test routes
+      live "/page/:coursepage/:queue", ActivityLive.Index, :index
+      live "/:id/queues", QueueLive, :delete
+      live "/course_page/:id/:queues/edit", QueueLive, :edit
+      live "/page/:coursepage/:queue/selectionTest", SelectionLive, :index
     end
   end
 end

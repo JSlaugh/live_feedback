@@ -6,16 +6,13 @@ defmodule LiveFeedbackWeb.CoursePageLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    if socket.assigns.current_user.is_admin do
-      {:ok, stream(socket, :course_pages, Courses.list_course_pages())}
-    else
       {:ok,
-       stream(
-         socket,
+      socket
+      |> assign(:present_mode, "user")
+      |> stream(
          :course_pages,
-         Courses.list_course_pages_by_user(socket.assigns.current_user.id)
+         []
        )}
-    end
   end
 
   @impl true
@@ -45,19 +42,39 @@ defmodule LiveFeedbackWeb.CoursePageLive.Index do
   end
 
   defp apply_action(socket, :new, _params) do
+    IO.inspect(Map.get(socket.assigns.streams, :course_pages), label: "My Stream Data")
     socket
     |> assign(:page_title, "New Feedback page")
     |> assign(:course_page, %CoursePage{})
   end
 
+  defp apply_action(socket, :join, _params) do
+    socket
+    |> assign(:page_title, "Join page")
+    |> assign(:course_page, %CoursePage{})
+  end
+
+  defp apply_action(socket, :host, _params) do
+    course_list = Courses.list_course_pages_by_user(socket.assigns.current_user.id, "owner")
+    socket
+    |> assign(:present_mode, "owner")
+    |> stream(:course_pages, course_list, reset: true)
+  end
+
   defp apply_action(socket, :index, _params) do
+    course_list = Courses.list_course_pages_by_user(socket.assigns.current_user.id, "user")
     socket
     |> assign(:page_title, "Listing Feedback pages")
-    |> assign(:course_page, nil)
+    |> stream(:course_pages, course_list, reset: true)
   end
 
   @impl true
-  def handle_info({LiveFeedbackWeb.CoursePageLive.FormComponent, {:saved, course_page}}, socket) do
+  def handle_info({LiveFeedbackWeb.CoursePageLive.NewCourseFormComponent, {:saved, course_page}}, socket) do
+    {:noreply, stream_insert(socket, :course_pages, course_page)}
+  end
+
+  @impl true
+  def handle_info({LiveFeedbackWeb.CoursePageLive.JoinCourseFormComponent, {:saved, course_page}}, socket) do
     {:noreply, stream_insert(socket, :course_pages, course_page)}
   end
 
@@ -81,4 +98,34 @@ defmodule LiveFeedbackWeb.CoursePageLive.Index do
         |> put_flash(:error, "You are not authorized to delete this page")
     end
   end
+
+  @impl true
+  def handle_event("leave", %{"id" => id}, socket) do
+    course_page = Courses.get_course_page!(id)
+
+    with :ok <-
+           Bodyguard.permit(
+             Courses,
+             :delete_course_page,
+             socket.assigns.current_user,
+             course_page
+           ) do
+      {:ok, _} = Courses.leave_course_page(course_page.id, socket.assigns.current_user.id)
+
+      {:noreply, stream_delete(socket, :course_pages, course_page)}
+    else
+      {:error, _reason} ->
+        socket
+        |> put_flash(:error, "Could not leave this page")
+    end
+  end
+
+
+  #def handle_event("toggle_course_list", %{"role" => role}, socket) do
+    #course_list = Courses.list_course_pages_by_user(socket.assigns.current_user.id, role)
+    #{:noreply,
+      #socket
+      #|> assign(:present_mode, role)
+      #|> stream(:course_pages, course_list, reset: true)}
+  #end
 end
