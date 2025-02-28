@@ -46,11 +46,6 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     # Subscribe to the Pubsub for this Course ID
     if connected?(socket), do: Messages.subscribe(course_page.id)
 
-    messages =
-      if first_question.question_type == "QA",
-        do: Messages.get_messages_for_question(first_question.id),
-        else: nil
-
     {:ok,
      socket
      |> assign(:anonymous_id, anonymous_id)

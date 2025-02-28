@@ -6,6 +6,7 @@ defmodule LiveFeedbackWeb.UserAuth do
 
   alias LiveFeedback.Accounts
   alias LiveFeedback.Selection
+  alias LiveFeedback.Queue
 
   # Make the remember me cookie valid for 60 days.
   # If you want bump or reduce this value, also change
@@ -168,12 +169,29 @@ defmodule LiveFeedbackWeb.UserAuth do
   def on_mount(:require_course_owner, params, _session, socket) do
     socket = mount_current_user(socket, _session)  # Ensure user is assigned
 
-    course_page_id = params["id"]
+    course_page_id = String.to_integer(params["id"])
     user = socket.assigns[:current_user]
 
     # Check if the user is the course owner
     if user_is_course_owner?(user, course_page_id) do
-      {:cont, socket}
+      # If "queue" exists in params, validate its course_id
+      case params["queue"] do
+        nil ->
+          {:cont, socket}
+
+        queue_id ->
+          queue = Queue.get_queue!(queue_id)
+          if course_page_id == queue.course_page_id do
+            {:cont, socket}
+          else
+              socket =
+                socket
+                |> Phoenix.LiveView.put_flash(:error, "You are not authorized to access this page.")
+                |> Phoenix.LiveView.redirect(to: "/course_pages")
+
+              {:halt, socket}
+          end
+      end
     else
       socket =
         socket
@@ -183,7 +201,6 @@ defmodule LiveFeedbackWeb.UserAuth do
       {:halt, socket}
     end
   end
-
 
   def on_mount(:redirect_if_user_is_authenticated, _params, session, socket) do
     socket = mount_current_user(socket, session)

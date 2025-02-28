@@ -5,7 +5,7 @@ defmodule LiveFeedbackWeb.QueueLive.Index do
   alias LiveFeedback.Queues
 
   @impl true
-  def mount(%{"course_page_id" => course_page_id}, _session, socket) do
+  def mount(%{"id" => course_page_id}, _session, socket) do
     Phoenix.PubSub.subscribe(LiveFeedback.PubSub, "queues:#{course_page_id}")
 
     {:ok,
@@ -20,13 +20,13 @@ defmodule LiveFeedbackWeb.QueueLive.Index do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
-  defp apply_action(socket, :index, %{"course_page_id" => course_page_id}) do
+  defp apply_action(socket, :index, %{"id" => course_page_id}) do
     socket
     |> assign(:page_title, "List Queues")
     |> assign(:course_page_id, course_page_id)
   end
 
-  defp apply_action(socket, :new, %{"course_page_id" => course_page_id}) do
+  defp apply_action(socket, :new, %{"id" => course_page_id}) do
     socket
     |> assign(:page_title, "New Queue")
     |> assign(:queue, %Queue{})

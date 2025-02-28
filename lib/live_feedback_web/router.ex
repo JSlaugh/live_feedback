@@ -96,6 +96,7 @@ defmodule LiveFeedbackWeb.Router do
     ] do
     live "/course_pages/:id/:queue/questions", QuestionLive, :index
     live "/course_pages/:id/queues/", QueueLive, :index
+    live "/course_pages/:id/queues/new", QueueLive, :new
     end
   end
 
@@ -116,8 +117,8 @@ defmodule LiveFeedbackWeb.Router do
       live "/page/:coursepage/new", ActivityLive.Index, :new
       #test routes
       live "/page/:coursepage/:queue", ActivityLive.Index, :index
-      live "/queue/:id", QueueLive, :delete
-      live "/queue/:id/edit", QueueLive, :edit
+      live "/:id/queues", QueueLive, :delete
+      live "/course_page/:id/:queues/edit", QueueLive, :edit
       live "/page/:coursepage/:queue/selectionTest", SelectionLive, :index
     end
   end

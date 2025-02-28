@@ -3,18 +3,18 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
 
   alias LiveFeedback.Questions
   alias LiveFeedback.Queue
+  alias LiveFeedback.Courses
 
   @impl true
   def mount(%{"queue" => queue_id}, _session, socket) do
     # if connected?(socket), do: Questions.subscribe(queue_id)
     queue = Questions.get_queue!(queue_id)
-    course_page_id = queue.course_page_id
+    course_page = Courses.get_course_page!(queue.course_page_id)
 
     {:ok,
      socket
-     |> assign(:course_page_id, course_page_id)
+     |> assign(:course_page, course_page)
      |> assign(:queue, queue)
-     |> assign(:course_name, Questions.get_course_name(course_page_id))
      |> assign(:show_form, nil)
      |> assign(:question_type, "QA")
      |> assign(:show_add_form, false)
@@ -356,9 +356,9 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
 
   @impl true
   def handle_event("toggle_present", %{"queue_id" => queue_id}, socket) do
-    case Queue.toggle_present_queue(socket.assigns.course_page_id, queue_id) do
+    case Queue.toggle_present_queue(socket.assigns.course_page.id, queue_id) do
       {:ok, message} ->
-        topic = "#{socket.assigns.course_page_id}"
+        topic = "#{socket.assigns.course_page.id}"
         Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:toggle_update, message})
         {:noreply,
           socket
@@ -367,6 +367,10 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
       {:error, _reason} ->
         {:noreply, put_flash(socket, :error, "Something went wrong")}
     end
+  end
+
+  def handle_event("navigate", %{"url" => url}, socket) do
+    {:noreply, push_navigate(socket, to: url)}
   end
 
   #toggles edit forms
