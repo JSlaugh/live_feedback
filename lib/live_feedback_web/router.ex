@@ -80,6 +80,11 @@ defmodule LiveFeedbackWeb.Router do
       live "/course_pages/:id", CoursePageLive, :update
       live "/course_pages/:id/delete", CoursePageLive, :delete
       live "/course_pages/:course_page_id/questions", QuestionLive.Index, :index
+      live "/course_pages/:course_page_id/participation", ParticipationLive.Index, :index
+
+      # Download the participation (attendance) summary data
+      get "/course_pages/:course_page_id/participation/export", ParticipationController, :download_csv
+
       # This is a test/template page
       live "/page/testtemplate", ActivityLive.Index, :index
       live "/page/testtemplate/new", ActivityLive.Index, :new
