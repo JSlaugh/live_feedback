@@ -84,8 +84,12 @@ defmodule LiveFeedbackWeb.Router do
       live "/course_pages/:id", CoursePageLive, :update
       live "/course_pages/:id/delete", CoursePageLive, :delete
       live "/course_pages/questions/:queue", QuestionLive, :index
+      # Queues
       live "/course_pages/queue/:course_page_id", QueueLive, :index
+      live "/course_pages/queue/:course_page_id/new", QueueLive, :new
+
       # This is a test/template page
+
       live "/page/testtemplate", ActivityLive.Index, :index
       live "/page/testtemplate/new", ActivityLive.Index, :new
     end
@@ -107,6 +111,8 @@ defmodule LiveFeedbackWeb.Router do
       live "/page/:coursepage", FeedbackLive, :index
       live "/page/:coursepage/new", FeedbackLive, :new
       live "/page/:coursepage/:queue", ActivityLive.Index, :index
+      live "/queue/:id", QueueLive, :delete
+      live "/queue/:id/edit", QueueLive, :edit
     end
   end
 end

@@ -1,4 +1,4 @@
-defmodule LiveFeedback.Questions.Queue do
+defmodule LiveFeedback.Queues.Queue do
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -12,8 +12,6 @@ defmodule LiveFeedback.Questions.Queue do
     has_many :question_occurrence, LiveFeedback.Questions.QuestionOccurrence
 
     timestamps(type: :utc_datetime)
-
-
   end
 
   @doc false

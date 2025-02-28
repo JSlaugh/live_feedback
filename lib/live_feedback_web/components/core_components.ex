@@ -17,7 +17,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
   use Phoenix.Component
 
   alias Phoenix.LiveView.JS
-  import LiveFeedbackWeb.Gettext
+  use Gettext, backend: LiveFeedbackWeb.Gettext
 
   @doc """
   Renders a modal.
@@ -683,5 +683,57 @@ defmodule LiveFeedbackWeb.CoreComponents do
   """
   def translate_errors(errors, field) when is_list(errors) do
     for {^field, {msg, opts}} <- errors, do: translate_error({msg, opts})
+  end
+
+  @doc """
+  Dropdown Menu for the user to access Logout / Account Settings
+  """
+  def chevron_down(assigns) do
+    ~H"""
+    <svg
+      class="-mr-1 h-5 w-5 text-gray-400"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        fill-rule="evenodd"
+        d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+        clip-rule="evenodd"
+      />
+    </svg>
+    """
+  end
+
+  attr(:id, :string, required: true)
+
+  slot(:button, required: true)
+  slot(:content, required: true)
+
+  def dropdown(assigns) do
+    ~H"""
+    <div class="relative" data-component="dropdown">
+      <button
+        type="button"
+        class=""
+        id={"#{@id}-button"}
+        aria-expanded="false"
+        phx-click={JS.dispatch("toggle", to: "##{@id}-menu")}
+        phx-click-away={JS.dispatch("close", to: "##{@id}-menu")}
+        phx-window-keydown={JS.dispatch("close", to: "##{@id}-menu")}
+        phx-key="Escape"
+      >
+        <%= render_slot(@button) %>
+      </button>
+      
+      <nav
+        hidden="true"
+        class="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5"
+        id={"#{@id}-menu"}
+      >
+        <%= render_slot(@content) %>
+      </nav>
+    </div>
+    """
   end
 end
