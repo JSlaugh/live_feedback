@@ -10,7 +10,7 @@ defmodule LiveFeedbackWeb.UserSettingsLive do
         Account Settings
         <:subtitle>Manage your account email address and password settings</:subtitle>
       </.header>
-
+      
       <div class="space-y-12 divide-y">
         <div>
           <.simple_form
@@ -34,7 +34,7 @@ defmodule LiveFeedbackWeb.UserSettingsLive do
             </:actions>
           </.simple_form>
         </div>
-
+        
         <div>
           <.simple_form
             for={@password_form}
@@ -71,16 +71,14 @@ defmodule LiveFeedbackWeb.UserSettingsLive do
             </:actions>
           </.simple_form>
         </div>
-
-        <li>
-          <.link
-            href={~p"/users/log_out"}
-            method="delete"
-            class="block text-center mx-auto mt-10 phx-submit-loading:opacity-75 rounded-lg bg-red-600 hover:bg-red-700 py-2 px-4 text-base font-semibold text-white active:text-white/80"
-          >
-            Log out
-          </.link>
-        </li>
+        
+        <.link
+          href={~p"/users/log_out"}
+          method="delete"
+          class="block text-center mx-auto mt-10 phx-submit-loading:opacity-75 rounded-lg bg-red-600 hover:bg-red-700 py-2 px-4 text-base font-semibold text-white active:text-white/80"
+        >
+          Log out
+        </.link>
       </div>
     </div>
     """

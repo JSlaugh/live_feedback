@@ -2,10 +2,10 @@
 <.back_button to={~p"/course_pages/host"} text="Back" />
 <div class="mx-auto max-w-4xl px-4 py-8">
   <div class="flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-semibold text-gray-900">Stream Queues</h1>
+    <h1 class="text-2xl font-semibold text-gray-900"><%= @course_name %> Queues</h1>
 
     <.link
-      navigate={~p"/queues/new"}
+      navigate={~p"/course_pages/queue/#{@course_page_id}/new"}
       class="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-700"
     >
       New Queue
@@ -13,13 +13,18 @@
   </div>
 
   <div class="grid gap-4" phx-update="stream" id="queues">
-    <%= for {_id, queue} <- @streams.queues do %>
-      <div class="bg-blue-400 rounded-lg shadow p-6 transition-all duration-200 hover:shadow-lg hover:scale-[1.01] cursor-pointer relative group hover:bg-blue-500" phx-click={JS.navigate(~p"/course_pages/#{@course_id}/#{queue.id}/questions/")}>
+    <%= for {id,queue} <- @streams.queues do %>
+      <div
+        id={id}
+        class="bg-blue-400 rounded-lg shadow p-6 transition-all duration-200 hover:shadow-lg hover:scale-[1.01] cursor-pointer relative group hover:bg-blue-500"
+        phx-click={JS.navigate(~p"/course_pages/questions/#{queue.id}")}
+      >
         <div class="flex items-center justify-between relative z-10">
           <div class="flex-1">
             <h2 class="text-xl font-semibold text-white mb-2">
               <%= queue.name %>
             </h2>
+
             <p class="text-blue-100">
               <%= queue.description %>
             </p>
@@ -27,19 +32,19 @@
 
           <div class="flex items-center gap-4">
             <.link
-              navigate={~p"/queues/#{queue.id}/edit"}
+              navigate={~p"/queue/#{queue.id}/edit"}
               class="inline-flex items-center px-3 py-2 border shadow-sm text-sm font-medium rounded-md text-white bg-transparent focus:outline-none relative z-20"
             >
-              <.icon name="hero-pencil-square" class="text-white"/>
+              <.icon name="hero-pencil-square" class="text-white" />
             </.link>
 
             <.link
-              href={~p"/queues/#{queue.id}"}
-              method="delete"
+              phx-click="delete_queue"
+              phx-value-id={queue.id}
               data-confirm="Are you sure you want to delete this queue?"
               class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none relative z-20"
             >
-              <.icon name="hero-trash" class="text-white"/>
+              <.icon name="hero-trash" class="text-white" />
             </.link>
           </div>
         </div>
@@ -47,3 +52,20 @@
     <% end %>
   </div>
 </div>
+
+<.modal
+  :if={@live_action in [:new]}
+  id="queue-modal"
+  show
+  on_cancel={JS.patch(~p"/course_pages/queue/#{@course_page_id}")}
+>
+  <.live_component
+    module={LiveFeedbackWeb.QueueLive.FormComponent}
+    id={@queue.id || :new}
+    title={@page_title}
+    course_page_id={@course_page_id}
+    action={@live_action}
+    queue={@queue}
+    patch={~p"/course_pages/queue/#{@course_page_id}"}
+  />
+</.modal>

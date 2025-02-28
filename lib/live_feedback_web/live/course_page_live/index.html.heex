@@ -1,68 +1,100 @@
 <.header>
-<div class="w-full border-b border-gray-200">
-  <div class="container mx-auto px-4 py-4">
-    <!-- Top section with title and navigation -->
-    <div class="flex items-center justify-between mb-4">
-      <h1 class="text-2xl font-bold">My Feedback Pages</h1>
+  <div class="w-full border-b border-gray-200">
+    <div class="container mx-auto px-4 py-4">
+      <!-- Top section with title and navigation -->
+      <div class="flex flex-col mb-4">
+        <div>
+          <h1 class="text-2xl font-bold mb-4">
+            <%= if @present_mode == "owner" do %>
+              My Feedback Pages
+            <% else %>
+              Saved Pages
+            <% end %>
+          </h1>
+          <!-- Action button section -->
+        </div>
 
-      <div class="flex space-x-4">
-        <.link navigate={~p"/course_pages"}
-          class={if @present_mode == "user" do
-            "px-4 py-2 font-medium border-b-2 border-blue-500 text-blue-600"
-          else
-            "px-4 py-2 font-medium border-b-2 border-transparent text-gray-400 hover:text-gray-600"
-          end}>
-          Join
-        </.link>
-        <.link navigate={~p"/course_pages/host"}
-          class={if @present_mode == "owner" do
-            "px-4 py-2 font-medium border-b-2 border-blue-500 text-blue-600"
-          else
-            "px-4 py-2 font-medium border-b-2 border-transparent text-gray-400 hover:text-gray-600"
-          end}>
-          Present
-        </.link>
+        <div class="flex justify-between ">
+          <div class="flex items-center">
+            <%= if @present_mode == "owner" do %>
+              <.link
+                patch={~p"/course_pages/new"}
+                class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded"
+              >
+                <button>Create Class</button>
+              </.link>
+            <% else %>
+              <.link
+                patch={~p"/course_pages/join"}
+                class="bg-blue-500 hover:bg-blue-600 text-white  p-2 rounded"
+              >
+                <button>Join Class</button>
+              </.link>
+            <% end %>
+          </div>
+
+          <div>
+            <button
+              phx-click="toggle_course_list"
+              phx-value-role="user"
+              class={
+                if @present_mode == "user" do
+                  "px-4 py-2 font-medium border-b-2 border-blue-500 text-blue-600"
+                else
+                  "px-4 py-2 font-medium border-b-2 border-transparent text-gray-400 hover:text-gray-600"
+                end
+              }
+            >
+              Join
+            </button>
+
+            <button
+              phx-click="toggle_course_list"
+              phx-value-role="owner"
+              class={
+                if @present_mode == "owner" do
+                  "px-4 py-2 font-medium border-b-2 border-blue-500 text-blue-600"
+                else
+                  "px-4 py-2 font-medium border-b-2 border-transparent text-gray-400 hover:text-gray-600"
+                end
+              }
+            >
+              Host
+            </button>
+          </div>
+        </div>
       </div>
     </div>
-
-    <!-- Action button section -->
-    <div class="flex justify-end mb-4">
-      <%= if @present_mode == "owner" do %>
-        <.link patch={~p"/course_pages/new"} class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
-          <button>Create Class</button>
-        </.link>
-      <% else %>
-        <.link patch={~p"/course_pages/join"} class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
-          <button>Join Class</button>
-        </.link>
-      <% end %>
-    </div>
   </div>
-</div>
 </.header>
 
 <.table
   id="course_pages"
   rows={@streams.course_pages}
-  row_click={fn {_id, course_page} ->
-    if @present_mode == "owner" do
-      JS.navigate(~p"/course_pages/#{course_page.id}/queues/")
-    else
-      JS.navigate(~p"/page/#{course_page.slug}")
+  row_click={
+    fn {_id, course_page} ->
+      if @present_mode == "owner" do
+        JS.navigate(~p"/course_pages/queue/#{course_page.id}")
+      else
+        JS.navigate(~p"/page/#{course_page.slug}")
+      end
     end
-  end}
-
+  }
 >
   <:col :let={{_id, course_page}} label="Title"><%= course_page.title %></:col>
+
   <:col :let={{_id, course_page}} label="Description"><%= course_page.description %></:col>
+
   <:col :let={{_id, course_page}} label="Slug"><%= course_page.slug %></:col>
+
   <:action :let={{_id, course_page}}>
     <%= if @present_mode == "owner" do %>
       <div class="sr-only">
         <.link navigate={~p"/course_pages/#{course_page}"}>Show</.link>
       </div>
+
       <.link patch={~p"/course_pages/#{course_page}/edit"}>
-        <.icon name="hero-pencil-square" class="text-blue-500"/>
+        <.icon name="hero-pencil-square" class="text-blue-500" />
       </.link>
     <% end %>
   </:action>
@@ -81,7 +113,7 @@
         data-confirm="Are you sure you want to leave this class?"
         class="text-red-500"
       >
-       Leave
+        Leave
       </.link>
     <% end %>
   </:action>

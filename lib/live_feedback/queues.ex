@@ -1,0 +1,111 @@
+defmodule LiveFeedback.Queues do
+  import Ecto.Query, warn: false
+  alias LiveFeedback.Repo
+
+  alias LiveFeedback.Courses.CoursePage
+  alias LiveFeedback.Queues.Queue
+  alias LiveFeedback.Accounts.User
+
+  @doc """
+   Authorization for deleting a queue
+  """
+
+  def authorize(:delete_queue, %User{id: user_id}, %Queue{} = queue) do
+    queue = Repo.preload(queue, :course_page)
+    if queue.course_page.user_id == user_id, do: :ok, else: :error
+  end
+
+  def authorize(:delete_queue, _user, _queue), do: :error
+
+  @spec get_queue(any()) :: any()
+  @doc """
+   get a single queue
+  """
+
+  def get_queue(id) do
+    Repo.get!(Queue, id)
+  end
+
+  @doc """
+  Returns the list of queues for a course.
+  """
+  def get_queues_for_course(course_id) do
+    from(queue in Queue,
+      where: queue.course_page_id == ^course_id
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Returns the name of a course.
+  """
+  def get_course_name(course_page_id) do
+    from(course in CoursePage,
+      where: course.id == ^course_page_id,
+      select: course.title
+    )
+    |> Repo.one()
+  end
+
+  @doc """
+  Updates a queue.
+  """
+  def update_queue(%Queue{} = queue, attrs) do
+    queue
+    |> Queue.changeset(attrs)
+    |> Repo.update()
+    |> case do
+      {:ok, queue} ->
+        topic = "queues:#{queue.id}"
+        Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:updated_queue, queue})
+        {:ok, queue}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  @doc """
+  Creates a queue.
+  """
+  def create_queue(attrs \\ %{}) do
+    IO.inspect(attrs, label: "Queue Params")
+
+    %Queue{}
+    |> Queue.changeset(attrs)
+    |> Repo.insert()
+    |> case do
+      {:ok, queue} ->
+        {:ok, queue}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  @spec delete_queue(%{
+          :__struct__ => atom() | %{:__changeset__ => any(), optional(any()) => any()},
+          optional(any()) => any()
+        }) :: {:error, <<_::208>>} | {:ok, any()}
+  @doc """
+  Deletes a queue.
+  """
+  def delete_queue(queue) do
+    Repo.delete(queue)
+    |> case do
+      {:ok, queue} ->
+        {:ok, queue}
+
+      {:error, _} ->
+        {:error, "Queue could not be deleted"}
+    end
+  end
+
+  @doc """
+  Change Queue
+  """
+  def change_queue(%Queue{} = queue, attrs) do
+    queue
+    |> Queue.changeset(attrs)
+  end
+end

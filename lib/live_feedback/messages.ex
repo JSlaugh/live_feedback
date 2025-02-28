@@ -168,7 +168,8 @@ defmodule LiveFeedback.Messages do
         :newest -> [desc: :inserted_at]
         :oldest -> [asc: :inserted_at]
         :like_count -> [desc: :like_count]
-        _ -> [asc: :inserted_at] # Default to oldest
+        # Default to oldest
+        _ -> [asc: :inserted_at]
       end
 
     from(m in Message,
@@ -198,78 +199,73 @@ defmodule LiveFeedback.Messages do
     end
   end
 
+  @doc """
+  Toggles the like on a message for a given user (authenticated or anonymous).
+  """
+  def toggle_like_message(%Message{} = message, anonymous_id) do
+    like_query =
+      from(like in LikedBy,
+        where: like.message_id == ^message.id and like.anonymous_id == ^anonymous_id
+      )
 
+    case Repo.one(like_query) do
+      # If a like exists, remove it
+      %LikedBy{} = like ->
+        Repo.delete(like)
+        |> case do
+          {:ok, _} ->
+            update_like_count(message, -1)
 
-@doc """
-Toggles the like on a message for a given user (authenticated or anonymous).
-"""
-@doc """
-Toggles the like on a message for a given user (authenticated or anonymous).
-"""
-def toggle_like_message(%Message{} = message, anonymous_id) do
-  like_query =
-    from(like in LikedBy,
-      where: like.message_id == ^message.id and like.anonymous_id == ^anonymous_id
-    )
+          {:error, changeset} ->
+            {:error, changeset}
+        end
 
-  case Repo.one(like_query) do
-    # If a like exists, remove it
-    %LikedBy{} = like ->
-      Repo.delete(like)
-      |> case do
-        {:ok, _} ->
-          update_like_count(message, -1)
+      # If no like exists, create one
+      nil ->
+        %LikedBy{}
+        |> LikedBy.changeset(%{message_id: message.id, anonymous_id: anonymous_id})
+        |> Repo.insert()
+        |> case do
+          {:ok, _} ->
+            update_like_count(message, 1)
 
-        {:error, changeset} ->
-          {:error, changeset}
-      end
-
-    # If no like exists, create one
-    nil ->
-      %LikedBy{}
-      |> LikedBy.changeset(%{message_id: message.id, anonymous_id: anonymous_id})
-      |> Repo.insert()
-      |> case do
-        {:ok, _} ->
-          update_like_count(message, 1)
-
-        {:error, changeset} ->
-          {:error, changeset}
-      end
+          {:error, changeset} ->
+            {:error, changeset}
+        end
+    end
   end
-end
 
-# Helper function to update the like count on a message
-defp update_like_count(%Message{} = message, delta) do
-  new_count = message.like_count + delta
+  # Helper function to update the like count on a message
+  defp update_like_count(%Message{} = message, delta) do
+    new_count = message.like_count + delta
 
-  message
-  |> Message.changeset(%{like_count: new_count})
-  |> Repo.update()
-  |> case do
-    {:ok, updated_message} ->
-      # Broadcast the updated message
-      topic = "messages:#{updated_message.id}"
-      Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:updated_message, updated_message})
+    message
+    |> Message.changeset(%{like_count: new_count})
+    |> Repo.update()
+    |> case do
+      {:ok, updated_message} ->
+        # Broadcast the updated message
+        topic = "messages:#{updated_message.id}"
+        Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:updated_message, updated_message})
 
-      {:ok, updated_message}
+        {:ok, updated_message}
 
-    {:error, changeset} ->
-      {:error, changeset}
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
-end
 
-def has_liked_message?(%Message{} = message, anonymous_id) do
-  like_query =
-    from(like in LikedBy,
-      where: like.message_id == ^message.id and like.anonymous_id == ^anonymous_id
-    )
+  def has_liked_message?(%Message{} = message, anonymous_id) do
+    like_query =
+      from(like in LikedBy,
+        where: like.message_id == ^message.id and like.anonymous_id == ^anonymous_id
+      )
 
-  case Repo.one(like_query) do
-    nil -> false
-    %LikedBy{} -> true
+    case Repo.one(like_query) do
+      nil -> false
+      %LikedBy{} -> true
+    end
   end
-end
 
   def subscribe(course_page_id) do
     topic = "#{course_page_id}"
@@ -282,12 +278,14 @@ end
         :newest -> [desc: :inserted_at]
         :oldest -> [asc: :inserted_at]
         :like_count -> [desc: :like_count]
-        _ -> [asc: :inserted_at] # Default to oldest
+        # Default to oldest
+        _ -> [asc: :inserted_at]
       end
 
     from(message in Message,
-    where: message.question_occurrence_id == ^question_id,
-    order_by: ^sort_order)
+      where: message.question_occurrence_id == ^question_id,
+      order_by: ^sort_order
+    )
     |> Repo.all()
   end
 

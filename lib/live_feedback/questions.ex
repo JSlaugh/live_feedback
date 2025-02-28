@@ -1,5 +1,4 @@
 defmodule LiveFeedback.Questions do
-
   @behaviour Bodyguard.Policy
 
   import Ecto.Query, warn: false
@@ -8,8 +7,7 @@ defmodule LiveFeedback.Questions do
   alias LiveFeedback.Courses.CoursePage
   alias LiveFeedback.Questions.QuestionOccurrence
   alias LiveFeedback.Questions.QuestionOptionsOccurrence
-  alias LiveFeedback.Questions.Queue
-
+  alias LiveFeedback.Queues.Queue
 
   def subscribe(queue_id) do
     topic = "questions:#{queue_id}"
@@ -28,13 +26,17 @@ defmodule LiveFeedback.Questions do
 
   #get all options for a question
   def list_options_for_question(question_occurrence_id) do
-    Repo.all(from o in QuestionOptionsOccurrence, where: o.question_occurrence_id == ^question_occurrence_id)
+    Repo.all(
+      from o in QuestionOptionsOccurrence,
+        where: o.question_occurrence_id == ^question_occurrence_id
+    )
   end
 
   #get specific question
   def get_question!(id) do
     Repo.get!(QuestionOccurrence, id)
-    |> Repo.preload(:question_options_occurrences) # Preload the associated question options
+    # Preload the associated question options
+    |> Repo.preload(:question_options_occurrences)
   end
 
   #get specific option
@@ -47,16 +49,18 @@ defmodule LiveFeedback.Questions do
   def get_course_name(course_page_id) do
     from(course in CoursePage,
       where: course.id == ^course_page_id,
-      select: course.title)
-      |> Repo.one()
+      select: course.title
+    )
+    |> Repo.one()
   end
 
   #get max display order to determine last question
   #used for reordering arrows and when adding new question
   def get_max_display_order(queue_id) do
-    query = from question in QuestionOccurrence,
-            where: question.queue_id == ^queue_id,
-            select: max(question.display_order)
+    query =
+      from question in QuestionOccurrence,
+        where: question.queue_id == ^queue_id,
+        select: max(question.display_order)
 
     case Repo.one(query) do
       nil -> 0 # If first question, return 0
@@ -80,6 +84,7 @@ defmodule LiveFeedback.Questions do
 
   def update_question(%QuestionOccurrence{} = question, attrs) do
     IO.inspect(attrs)
+
     question
     |> QuestionOccurrence.changeset(attrs)
     |> Repo.update()
@@ -109,7 +114,6 @@ defmodule LiveFeedback.Questions do
     end)
   end
 
-
   def add_option(attrs) do
     %QuestionOptionsOccurrence{}
     |> QuestionOptionsOccurrence.changeset(attrs)
@@ -119,6 +123,7 @@ defmodule LiveFeedback.Questions do
   def update_option(option_id, attrs) do
     option = get_question_option!(option_id)
     IO.inspect(option, label: "option to be updated")
+
     option
     |> QuestionOptionsOccurrence.changeset(attrs)
     |> Repo.update()
@@ -130,10 +135,11 @@ defmodule LiveFeedback.Questions do
   end
 
   def delete_all_options_for_question(question_occurrence_id) do
-    from(o in QuestionOptionsOccurrence, where: o.question_occurrence_id == ^question_occurrence_id)
+    from(o in QuestionOptionsOccurrence,
+      where: o.question_occurrence_id == ^question_occurrence_id
+    )
     |> Repo.delete_all()
   end
-
 
   def move_question(question_occurrence_id, direction) when direction in ["up", "down"] do
     Repo.transaction(fn ->
@@ -150,19 +156,31 @@ defmodule LiveFeedback.Questions do
       adjacent_question =
         Repo.one(
           from q in QuestionOccurrence,
-          where: q.queue_id == ^question.queue_id and q.display_order == ^comparison,
-          limit: 1
+            where: q.queue_id == ^question.queue_id and q.display_order == ^comparison,
+            limit: 1
         )
 
       # If there's no adjacent question, do nothing
       if adjacent_question do
         # Swap their display_order values
-        Repo.update!(Ecto.Changeset.change(question, display_order: question.display_order + offset))
-        Repo.update!(Ecto.Changeset.change(adjacent_question, display_order: adjacent_question.display_order - offset))
+        Repo.update!(
+          Ecto.Changeset.change(question, display_order: question.display_order + offset)
+        )
+
+        Repo.update!(
+          Ecto.Changeset.change(adjacent_question,
+            display_order: adjacent_question.display_order - offset
+          )
+        )
 
         # Broadcast update
         topic = "questions:#{question.queue_id}"
-        Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:swapped_questions, question, adjacent_question})
+
+        Phoenix.PubSub.broadcast(
+          LiveFeedback.PubSub,
+          topic,
+          {:swapped_questions, question, adjacent_question}
+        )
 
         {:ok, {question, adjacent_question}}
       else
@@ -170,5 +188,4 @@ defmodule LiveFeedback.Questions do
       end
     end)
   end
-
 end

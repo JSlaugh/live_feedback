@@ -78,7 +78,10 @@ defmodule LiveFeedback.Courses do
 
   def join_class(attrs \\ %{}) do
     # Check if a UserProfile already exists for the user and course
-    case Repo.get_by(UserProfile, user_id: attrs["user_id"], course_page_id: attrs["course_page_id"]) do
+    case Repo.get_by(UserProfile,
+           user_id: attrs["user_id"],
+           course_page_id: attrs["course_page_id"]
+         ) do
       nil ->
         # No existing profile, so insert a new one
         %UserProfile{}
@@ -136,9 +139,11 @@ defmodule LiveFeedback.Courses do
   end
 
   def leave_course_page(course_page_id, user_id) do
-
-    profile = Repo.one(from profile in UserProfile,
-      where: profile.user_id == ^user_id and profile.course_page_id == ^course_page_id)
+    profile =
+      Repo.one(
+        from profile in UserProfile,
+          where: profile.user_id == ^user_id and profile.course_page_id == ^course_page_id
+      )
 
     if profile.is_active do
       profile
@@ -167,21 +172,25 @@ defmodule LiveFeedback.Courses do
   end
 
   def get_course_page_by_slug(slug) do
-  case Repo.get_by(CoursePage, slug: slug) do
-    nil -> {:error, :not_found}
-    course -> {:ok, course}
+    case Repo.get_by(CoursePage, slug: slug) do
+      nil -> {:error, :not_found}
+      course -> {:ok, course}
+    end
   end
-end
 
   def list_course_pages_by_user(user_id, role) do
-    Repo.all(from cp in CoursePage,
+    Repo.all(
+      from cp in CoursePage,
         join: profile in UserProfile,
         on: profile.course_page_id == cp.id,
-        where: profile.user_id == ^user_id and profile.role == ^role and profile.is_active == true)
+        where: profile.user_id == ^user_id and profile.role == ^role and profile.is_active == true
+    )
   end
 
   def get_profile_for_course(user_id, course_page_id) do
-    Repo.one(from profile in UserProfile,
-        where: profile.user_id == ^user_id and profile.course_page_id == ^course_page_id)
+    Repo.one(
+      from profile in UserProfile,
+        where: profile.user_id == ^user_id and profile.course_page_id == ^course_page_id
+    )
   end
 end
