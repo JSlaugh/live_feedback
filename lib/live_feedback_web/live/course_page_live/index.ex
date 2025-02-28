@@ -11,7 +11,7 @@ defmodule LiveFeedbackWeb.CoursePageLive.Index do
       |> assign(:present_mode, "user")
       |> stream(
          :course_pages,
-         Courses.list_course_pages_by_user(socket.assigns.current_user.id, "user")
+         []
        )}
   end
 
@@ -54,10 +54,18 @@ defmodule LiveFeedbackWeb.CoursePageLive.Index do
     |> assign(:course_page, %CoursePage{})
   end
 
+  defp apply_action(socket, :host, _params) do
+    course_list = Courses.list_course_pages_by_user(socket.assigns.current_user.id, "owner")
+    socket
+    |> assign(:present_mode, "owner")
+    |> stream(:course_pages, course_list, reset: true)
+  end
+
   defp apply_action(socket, :index, _params) do
+    course_list = Courses.list_course_pages_by_user(socket.assigns.current_user.id, "user")
     socket
     |> assign(:page_title, "Listing Feedback pages")
-    |> assign(:course_page, nil)
+    |> stream(:course_pages, course_list, reset: true)
   end
 
   @impl true
@@ -112,11 +120,12 @@ defmodule LiveFeedbackWeb.CoursePageLive.Index do
     end
   end
 
-  def handle_event("toggle_course_list", %{"role" => role}, socket) do
-    course_list = Courses.list_course_pages_by_user(socket.assigns.current_user.id, role)
-    {:noreply,
-      socket
-      |> assign(:present_mode, role)
-      |> stream(:course_pages, course_list, reset: true)}
-  end
+
+  #def handle_event("toggle_course_list", %{"role" => role}, socket) do
+    #course_list = Courses.list_course_pages_by_user(socket.assigns.current_user.id, role)
+    #{:noreply,
+      #socket
+      #|> assign(:present_mode, role)
+      #|> stream(:course_pages, course_list, reset: true)}
+  #end
 end

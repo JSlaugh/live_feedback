@@ -268,7 +268,7 @@ defmodule LiveFeedback.Messages do
   end
 
   def subscribe(course_page_id) do
-    topic = "messages:#{course_page_id}"
+    topic = "#{course_page_id}"
     Phoenix.PubSub.subscribe(LiveFeedback.PubSub, topic)
   end
 

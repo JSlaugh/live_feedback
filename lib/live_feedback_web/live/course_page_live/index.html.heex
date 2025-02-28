@@ -13,7 +13,7 @@
           </h1>
           <!-- Action button section -->
         </div>
-        
+
         <div class="flex justify-between ">
           <div class="flex items-center">
             <%= if @present_mode == "owner" do %>
@@ -32,11 +32,10 @@
               </.link>
             <% end %>
           </div>
-          
+
           <div>
-            <button
-              phx-click="toggle_course_list"
-              phx-value-role="user"
+            <.link navigate={~p"/course_pages"}
+
               class={
                 if @present_mode == "user" do
                   "px-4 py-2 font-medium border-b-2 border-blue-500 text-blue-600"
@@ -46,11 +45,10 @@
               }
             >
               Join
-            </button>
-            
-            <button
-              phx-click="toggle_course_list"
-              phx-value-role="owner"
+            </.link>
+
+            <.link navigate={~p"/course_pages/host"}
+
               class={
                 if @present_mode == "owner" do
                   "px-4 py-2 font-medium border-b-2 border-blue-500 text-blue-600"
@@ -60,7 +58,7 @@
               }
             >
               Host
-            </button>
+            </.link>
           </div>
         </div>
       </div>
@@ -74,7 +72,7 @@
   row_click={
     fn {_id, course_page} ->
       if @present_mode == "owner" do
-        JS.navigate(~p"/course_pages/queue/#{course_page.id}")
+        JS.navigate(~p"/course_pages/#{course_page.id}/queues")
       else
         JS.navigate(~p"/page/#{course_page.slug}")
       end
@@ -82,23 +80,19 @@
   }
 >
   <:col :let={{_id, course_page}} label="Title"><%= course_page.title %></:col>
-  
+
   <:col :let={{_id, course_page}} label="Description"><%= course_page.description %></:col>
-  
+
   <:col :let={{_id, course_page}} label="Slug"><%= course_page.slug %></:col>
-  
+
   <:action :let={{_id, course_page}}>
     <%= if @present_mode == "owner" do %>
-      <div class="sr-only">
-        <.link navigate={~p"/course_pages/#{course_page}"}>Show</.link>
-      </div>
-      
       <.link patch={~p"/course_pages/#{course_page}/edit"}>
         <.icon name="hero-pencil-square" class="text-blue-500" />
       </.link>
     <% end %>
   </:action>
-  
+
   <:action :let={{id, course_page}}>
     <%= if @present_mode == "owner" do %>
       <.link
@@ -123,7 +117,7 @@
   :if={@live_action in [:new, :edit]}
   id="course_page-modal"
   show
-  on_cancel={JS.patch(~p"/course_pages")}
+  on_cancel={JS.patch(~p"/course_pages/host")}
 >
   <.live_component
     module={LiveFeedbackWeb.CoursePageLive.NewCourseFormComponent}
@@ -132,7 +126,7 @@
     action={@live_action}
     course_page={@course_page}
     current_user={@current_user}
-    patch={~p"/course_pages"}
+    patch={~p"/course_pages/host"}
   />
 </.modal>
 

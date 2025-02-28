@@ -14,6 +14,7 @@ defmodule LiveFeedback.Questions do
     Phoenix.PubSub.subscribe(LiveFeedback.PubSub, topic)
   end
 
+  #gets all question for that queue so it can be displayed on the page
   def list_questions_for_queue(queue_id) do
     from(question in QuestionOccurrence,
       where: question.queue_id == ^queue_id,
@@ -23,6 +24,7 @@ defmodule LiveFeedback.Questions do
     |> Repo.all()
   end
 
+  #get all options for a question
   def list_options_for_question(question_occurrence_id) do
     Repo.all(
       from o in QuestionOptionsOccurrence,
@@ -30,16 +32,20 @@ defmodule LiveFeedback.Questions do
     )
   end
 
+  #get specific question
   def get_question!(id) do
     Repo.get!(QuestionOccurrence, id)
     # Preload the associated question options
     |> Repo.preload(:question_options_occurrences)
   end
 
+  #get specific option
   def get_question_option!(id), do: Repo.get!(QuestionOptionsOccurrence, id)
 
+  #get queue
   def get_queue!(id), do: Repo.get!(Queue, id)
 
+  #get course name so it can be displayed
   def get_course_name(course_page_id) do
     from(course in CoursePage,
       where: course.id == ^course_page_id,
@@ -48,6 +54,8 @@ defmodule LiveFeedback.Questions do
     |> Repo.one()
   end
 
+  #get max display order to determine last question
+  #used for reordering arrows and when adding new question
   def get_max_display_order(queue_id) do
     query =
       from question in QuestionOccurrence,
@@ -55,12 +63,11 @@ defmodule LiveFeedback.Questions do
         select: max(question.display_order)
 
     case Repo.one(query) do
-      # If no questions exist, return 0
-      nil -> 1
-      # Return the maximum display_order
-      max_display_order -> max_display_order
+      nil -> 0 # If first question, return 0
+      max_display_order -> max_display_order  # Return the maximum display_order
     end
   end
+
 
   def add_question(attrs \\ %{}) do
     %QuestionOccurrence{}
@@ -83,9 +90,11 @@ defmodule LiveFeedback.Questions do
     |> Repo.update()
   end
 
+  #reorders questions to maintain sequential display_order before deleting question
   def delete_question(%QuestionOccurrence{} = question) do
     Repo.transaction(fn ->
       # Update display_order of questions with a greater order
+      #moves them down by 1 to maintain sequential display order after deleting the question
       if question.display_order < get_max_display_order(question.queue_id) do
         from(q in QuestionOccurrence,
           where: q.queue_id == ^question.queue_id and q.display_order > ^question.display_order,
@@ -98,7 +107,7 @@ defmodule LiveFeedback.Questions do
       case Repo.delete(question) do
         {:ok, question} ->
           {:ok, question}
-
+        #rolls back changes if the question doesn't delete
         {:error, changeset} ->
           Repo.rollback(changeset)
       end

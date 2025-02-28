@@ -1,3 +1,8 @@
+#Component for the forms so each element has an individual state
+#and can be used for both editing and adding a new question
+
+#determines whether to show the question for viewing or the form for editing
+#hides and shows through css because the form cannot be created, deleted, and created again
 defmodule LiveFeedback.QuestionLive.QuestionComponent do
   use Phoenix.LiveComponent
   @impl true
@@ -15,7 +20,7 @@ defmodule LiveFeedback.QuestionLive.QuestionComponent do
           id={"form_#{@question.id}"}
         />
       </div>
-      
+
       <div
         class={if "#{@show_form}" != "#{@question.id}", do: "block", else: "hidden"}
         id={"question_view_#{@question.id}"}
@@ -41,6 +46,7 @@ defmodule LiveFeedback.QuestionLive.QuestionComponent do
   end
 end
 
+#viewing a question, simple box with content and buttons
 defmodule LiveFeedbackWeb.QuestionLive.ViewQuestion do
   use Phoenix.LiveComponent
   import LiveFeedbackWeb.CoreComponents
@@ -52,8 +58,11 @@ defmodule LiveFeedbackWeb.QuestionLive.ViewQuestion do
       class="flex justify-between items-center p-4 bg-white rounded-lg border border-gray-300 hover:border-blue-500 transition-all shadow-sm mb-4"
     >
       <p class="text-gray-800"><%= @question.question_content %></p>
-      
+
       <div class="flex items-center gap-2">
+        <!-- arrows for reordering questions.
+        doesn't show up arrow if at top & vice versa
+        max = max_question_num; min = 1-->
         <div class="flex flex-col" id={"navigation_buttons_#{@question.id}"} phx-update="replace">
           <button
             id={"up_button_#{@question.id}"}
@@ -64,7 +73,7 @@ defmodule LiveFeedbackWeb.QuestionLive.ViewQuestion do
           >
             <.icon name="hero-chevron-up" />
           </button>
-          
+
           <button
             id={"down_button_#{@question.id}"}
             phx-click="move_question"
@@ -75,9 +84,9 @@ defmodule LiveFeedbackWeb.QuestionLive.ViewQuestion do
             <.icon name="hero-chevron-down" />
           </button>
         </div>
-        
+
         <div class="border-l border-gray-300 h-8 mx-2"></div>
-        
+        <!-- Delete button, pops up modal-->
         <button
           id={"delete_button_#{@question.id}"}
           phx-click="confirm_delete"
@@ -92,6 +101,7 @@ defmodule LiveFeedbackWeb.QuestionLive.ViewQuestion do
   end
 end
 
+#start of form component
 defmodule LiveFeedbackWeb.QuestionLive.FormComponent do
   use Phoenix.LiveComponent
 
@@ -125,29 +135,19 @@ defmodule LiveFeedbackWeb.QuestionLive.FormComponent do
               class="w-full px-3 py-2 h-[46px] bg-white border border-gray-300 rounded-md text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="QA" selected={@question_type == "QA"}>Q&A</option>
-              
-              <option value="free_response" selected={@question_type == "free_response"}>
-                Free Response
-              </option>
-              
-              <option value="multiple_choice" selected={@question_type == "multiple_choice"}>
-                Multiple Choice
-              </option>
-              
-              <option value="multi-select" selected={@question_type == "multi-select"}>
-                Multi-Select
-              </option>
-              
+              <!--<option value="free_response" selected={@question_type == "free_response"}>Free Response</option> activity type not currently offered-->
+              <option value="multiple_choice" selected={@question_type == "multiple_choice"}>Multiple Choice</option>
+              <option value="multi-select" selected={@question_type == "multi-select"}>Multi-Select</option>
               <option value="true_false" selected={@question_type == "true_false"}>True/False</option>
             </select>
           </div>
         </div>
-        <!-- Render Options -->
-        <div
-          id={"question_options_#{@question.id}"}
-          phx-key={"question_options_#{@question.id}"}
-          phx-update="replace"
-        >
+
+      <!-- Render Options
+
+      multiple choice and multiselect have option content
+      so they are a different form than T/F-->
+        <div id={"question_options_#{@question.id}"} phx-key={"question_options_#{@question.id}"} phx-update="replace">
           <%= if @question_type == "multiple_choice" or @question_type == "multi-select" do %>
             <.live_component
               module={LiveFeedbackWeb.QuestionLive.MultipleChoice}
@@ -157,7 +157,7 @@ defmodule LiveFeedbackWeb.QuestionLive.FormComponent do
               phx-key={"MC_Options_#{@question.id}"}
             />
           <% end %>
-          
+
           <%= if @question_type == "true_false" do %>
             <.live_component
               module={LiveFeedbackWeb.QuestionLive.TrueFalse}
@@ -167,10 +167,11 @@ defmodule LiveFeedbackWeb.QuestionLive.FormComponent do
             />
           <% end %>
         </div>
-        
+
         <div class="pb-8"></div>
       </div>
-      <!-- Required Toggle -->
+
+      <!-- Required Toggle & submit button -->
       <div class="absolute bottom-0 right-0 left-0 p-2 bg-white border-t border-gray-200">
         <div class="flex justify-end items-center gap-4">
           <.live_component
@@ -191,6 +192,7 @@ defmodule LiveFeedbackWeb.QuestionLive.FormComponent do
   end
 end
 
+#Show the question content
 defmodule LiveFeedbackWeb.QuestionLive.QuestionContent do
   use Phoenix.LiveComponent
 
@@ -211,16 +213,14 @@ defmodule LiveFeedbackWeb.QuestionLive.QuestionContent do
   end
 end
 
+#options sections, for both multiple choice and multiselect
 defmodule LiveFeedbackWeb.QuestionLive.MultipleChoice do
   use Phoenix.LiveComponent
 
   def render(assigns) do
     ~H"""
-    <div
-      id={"MC_options_#{@question.id}"}
-      phx-key={"MC_Options_#{@question.id}"}
-      class="space-y-3 mt-4"
-    >
+    <div id={"MC_options_#{@question.id}"} phx-key={"MC_Options_#{@question.id}"} class="space-y-3 mt-4">
+      <!--goes through a list of options, packages up options for components-->
       <%= for {letter, _index} <- Enum.with_index(["A", "B", "C", "D"]) do %>
         <% option =
           Enum.find(@question.question_options_occurrences, fn o -> o.option_order == letter end) ||
@@ -255,25 +255,20 @@ defmodule LiveFeedbackWeb.QuestionLive.MultipleChoice do
   end
 end
 
+#options section for T/F
 defmodule LiveFeedbackWeb.QuestionLive.TrueFalse do
   use Phoenix.LiveComponent
 
   def render(assigns) do
     ~H"""
-    <div
-      id={"TF_options_#{@question.id}"}
-      phx-key={"TF_Options_#{@question.id}"}
-      class="space-y-3 mt-4"
-    >
+    <div id={"TF_options_#{@question.id}"} phx-key={"TF_Options_#{@question.id}"} class="space-y-3 mt-4">
+      <!--creates and option T/F, uses letter A&B so it is compatible
+      with Multiple Choice when parsing through parameters in the event handler-->
       <%= for {letter, _index} <- Enum.with_index(["A", "B"]) do %>
-        <% option =
-          Enum.find(@question.question_options_occurrences, fn o -> o.option_order == letter end) ||
-            %LiveFeedback.Questions.QuestionOptionsOccurrence{
-              id: "#{letter}",
-              option_content: "",
-              is_correct: false,
-              option_order: letter
-            } %>
+        <!--finds the option to determine if it is correct
+        I believe there is a small bug here-->
+        <% option = Enum.find(@question.question_options_occurrences, fn o -> o.option_order == letter end) ||
+                    %LiveFeedback.Questions.QuestionOptionsOccurrence{id: "#{letter}", option_content: "", is_correct: false, option_order: letter} %>
         <div class="flex items-center gap-3 pl-2">
           <input
             type="radio"
@@ -291,6 +286,7 @@ defmodule LiveFeedbackWeb.QuestionLive.TrueFalse do
   end
 end
 
+#handles checkboxes vs. radio buttons
 defmodule LiveFeedbackWeb.QuestionLive.RadioOrCheckbox do
   use Phoenix.LiveComponent
 
@@ -308,6 +304,7 @@ defmodule LiveFeedbackWeb.QuestionLive.RadioOrCheckbox do
   end
 end
 
+#show option content
 defmodule LiveFeedbackWeb.QuestionLive.OptionContent do
   use Phoenix.LiveComponent
 
@@ -325,6 +322,7 @@ defmodule LiveFeedbackWeb.QuestionLive.OptionContent do
   end
 end
 
+#shows "required" toggle switch
 defmodule LiveFeedbackWeb.QuestionLive.RequiredToggle do
   use Phoenix.LiveComponent
 
@@ -334,7 +332,7 @@ defmodule LiveFeedbackWeb.QuestionLive.RequiredToggle do
       <label for={"required_toggle_input_#{@question.id}"} class="text-sm text-gray-700">
         Required
       </label>
-      
+
       <label class="relative inline-flex items-center cursor-pointer">
         <input
           type="checkbox"
