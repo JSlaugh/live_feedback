@@ -6,7 +6,7 @@ defmodule LiveFeedbackWeb.UserAuth do
 
   alias LiveFeedback.Accounts
   alias LiveFeedback.Selection
-  alias LiveFeedback.Queue
+  alias LiveFeedback.Queues
 
   # Make the remember me cookie valid for 60 days.
   # If you want bump or reduce this value, also change
@@ -167,7 +167,8 @@ defmodule LiveFeedbackWeb.UserAuth do
   end
 
   def on_mount(:require_course_owner, params, _session, socket) do
-    socket = mount_current_user(socket, _session)  # Ensure user is assigned
+    # Ensure user is assigned
+    socket = mount_current_user(socket, _session)
 
     course_page_id = String.to_integer(params["id"])
     user = socket.assigns[:current_user]
@@ -180,16 +181,17 @@ defmodule LiveFeedbackWeb.UserAuth do
           {:cont, socket}
 
         queue_id ->
-          queue = Queue.get_queue!(queue_id)
-          if course_page_id == queue.course_page_id do
+          queue = Queues.get_queue!(queue_id)
+
+          if course_page_id == Queues.course_page_id() do
             {:cont, socket}
           else
-              socket =
-                socket
-                |> Phoenix.LiveView.put_flash(:error, "You are not authorized to access this page.")
-                |> Phoenix.LiveView.redirect(to: "/course_pages")
+            socket =
+              socket
+              |> Phoenix.LiveView.put_flash(:error, "You are not authorized to access this page.")
+              |> Phoenix.LiveView.redirect(to: "/course_pages")
 
-              {:halt, socket}
+            {:halt, socket}
           end
       end
     else
@@ -257,7 +259,9 @@ defmodule LiveFeedbackWeb.UserAuth do
 
     if user && course_page_id do
       case Selection.get_profile_id(user.id, course_page_id) do
-        %{role: "owner"} -> conn
+        %{role: "owner"} ->
+          conn
+
         _ ->
           conn
           |> put_flash(:error, "You are not authorized to access this page.")
@@ -273,7 +277,6 @@ defmodule LiveFeedbackWeb.UserAuth do
       |> halt()
     end
   end
-
 
   defp put_token_in_session(conn, token) do
     conn
@@ -295,5 +298,4 @@ defmodule LiveFeedbackWeb.UserAuth do
       _ -> false
     end
   end
-
 end

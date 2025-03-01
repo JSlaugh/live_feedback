@@ -4,7 +4,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
   alias LiveFeedback.Messages
   alias LiveFeedback.Courses
   alias LiveFeedback.Questions
-  alias LiveFeedback.Queue
+  alias LiveFeedback.Queues
   alias LiveFeedback.Messages.Message
   alias LiveFeedback.Selection
   alias LiveFeedback.Activity
@@ -16,19 +16,27 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     # Get Course Page Object -- We need CoursePageID, CourseTitle,
     course_page = Courses.get_course_page_by_slug!(slug)
     # Get the queue if it exists
-  {queue, queue_id, first_question, messages, question_responses, max_question_num} =
-    case Queue.get_presenting_queue_for_course(course_page.id) do
-      nil ->
-        {nil, nil, nil, [], nil, nil}
-      queue ->
-        queue_id = queue.id
-        first_question = Selection.get_question_from_queue(queue.id, 1)
-        messages = if first_question && first_question.question_type == "QA", do: Messages.get_messages_for_question(first_question.id), else: nil
-        question_responses = if first_question, do: Selection.get_question_responses(first_question.id), else: nil
-        max_question_num = Questions.get_max_display_order(queue.id)
+    {queue, queue_id, first_question, messages, question_responses, max_question_num} =
+      case Queues.get_presenting_queue_for_course(course_page.id) do
+        nil ->
+          {nil, nil, nil, [], nil, nil}
 
-        {queue, queue_id, first_question, messages, question_responses, max_question_num}
-    end
+        queue ->
+          queue_id = Queues.id()
+          first_question = Selection.get_question_from_queue(Queues.id(), 1)
+
+          messages =
+            if first_question && first_question.question_type == "QA",
+              do: Messages.get_messages_for_question(first_question.id),
+              else: nil
+
+          question_responses =
+            if first_question, do: Selection.get_question_responses(first_question.id), else: nil
+
+          max_question_num = Questions.get_max_display_order(Queues.id())
+
+          {queue, queue_id, first_question, messages, question_responses, max_question_num}
+      end
 
     # Get the UserID
     user_id = Map.get(session, "user_id")
@@ -38,7 +46,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     anonymous_id = Map.get(session, "anonymous_id")
 
     # Determine if they are the Presenter or not
-    presenter = (if profile.role == "owner", do: true, else: false)
+    presenter = if profile.role == "owner", do: true, else: false
     # Set the Visibility of the QR Code to be based on if they are a presenter or not
     qr_code_visible = presenter
 
@@ -105,23 +113,38 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
   def handle_event("change_question", %{"direction" => direction}, socket) do
     current_question_num = socket.assigns.current_question_num
 
-    next_question_num = if(direction=="next", do: current_question_num + 1, else: current_question_num - 1 )
+    next_question_num =
+      if(direction == "next", do: current_question_num + 1, else: current_question_num - 1)
 
     next_question = Selection.get_question_from_queue(socket.assigns.queue_id, next_question_num)
 
-    question_responses = if(next_question.question_type != "QA",
-      do: Selection.get_question_responses(next_question.id), else: nil)
+    question_responses =
+      if(next_question.question_type != "QA",
+        do: Selection.get_question_responses(next_question.id),
+        else: nil
+      )
 
-    messages = if(next_question.question_type == "QA",
-      do: Messages.get_messages_for_question(next_question.id), else: [])
+    messages =
+      if(next_question.question_type == "QA",
+        do: Messages.get_messages_for_question(next_question.id),
+        else: []
+      )
 
     topic = "#{socket.assigns.course_page.id}"
-    Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:change_question, next_question_num, next_question, question_responses, messages})
+
+    Phoenix.PubSub.broadcast(
+      LiveFeedback.PubSub,
+      topic,
+      {:change_question, next_question_num, next_question, question_responses, messages}
+    )
 
     {:noreply, socket}
   end
 
-  def handle_info({:change_question, next_question_num, next_question, question_responses, messages}, socket) do
+  def handle_info(
+        {:change_question, next_question_num, next_question, question_responses, messages},
+        socket
+      ) do
     {:noreply,
      socket
      |> assign(:current_question_num, next_question_num)
@@ -207,8 +230,8 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
 
   # Handle Info for Refreshing Responses to Quiz Questions
   def handle_info({:refresh_responses}, socket) do
-     question_responses = Selection.get_question_responses(socket.assigns.current_question.id)
-     {:noreply, assign(socket, :responses, question_responses)}
+    question_responses = Selection.get_question_responses(socket.assigns.current_question.id)
+    {:noreply, assign(socket, :responses, question_responses)}
   end
 
   # Handle Info for testing/troubleshooting purposes only ------------------------------------------

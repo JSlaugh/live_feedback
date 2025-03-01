@@ -33,6 +33,12 @@ defmodule LiveFeedbackWeb.QueueLive.Index do
     |> assign(:course_page_id, course_page_id)
   end
 
+  defp apply_action(socket, :edit, %{"id" => id}) do
+    socket
+    |> assign(:page_title, "Edit Queue")
+    |> assign(:queue, Queues.get_queue!(id))
+  end
+
   @impl true
   def handle_info({LiveFeedbackWeb.QueueLive.FormComponent, {:saved, queue}}, socket) do
     {:noreply, stream_insert(socket, :queues, queue)}
