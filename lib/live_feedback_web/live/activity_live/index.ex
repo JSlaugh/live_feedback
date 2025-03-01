@@ -22,8 +22,8 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
           {nil, nil, nil, [], nil, nil}
 
         queue ->
-          queue_id = Queues.id()
-          first_question = Selection.get_question_from_queue(Queues.id(), 1)
+          queue_id = queue.id
+          first_question = Selection.get_question_from_queue(queue.id, 1)
 
           messages =
             if first_question && first_question.question_type == "QA",
@@ -33,7 +33,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
           question_responses =
             if first_question, do: Selection.get_question_responses(first_question.id), else: nil
 
-          max_question_num = Questions.get_max_display_order(Queues.id())
+          max_question_num = Questions.get_max_display_order(queue.id)
 
           {queue, queue_id, first_question, messages, question_responses, max_question_num}
       end

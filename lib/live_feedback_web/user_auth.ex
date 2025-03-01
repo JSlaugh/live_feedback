@@ -183,7 +183,7 @@ defmodule LiveFeedbackWeb.UserAuth do
         queue_id ->
           queue = Queues.get_queue!(queue_id)
 
-          if course_page_id == Queues.course_page_id() do
+          if course_page_id == queue.course_page_id do
             {:cont, socket}
           else
             socket =

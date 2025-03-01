@@ -68,8 +68,6 @@ defmodule LiveFeedback.Queues do
   Creates a queue.
   """
   def create_queue(attrs \\ %{}) do
-    IO.inspect(attrs, label: "Queue Params")
-
     %Queue{}
     |> Queue.changeset(attrs)
     |> Repo.insert()
