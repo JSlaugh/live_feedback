@@ -1,19 +1,35 @@
 
 <%= if !@csv_gathered do %>
 <div class="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg">
-  <h1 class="text-2xl font-semibold text-gray-800 mb-4">All Participation Requests</h1>
+  <h1 class="text-2xl font-semibold text-gray-800 mb-4">All Available Question Queues</h1>
 
   <div class="overflow-x-auto">
     <table class="w-full border border-gray-300 rounded-lg shadow-sm">
       <thead class="bg-gray-200 text-gray-700">
         <tr class="text-left">
-          <th class="py-2 px-4 border-b">Available Dates</th>
+          <th class="py-2 px-4 border-b">Queue</th>
+          <th class="py-2 px-4 border-b">Readable Date</th>
+          <th class="py-2 px-4 border-b">Date</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-200">
-        <%= for {_id, participation} <- @streams.participation_dates do %>
+        <%= for date <- @participation_dates do %>
           <tr class="hover:bg-gray-100">
-            <td class="py-2 px-4 border-b"><%= participation.presented_date %></td>
+            <td class="py-2 px-4 border-b"><%= date.name %></td>
+            <td class="py-2 px-4 border-b">
+              <%= if date.presented_date do %>
+              <%= Timex.Format.DateTime.Formatter.format!(date.presented_date, "{WDfull}, {Mfull} {D}, {YYYY}") %>
+              <% else %>
+                <i>Queue not presented yet</i>
+              <% end %>
+            </td>
+            <td class="py-2 px-4 border-b">
+              <%= if date.presented_date do %>
+                <%= date.presented_date %>
+              <% else %>
+                <i>Queue not presented yet</i>
+              <% end %>
+            </td>
           </tr>
         <% end %>
       </tbody>
@@ -30,33 +46,37 @@
 <%= if @csv_gathered do %>
 
   <div class="flex items-center justify-center">
-    <a href={"/course_pages/#{@course_page_id}/participation/export"} class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300">
-      Download CSV
+    <a href={"/course_pages/#{@course_page_id}/participation/export?date=#{@date_presented}"} class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300">
+      Download CSV for <%= @date_presented %>
     </a>
   </div>
 
-  <div class="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg">
-    <h1 class="text-2xl font-semibold text-gray-800 mb-4">All Participation Requests</h1>
+  <div class="w-4/5 mx-auto p-6 bg-white shadow-md rounded-lg">
+    <h1 class="text-2xl font-semibold text-gray-800 mb-4 text-center">CSV Preview</h1>
 
     <div class="overflow-x-auto">
       <table class="w-full border border-gray-300 rounded-lg shadow-sm">
         <thead class="bg-gray-200 text-gray-700">
           <tr class="text-left">
-            <th class="py-2 px-4 border-b">Class ID</th>
+            <th class="py-2 px-4 border-b">Class Code</th>
             <th class="py-2 px-4 border-b">Date Asked</th>
-            <th class="py-2 px-4 border-b">Custom ID</th>
+            <th class="py-2 px-4 border-b">Participant Display Name</th>
+            <th class="py-2 px-4 border-b">Participant ID</th>
+            <th class="py-2 px-4 border-b">Question ID</th>
             <th class="py-2 px-4 border-b">Question</th>
             <th class="py-2 px-4 border-b">Option</th>
             <th class="py-2 px-4 border-b">Option Picked</th>
-            <th class="py-2 px-4 border-b">Correct Y/N</th>
+            <th class="py-2 px-4 border-b">Correct</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200">
-          <%= for [presented_date, custom_registration_id, question_content, option_content, option_order, correct_yn] <- @participation_data do %>
-            <tr class="hover:bg-gray-100">
+          <%= for [presented_date, display_name, custom_registration_id, question_id, question_content, option_content, option_order, correct_yn] <- @participation_data do %>
+            <tr class="hover:bg-gray-100 text-gray-700">
               <td class="py-2 px-4 border-b"><%= @course_page_id %></td>
               <td class="py-2 px-4 border-b"><%= presented_date %></td>
+              <td class="py-2 px-4 border-b"><%= display_name %></td>
               <td class="py-2 px-4 border-b"><%= custom_registration_id %></td>
+              <td class="py-2 px-4 border-b"><%= question_id %></td>
               <td class="py-2 px-4 border-b"><%= question_content %></td>
               <td class="py-2 px-4 border-b"><%= option_content %></td>
               <td class="py-2 px-4 border-b"><%= option_order %></td>
@@ -66,5 +86,5 @@
         </tbody>
       </table>
     </div>
-  </div>
+</div>
 <% end %>

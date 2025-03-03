@@ -63,7 +63,8 @@ defmodule LiveFeedback.MixProject do
       {:bandit, "~> 1.5"},
       {:uuid, "~> 1.1"},
       {:qr_code, "~> 3.0.0"},
-      {:bodyguard, "~> 2.4"}
+      {:bodyguard, "~> 2.4"},
+      {:timex, "~> 3.7"}
     ]
   end
 

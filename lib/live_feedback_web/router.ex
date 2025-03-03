@@ -84,6 +84,10 @@ defmodule LiveFeedbackWeb.Router do
       live "/course_pages/:id", CoursePageLive, :update
       live "/course_pages/:id/delete", CoursePageLive, :delete
 
+      # Download the participation (attendance) summary data
+      live "/course_pages/:course_page_id/participation", ParticipationLive.Index, :index
+      get "/course_pages/:course_page_id/participation/export", ParticipationController, :download_csv
+
       # This is a test/template page
 
       live "/page/testtemplate", ActivityLive.Index, :index
@@ -99,9 +103,6 @@ defmodule LiveFeedbackWeb.Router do
     live "/course_pages/:id/queues/", QueueLive, :index
     live "/course_pages/:id/queues/new", QueueLive, :new
 
-    # Download the participation (attendance) summary data
-    live "/course_pages/:course_page_id/participation", ParticipationLive.Index, :index
-    get "/course_pages/:course_page_id/participation/export", ParticipationController, :download_csv
     end
   end
 

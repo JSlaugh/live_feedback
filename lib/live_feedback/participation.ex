@@ -6,17 +6,19 @@ defmodule LiveFeedback.Participation do
 
   import Ecto.Query, warn: false
 
-  alias LiveFeedback.Questions.{Queue, QueueOccurrence}
+  alias LiveFeedback.Queues.Queue
   alias LiveFeedback.Repo
   alias LiveFeedback.Participation.ParticipationRequest
 
   def list_all_available_participation_dates(course_page_id) do
     query =
-      from qo in QueueOccurrence,
-      join: qoo in Queue, on: qo.queue_id == qoo.id,
-        distinct: qo.presented_date,
-        where: qoo.course_page_id == ^course_page_id,
-        order_by: [asc: qo.presented_date]
+      from q in Queue,
+        select: %{
+          name: q.name,
+          presented_date: q.presented_date,
+        },
+        where: q.course_page_id == ^course_page_id,
+        order_by: [asc: q.presented_date]
 
     Repo.all(query)
   end

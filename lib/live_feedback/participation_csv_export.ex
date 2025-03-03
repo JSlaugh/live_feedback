@@ -15,27 +15,28 @@ defmodule LiveFeedback.ParticipationCsvExport do
     parsed_date = Date.from_iso8601!(date_param)
 
     # Headers for CSV data
-    headers = ["presented_date", "custom_registration_id", "question_content", "option_content", "option_order", "correct_yn"]
+    headers = ["presented_date", "display_name", "custom_registration_id", "question_id", "question_content", "option_content", "option_order", "correct_yn"]
 
     # Query your data in the format for participation summaries
     query =
       from qor in "question_options_responses",
       join: qoo in "question_options_occurrences", on: qor.question_options_occurrence_id == qoo.id,
       join: qo in "question_occurrences", on: qoo.question_occurrence_id == qo.id,
-      join: qo2 in "queue_occurrences", on: qo.queue_id == qo2.queue_id,
+      join: q in "queues", on: qo.queue_id == q.id,
       join: up in "user_profiles", on: qor.user_profile_id == up.id,
       select: [
-        presented_date: qo2.presented_date,
+        presented_date: q.presented_date,
+        display_name: up.display_name,
         custom_registration_id: up.custom_registration_id,
+        question_id: qo.question_id,
         question_content: qo.question_content,
         option_content: qoo.option_content,
         option_order: qoo.option_order,
         correct_yn: fragment("CASE WHEN ? IS TRUE THEN 1 ELSE 0 END", qoo.is_correct)
       ],
       where: up.course_page_id == ^course_page_id,
-      where: qo2.presented_date == ^parsed_date,
-      order_by: [asc: qo2.presented_date, asc: up.custom_registration_id]
-
+      where: q.presented_date == ^parsed_date,
+      order_by: [asc: q.presented_date, asc: up.custom_registration_id]
 
     participation_summary =
       Repo.all(query)

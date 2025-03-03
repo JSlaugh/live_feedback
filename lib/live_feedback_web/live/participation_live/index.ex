@@ -19,7 +19,7 @@ defmodule LiveFeedbackWeb.ParticipationLive.Index do
      socket
      |> assign(:course_page_id, course_page_id)
      |> assign(:csv_gathered, false)
-     |> stream(:participation_dates, participation_dates)
+     |> assign(:participation_dates, participation_dates)
      |> assign(
         :form,
         to_form(changeset)
@@ -41,10 +41,15 @@ defmodule LiveFeedbackWeb.ParticipationLive.Index do
 
         case LiveFeedback.ParticipationCsvExport.export_participation_requests(socket.assigns.course_page_id, presented_date) do
           {:ok, formatted_results} ->
+
+            # Pull the first value of the first list (will always be presented_date unless expressly changed)
+            date_presented = List.first(formatted_results) |> List.first()
+
             {:noreply,
               socket
               |> put_flash(:info, "CSV export compiled successfully. Click 'Download CSV' to download your data.")
               |> assign(:participation_data, formatted_results)
+              |> assign(:date_presented, date_presented)
               |> assign(:csv_gathered, true)}
               #IO.inspect(socket.assigns.participation_data, label: "DATA CAME THROUGH:")
           {:error, reason} ->
