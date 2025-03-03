@@ -32,7 +32,7 @@ defmodule LiveFeedbackWeb.QuizComponent do
                 2 -> "bg-purple-500 hover:bg-purple-600"
                 3 -> "bg-orange-500 hover:bg-orange-600"
               end,
-              if Enum.any?(@responses, fn %{user_profile_id: pid, question_options_occurrence_id: oid} -> pid == @profile_id and oid == option.id end) do
+              if Enum.any?(@responses, fn %{anonymous_id: aid, question_options_occurrence_id: oid} -> aid == @anonymous_id and oid == option.id end) do
                 "opacity-50"
               else
                 ""
@@ -53,13 +53,13 @@ defmodule LiveFeedbackWeb.QuizComponent do
     question_type = socket.assigns.current_question.question_type
     profile_responses =
       socket.assigns.responses
-      |> Enum.filter(fn %LiveFeedback.Questions.QuestionOptionsResponse{user_profile_id: id} ->
-        id == socket.assigns.profile_id
+      |> Enum.filter(fn %LiveFeedback.Questions.QuestionOptionsResponse{anonymous_id: id} ->
+        id == socket.assigns.anonymous_id
       end)
 
     #if the response selected is already in the database for that question & profile, delete it
     if Enum.any?(profile_responses, fn %LiveFeedback.Questions.QuestionOptionsResponse{question_options_occurrence_id: id} -> id == String.to_integer(option_id) end) do
-      Selection.delete_response_for_profile_for_question(socket.assigns.profile_id, option_id)
+      Selection.delete_response_for_profile_for_question(socket.assigns.anonymous_id, option_id)
       {:noreply, socket}
     else
       #if it is a new response (not in the DB), determine what question type it is
@@ -70,14 +70,15 @@ defmodule LiveFeedbackWeb.QuizComponent do
           attrs = %{
             "question_options_occurrence_id" => option_id
           }
-          Selection.update_response_for_profile_for_question(socket.assigns.profile_id, socket.assigns.current_question.id, attrs)
+          Selection.update_response_for_profile_for_question(socket.assigns.anonymous_id, socket.assigns.current_question.id, attrs)
           {:noreply, socket}
         #if there is a previous response, update it
         else
           attrs = %{
-            "user_profile_id" => socket.assigns.profile_id,
+            "anonymous_id" => socket.assigns.anonymous_id,
             "question_options_occurrence_id" => option_id
           }
+          attrs = if socket.assigns.profile_id != nil, do: Map.put(attrs, "user_profile_id", socket.assigns.profile_id), else: attrs
           case Selection.add_response(attrs) do
             {:ok, _response} ->
               {:noreply,

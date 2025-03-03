@@ -30,15 +30,38 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
         {queue, queue_id, first_question, messages, question_responses, max_question_num}
     end
 
-    # Get the UserID
-    user_id = Map.get(session, "user_id")
-    # Get ProfileID
-    profile = Selection.get_profile_id(user_id, course_page.id)
     # Get the anonymous ID
     anonymous_id = Map.get(session, "anonymous_id")
 
+    # Get the UserID
+    user_id = Map.get(session, "user_id", nil)
+    # Get ProfileID
+    profile =
+      if is_nil(user_id) do
+        nil
+      else
+        case Selection.get_profile_id(user_id, course_page.id) do
+          nil -> nil
+            #auto join functionality
+            #attrs = %{
+              #"user_id" => user_id,
+              #"course_page_id" => course_page.id,
+              #"role" => "user"
+            #}
+
+            #case Courses.join_class(attrs) do
+              #{:ok, profile} -> profile
+              #{:error, _reason} -> nil
+            #end
+
+          profile -> profile
+        end
+      end
+
+
     # Determine if they are the Presenter or not
-    presenter = (if profile.role == "owner", do: true, else: false)
+    presenter = if profile && profile.role == "owner", do: true, else: false
+
     # Set the Visibility of the QR Code to be based on if they are a presenter or not
     qr_code_visible = presenter
 
@@ -49,6 +72,8 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     {:ok,
      socket
      |> assign(:anonymous_id, anonymous_id)
+     |> assign(:user_id, user_id)
+     |> assign(:profile_id, (if profile, do: profile.id, else: nil))
      |> assign(:page_admin, presenter)
      |> assign(:qr_code_visible, qr_code_visible)
      |> assign(:course_page, course_page)
@@ -58,7 +83,6 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      |> assign(:message, nil)
      # Use existing sort_by or default to :oldest
      |> assign_new(:sort_by, fn -> :oldest end)
-     |> assign(:profile_id, profile.id)
      |> assign(:current_question_num, 1)
      |> assign(:max_question_num, max_question_num)
      |> assign(:current_question, first_question)
@@ -119,6 +143,17 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:change_question, next_question_num, next_question, question_responses, messages})
 
     {:noreply, socket}
+  end
+
+  def handle_event("join-class", %{}, socket) do
+    if socket.assigns.user_id do
+      #make a join modal
+    else
+      {:noreply,
+      socket
+      |> redirect(to: ~p"/users/log_in")
+      |> put_flash(:info, "You will need to login to save a class")}
+    end
   end
 
   def handle_info({:change_question, next_question_num, next_question, question_responses, messages}, socket) do
