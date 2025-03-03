@@ -1,18 +1,18 @@
 <.activity_template>
   <:leftSidebar>
-  <%= cond do %>
-  <% @user_id != nil -> %>
+  <%= if @user_id != nil do %>
     <div class="mb-6">
       <.back_button to={~p"/course_pages"} text="Back" class="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-2" />
     </div>
-  <% @profile_id == nil -> %>
+  <% end %>
+  <%= if @profile_id == nil do%>
     <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg shadow-sm border border-blue-100 mb-6">
       <div class="flex flex-col items-center sm:items-start gap-4">
         <div class="text-center sm:text-left">
           <h2 class="text-xl font-bold text-gray-800 mb-2">Join This Class</h2>
           <p class="text-gray-600">Joining allows you to save this class to your account and participate in tracked questions.</p>
         </div>
-        <button phx-click=""class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md font-medium flex items-center gap-2 transition-colors duration-150 shadow-sm">
+        <button phx-click="join-class"class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md font-medium flex items-center gap-2 transition-colors duration-150 shadow-sm">
           Join
           <.icon name="hero-plus" class="h-5 w-5" />
         </button>
@@ -108,6 +108,17 @@
   </div>
 </:activity>
   <:rightSidebar>
-    <div>Right Sidebar</div>
+  <!-- QR Code -->
+    <.live_component
+      module={LiveFeedbackWeb.ToggleableImage}
+      id="qr-code"
+      visible_bool={@qr_code_visible}
+      icon="hero-qr-code"
+      parent_pid={self()}
+    >
+      <:innerblock>
+        <%= raw(@qr_code_svg) %>
+      </:innerblock>
+    </.live_component>
   </:rightSidebar>
 </.activity_template>
