@@ -17,7 +17,7 @@ defmodule LiveFeedback.Questions do
   #gets all question for that queue so it can be displayed on the page
   def list_questions_for_queue(queue_id) do
     from(question in QuestionOccurrence,
-      where: question.queue_id == ^queue_id,
+      where: question.queue_id == ^queue_id and question.is_archived == false,
       order_by: [asc: question.display_order],
       preload: [:question_options_occurrences]
     )

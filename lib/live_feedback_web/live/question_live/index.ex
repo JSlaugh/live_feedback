@@ -313,7 +313,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
           socket
           |> assign(:confirm_delete, false) #close modal
           |> put_flash(:info, "Question archived successfully.")
-          |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue.id), reset: false)
+          |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue.id), reset: true)
         }
       {:error, changeset} ->
         {:noreply,
