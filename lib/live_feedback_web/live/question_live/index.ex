@@ -25,9 +25,6 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
   end
 
   def handle_event("see_stream", _params, socket) do
-    # Inspect the stream data
-    # IO.inspect(Map.get(socket.assigns.streams, :ac), label: "My Stream Data")
-
     {:noreply, socket}
   end
 
@@ -329,6 +326,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
          |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue.id),
            reset: false
          )}
+
       {:error, changeset} ->
         {:noreply,
          socket
@@ -405,7 +403,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
   def handle_info({:toggle_form, question_id}, socket) do
     # gets question
     question = Questions.get_question!(question_id)
-    # IO.inspect(socket.assigns.streams, label: "My Stream Data")
+
     {:noreply,
      socket
      # toggles on the right form

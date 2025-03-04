@@ -28,41 +28,50 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
       else
         case Selection.get_profile_id(user_id, course_page.id) do
           nil -> nil
-            #auto join functionality
-            #attrs = %{
-              #"user_id" => user_id,
-              #"course_page_id" => course_page.id,
-              #"role" => "user"
-            #}
+          # auto join functionality
+          # attrs = %{
+          # "user_id" => user_id,
+          # "course_page_id" => course_page.id,
+          # "role" => "user"
+          # }
 
-            #case Courses.join_class(attrs) do
-              #{:ok, profile} -> profile
-              #{:error, _reason} -> nil
-            #end
+          # case Courses.join_class(attrs) do
+          # {:ok, profile} -> profile
+          # {:error, _reason} -> nil
+          # end
 
           profile -> profile
         end
       end
+
     # Determine if they are the Presenter or not
 
     presenter = if profile && profile.role == "owner", do: true, else: false
 
     # Get the queue if it exists
     {queue, queue_id, first_question, messages, question_responses, max_question_num} =
-      case Queue.get_presenting_queue_for_course(course_page.id) do
+      case Queues.get_presenting_queue_for_course(course_page.id) do
         nil ->
           {nil, nil, nil, [], nil, nil}
+
         queue ->
           queue_id = queue.id
           first_question = Selection.get_question_from_queue(queue.id, 1)
           max_question_num = Questions.get_max_display_order(queue.id)
-          messages = if first_question && first_question.question_type == "QA", do: Messages.get_messages_for_question(first_question.id), else: nil
-          question_responses = if first_question,
-            do: (if presenter,
-              do: Selection.get_question_responses(first_question.id),
-              else: Selection.get_profile_responses(anonymous_id, first_question.id)),
-            else: nil
 
+          messages =
+            if first_question && first_question.question_type == "QA",
+              do: Messages.get_messages_for_question(first_question.id),
+              else: nil
+
+          question_responses =
+            if first_question,
+              do:
+                if(presenter,
+                  do: Selection.get_question_responses(first_question.id),
+                  else: Selection.get_profile_responses(anonymous_id, first_question.id)
+                ),
+              else: nil
 
           {queue, queue_id, first_question, messages, question_responses, max_question_num}
       end
@@ -79,7 +88,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      socket
      |> assign(:anonymous_id, anonymous_id)
      |> assign(:user_id, user_id)
-     |> assign(:profile_id, (if profile, do: profile.id, else: nil))
+     |> assign(:profile_id, if(profile, do: profile.id, else: nil))
      |> assign(:page_admin, presenter)
      |> assign(:qr_code_visible, qr_code_visible)
      |> assign(:course_page, course_page)
@@ -211,28 +220,57 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     {:noreply, stream_insert(socket, :messages, message)}
   end
 
+  def handle_event("change_question", %{"direction" => direction}, socket) do
+    current_question_num = socket.assigns.current_question_num
+
+    next_question_num =
+      if(direction == "next", do: current_question_num + 1, else: current_question_num - 1)
+
+    next_question = Selection.get_question_from_queue(socket.assigns.queue_id, next_question_num)
+
+    question_responses =
+      if(next_question.question_type != "QA",
+        do: Selection.get_question_responses(next_question.id),
+        else: nil
+      )
+
+    messages =
+      if(next_question.question_type == "QA",
+        do: Messages.get_messages_for_question(next_question.id),
+        else: []
+      )
+
+    topic = "#{socket.assigns.course_page.id}"
+
+    Phoenix.PubSub.broadcast(
+      LiveFeedback.PubSub,
+      topic,
+      {:change_question, next_question_num, next_question, question_responses, messages}
+    )
+
+    {:noreply, socket}
+  end
+
+  def handle_event("join-class", %{}, socket) do
+    if socket.assigns.user_id do
+      # make a join modal
+      Process.send_after(self(), :clear_flash, 3250)
+
+      {:noreply,
+       socket
+       |> put_flash(:error, "Please add from course page")}
+    else
+      {:noreply,
+       socket
+       |> redirect(to: ~p"/users/log_in")
+       |> put_flash(:error, "You will need to login to save a class")}
+    end
+  end
+
   def handle_info(
         {:change_question, next_question_num, next_question, question_responses, messages},
         socket
       ) do
-
-  def handle_event("join-class", %{}, socket) do
-    if socket.assigns.user_id do
-      #make a join modal
-      Process.send_after(self(), :clear_flash, 3250)
-      {:noreply, socket
-      |> put_flash(:error, "Please add from course page")}
-
-    else
-      {:noreply,
-      socket
-      |> redirect(to: ~p"/users/log_in")
-      |> put_flash(:error, "You will need to login to save a class")}
-    end
-  end
-
-  def handle_info({:change_question, next_question_num, next_question, question_responses, messages}, socket) do
-
     {:noreply,
      socket
      |> assign(:current_question_num, next_question_num)
@@ -317,8 +355,13 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
 
   # Handle Info for Refreshing Responses to Quiz Questions
   def handle_info({:refresh_responses}, socket) do
-     question_responses = Selection.get_profile_responses(socket.assigns.anonymous_id, socket.assigns.current_question.id)
-     {:noreply, assign(socket, :responses, question_responses)}
+    question_responses =
+      Selection.get_profile_responses(
+        socket.assigns.anonymous_id,
+        socket.assigns.current_question.id
+      )
+
+    {:noreply, assign(socket, :responses, question_responses)}
   end
 
   # Handle Info for testing/troubleshooting purposes only ------------------------------------------
