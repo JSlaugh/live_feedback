@@ -103,17 +103,9 @@ defmodule LiveFeedbackWeb.CoursePageLive.Index do
   def handle_event("leave", %{"id" => id}, socket) do
     course_page = Courses.get_course_page!(id)
 
-    with :ok <-
-           Bodyguard.permit(
-             Courses,
-             :delete_course_page,
-             socket.assigns.current_user,
-             course_page
-           ) do
-      {:ok, _} = Courses.leave_course_page(course_page.id, socket.assigns.current_user.id)
-
-      {:noreply, stream_delete(socket, :course_pages, course_page)}
-    else
+   case Courses.leave_course_page(course_page.id, socket.assigns.current_user.id) do
+      {:ok, _reason} ->
+        {:noreply, stream_delete(socket, :course_pages, course_page)}
       {:error, _reason} ->
         socket
         |> put_flash(:error, "Could not leave this page")

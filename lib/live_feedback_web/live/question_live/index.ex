@@ -329,7 +329,6 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
          |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue.id),
            reset: false
          )}
-
       {:error, changeset} ->
         {:noreply,
          socket

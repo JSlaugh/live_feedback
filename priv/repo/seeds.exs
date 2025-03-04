@@ -11,7 +11,8 @@
 # and so on) as they will fail if something goes wrong.
 
 alias LiveFeedback.Repo
-alias LiveFeedback.Questions.{Question, QuestionOption, QuestionOptionsResponse, Queue, QuestionSet, QuestionOccurrence, QuestionOptionsOccurrence}
+alias LiveFeedback.Questions.{Question, QuestionOption, QuestionOptionsResponse, QuestionSet, QuestionOccurrence, QuestionOptionsOccurrence}
+alias LiveFeedback.Queues.Queue
 alias LiveFeedback.Courses.CoursePage
 alias LiveFeedback.Accounts.User
 alias LiveFeedback.Accounts.UserProfile

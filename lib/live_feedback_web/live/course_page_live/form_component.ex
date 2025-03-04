@@ -82,8 +82,8 @@ defmodule LiveFeedbackWeb.CoursePageLive.JoinCourseFormComponent do
 
       {:error, _reason} ->
         {:noreply, socket
-        |> put_flash(:error, "Invalid Class Code")
-        |> push_patch(to: socket.assigns.patch)}
+        |> push_patch(to: ~p"/course_pages/join")
+        |> put_flash(:error, "Invalid Class Code")}
     end
   end
   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})

@@ -265,6 +265,7 @@ defmodule LiveFeedback.Messages do
 
   def subscribe(queue_id) do
     topic = "#{queue_id}"
+
     Phoenix.PubSub.subscribe(LiveFeedback.PubSub, topic)
   end
 
