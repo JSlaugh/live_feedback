@@ -161,13 +161,8 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
         else: []
       )
 
-    topic = "#{socket.assigns.course_page.id}"
-
-    Phoenix.PubSub.broadcast(
-      LiveFeedback.PubSub,
-      topic,
-      {:change_question, next_question_num, next_question, question_responses, messages}
-    )
+    topic = "#{socket.assigns.queue_id}"
+    Phoenix.PubSub.broadcast(LiveFeedback.PubSub,topic,{:change_question, next_question_num, next_question, question_responses, messages})
 
     {:noreply, socket}
   end
@@ -198,6 +193,22 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     end
   end
 
+  def handle_event("join-class", %{}, socket) do
+    if socket.assigns.user_id do
+      # make a join modal
+      Process.send_after(self(), :clear_flash, 3250)
+
+      {:noreply,
+       socket
+       |> put_flash(:error, "Please add from course page")}
+    else
+      {:noreply,
+       socket
+       |> redirect(to: ~p"/users/log_in")
+       |> put_flash(:error, "You will need to login to save a class")}
+    end
+  end
+
   # Event called by the new message pubsub
   def handle_info({:new_message, message}, socket) do
     # Update the messages stream with the new message
@@ -220,57 +231,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     {:noreply, stream_insert(socket, :messages, message)}
   end
 
-  def handle_event("change_question", %{"direction" => direction}, socket) do
-    current_question_num = socket.assigns.current_question_num
-
-    next_question_num =
-      if(direction == "next", do: current_question_num + 1, else: current_question_num - 1)
-
-    next_question = Selection.get_question_from_queue(socket.assigns.queue_id, next_question_num)
-
-    question_responses =
-      if(next_question.question_type != "QA",
-        do: Selection.get_question_responses(next_question.id),
-        else: nil
-      )
-
-    messages =
-      if(next_question.question_type == "QA",
-        do: Messages.get_messages_for_question(next_question.id),
-        else: []
-      )
-
-    topic = "#{socket.assigns.course_page.id}"
-
-    Phoenix.PubSub.broadcast(
-      LiveFeedback.PubSub,
-      topic,
-      {:change_question, next_question_num, next_question, question_responses, messages}
-    )
-
-    {:noreply, socket}
-  end
-
-  def handle_event("join-class", %{}, socket) do
-    if socket.assigns.user_id do
-      # make a join modal
-      Process.send_after(self(), :clear_flash, 3250)
-
-      {:noreply,
-       socket
-       |> put_flash(:error, "Please add from course page")}
-    else
-      {:noreply,
-       socket
-       |> redirect(to: ~p"/users/log_in")
-       |> put_flash(:error, "You will need to login to save a class")}
-    end
-  end
-
-  def handle_info(
-        {:change_question, next_question_num, next_question, question_responses, messages},
-        socket
-      ) do
+  def handle_info({:change_question, next_question_num, next_question, question_responses, messages},socket) do
     {:noreply,
      socket
      |> assign(:current_question_num, next_question_num)
