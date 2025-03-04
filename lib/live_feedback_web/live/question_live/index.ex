@@ -304,11 +304,12 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     question = Questions.get_question!(id)
 
     attrs = %{
-      "is_archived" => true
+      "is_archived" => true,
+      "display_order" => nil
     }
     #update question with so it is archived
-    case Questions.update_question(question, attrs) do
-      {:ok, question} ->
+    case Questions.archive_question(question, attrs) do
+      {:ok, _question} ->
         {:noreply,
           socket
           |> assign(:confirm_delete, false) #close modal
