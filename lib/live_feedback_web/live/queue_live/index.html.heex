@@ -1,9 +1,8 @@
-<.flash_group flash={@flash} />
-<.back_button to={~p"/course_pages/host"} text="Back" />
+<.flash_group flash={@flash} /> <.back_button to={~p"/course_pages/host"} text="Back" />
 <div class="mx-auto max-w-4xl px-4 py-8">
   <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-semibold text-gray-900"><%= @course_name %> Queues</h1>
-
+    
     <.link
       navigate={~p"/course_pages/#{@course_page_id}/queues/new"}
       class="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-700"
@@ -11,7 +10,7 @@
       New Queue
     </.link>
   </div>
-
+  
   <div class="grid gap-4" phx-update="stream" id="queues">
     <%= for {id,queue} <- @streams.queues do %>
       <div
@@ -24,12 +23,12 @@
             <h2 class="text-xl font-semibold text-white mb-2">
               <%= queue.name %>
             </h2>
-
+            
             <p class="text-blue-100">
               <%= queue.description %>
             </p>
           </div>
-
+          
           <div class="flex items-center gap-4">
             <.link
               navigate={~p"/course_page/#{@course_page_id}/#{queue.id}/edit"}
@@ -37,7 +36,7 @@
             >
               <.icon name="hero-pencil-square" class="text-white" />
             </.link>
-
+            
             <.link
               phx-click="delete_queue"
               phx-value-id={queue.id}
@@ -54,7 +53,7 @@
 </div>
 
 <.modal
-  :if={@live_action in [:new]}
+  :if={@live_action in [:new, :edit]}
   id="queue-modal"
   show
   on_cancel={JS.patch(~p"/course_pages/#{@course_page_id}/queues")}

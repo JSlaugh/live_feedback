@@ -79,8 +79,6 @@ defmodule LiveFeedback.Messages do
     |> Repo.insert()
     |> case do
       {:ok, message} ->
-        topic = "messages:#{message.course_page_id}"
-        Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:new_message, message})
         {:ok, message}
 
       {:error, changeset} ->
@@ -131,8 +129,6 @@ defmodule LiveFeedback.Messages do
     Repo.delete(message)
     |> case do
       {:ok, message} ->
-        topic = "messages:#{message.id}"
-        Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:deleted_message, message})
         {:ok, message}
 
       {:error, changeset} ->
@@ -267,8 +263,9 @@ defmodule LiveFeedback.Messages do
     end
   end
 
-  def subscribe(course_topic) do
-    topic = "#{course_topic}"
+  def subscribe(queue_id) do
+    topic = "#{queue_id}"
+
     Phoenix.PubSub.subscribe(LiveFeedback.PubSub, topic)
   end
 
