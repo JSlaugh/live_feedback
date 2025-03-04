@@ -33,6 +33,12 @@ defmodule LiveFeedbackWeb.QueueLive.Index do
     |> assign(:course_page_id, course_page_id)
   end
 
+  defp apply_action(socket, :edit, %{"id" => _, "queues" => queue_id}) do
+    socket
+    |> assign(:page_title, "Edit Queue")
+    |> assign(:queue, Queues.get_queue!(queue_id))
+  end
+
   @impl true
   def handle_info({LiveFeedbackWeb.QueueLive.FormComponent, {:saved, queue}}, socket) do
     {:noreply, stream_insert(socket, :queues, queue)}
@@ -44,7 +50,7 @@ defmodule LiveFeedbackWeb.QueueLive.Index do
   end
 
   defp delete_queue(socket, id) do
-    queue = Queues.get_queue(id)
+    queue = Queues.get_queue!(id)
 
     with :ok <- Bodyguard.permit(Queues, :delete_queue, socket.assigns.current_user, queue) do
       Queues.delete_queue(queue)
