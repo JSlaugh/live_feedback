@@ -81,7 +81,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
 
     # Not sure if I need this but will leave it for now
     # Subscribe to the Pubsub for this Course ID
-
+    if connected?(socket), do: Messages.subscribe(course_page.id)
     if connected?(socket), do: Messages.subscribe(queue_id)
 
     {:ok,
