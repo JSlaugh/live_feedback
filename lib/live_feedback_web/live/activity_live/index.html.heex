@@ -9,18 +9,18 @@
         />
       </div>
     <% end %>
-    
+
     <%= if @profile_id == nil do %>
       <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg shadow-sm border border-blue-100 mb-6">
         <div class="flex flex-col items-center sm:items-start gap-4">
           <div class="text-center sm:text-left">
             <h2 class="text-xl font-bold text-gray-800 mb-2">Join This Class</h2>
-            
+
             <p class="text-gray-600">
               Joining allows you to save this class to your account and participate in tracked questions.
             </p>
           </div>
-          
+
           <button
             phx-click="join-class"
             class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md font-medium flex items-center gap-2 transition-colors duration-150 shadow-sm"
@@ -31,7 +31,7 @@
       </div>
     <% end %>
   </:leftSidebar>
-  
+
   <:activity>
     <%= if @current_question != nil do %>
       <div class="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -40,7 +40,7 @@
         </h1>
       </div>
     <% end %>
-    
+
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
       <%= cond do %>
         <% @current_question == nil -> %>
@@ -53,7 +53,7 @@
               <div class="flex-shrink-0">
                 <.icon name="hero-exclamation-triangle" class="h-5 w-5 text-yellow-400" />
               </div>
-              
+
               <div class="ml-3">
                 <p class="text-sm text-yellow-700">
                   This question is being tracked, you must login to continue.
@@ -90,10 +90,10 @@
         <% true -> %>
       <% end %>
     </div>
-    
+
     <div class="flex justify-between items-center mt-8 mb-4">
       <div>
-        <%= if @current_question_num != 1 do %>
+        <%= if @page_admin and @current_question_num != 1 do %>
           <button
             class="inline-flex items-center px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-200 shadow-sm"
             phx-click="change_question"
@@ -106,15 +106,15 @@
           <!-- Spacer to maintain layout when button is hidden -->
         <% end %>
       </div>
-      
+
       <%= if @current_question != nil do %>
         <div class="text-sm text-gray-500 font-medium">
           Question <%= @current_question_num %> of <%= @max_question_num %>
         </div>
       <% end %>
-      
+
       <div>
-        <%= if @current_question != nil and @current_question_num != @max_question_num do %>
+        <%= if @page_admin and @current_question != nil and @current_question_num != @max_question_num do %>
           <button
             class="inline-flex items-center px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-200 shadow-sm"
             phx-click="change_question"
@@ -129,7 +129,7 @@
       </div>
     </div>
   </:activity>
-  
+
   <:rightSidebar>
     <!-- QR Code -->
     <.live_component
