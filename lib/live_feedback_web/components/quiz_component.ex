@@ -19,6 +19,10 @@ defmodule LiveFeedbackWeb.QuizComponent do
       raise ArgumentError, "responses attribute is required"
     end
 
+    if not Map.has_key?(assigns, :course_page) do
+      raise ArgumentError, "course_page attribute is required"
+    end
+
     ~H"""
       <div class=" p-8 flex flex-col">
         <div class="grid grid-cols-2 gap-6 max-w-4xl mx-auto h-[65vh] w-[65vw]">
@@ -108,7 +112,11 @@ defmodule LiveFeedbackWeb.QuizComponent do
     end
     # update the question responses list
     send(socket.assigns.parent_pid, {:refresh_responses})
-    #send pubsub broadcast
+
+    #broadcast changes to the presenter
+    topic = "Host:#{socket.assigns.course_page.id}"
+    Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:refresh_presenter_responses})
+
     {:noreply, socket}
   end
 end

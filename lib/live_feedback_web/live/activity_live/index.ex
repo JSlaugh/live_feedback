@@ -66,14 +66,14 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
           {queue, queue_id, first_question, messages, question_responses, max_question_num}
       end
 
-
-
     # Set the Visibility of the QR Code to be based on if they are a presenter or not
     qr_code_visible = presenter
 
-    # Not sure if I need this but will leave it for now
     # Subscribe to the Pubsub for this Course ID
     if connected?(socket), do: Messages.subscribe(course_page.id)
+    # Subscribe to the PubSub for presenter for this Course ID
+    if connected?(socket) && presenter, do: Messages.subscribe("Host:#{course_page.id}")
+
     {:ok,
      socket
      |> assign(:anonymous_id, anonymous_id)
@@ -81,6 +81,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      |> assign(:profile_id, (if profile, do: profile.id, else: nil))
      |> assign(:page_admin, presenter)
      |> assign(:qr_code_visible, qr_code_visible)
+     |> assign(:show_results, false)
      |> assign(:course_page, course_page)
      # This needs to have a default value
      |> assign(:live_action, :index)
@@ -165,6 +166,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     end
   end
 
+  #changes sockets for pubsub broadcast
   def handle_info({:change_question, next_question_num, next_question, question_responses, messages}, socket) do
     {:noreply,
      socket
@@ -179,11 +181,9 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     {:noreply, clear_flash(socket)}
   end
 
-  # Handle Info for PubSub Update --------------------------------------------------
+  # Handle Info for PubSub Update (start/stop presentation) --------------------------------------------------
   def handle_info({:toggle_update, _value}, socket) do
-    IO.inspect("here")
     slug = socket.assigns.course_page.slug
-    IO.inspect(slug)
     # Force remount by returning :noreply with new assigns
     {:noreply, redirect(socket, to: ~p"/page/#{slug}")}
   end
@@ -254,11 +254,18 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     {:noreply, stream_delete(socket, :messages, message)}
   end
 
-  # Handle Info for Refreshing Responses to Quiz Questions
+  # Handle Info for Refreshing Responses to Quiz Questions ---------------------------
   def handle_info({:refresh_responses}, socket) do
      question_responses = Selection.get_profile_responses(socket.assigns.anonymous_id, socket.assigns.current_question.id)
      {:noreply, assign(socket, :responses, question_responses)}
   end
+
+  # Handle Info for Refreshing Responses to Quiz Questions for Presenter ---------------------------
+  def handle_info({:refresh_presenter_responses}, socket) do
+    IO.inspect("sent to professor")
+    question_responses = Selection.get_question_responses(socket.assigns.current_question.id)
+    {:noreply, assign(socket, :responses, question_responses)}
+ end
 
   # Handle Info for testing/troubleshooting purposes only ------------------------------------------
   def handle_info(msg, socket) do
