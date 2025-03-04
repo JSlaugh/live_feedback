@@ -33,11 +33,6 @@ defmodule LiveFeedbackWeb.MessageLive.Index do
   end
 
   @impl true
-  def handle_info({LiveFeedbackWeb.MessageLive.FormComponent, {:saved, message}}, socket) do
-    {:noreply, stream_insert(socket, :messages, message)}
-  end
-
-  @impl true
   def handle_event("delete", %{"id" => id}, socket) do
     message = Messages.get_message!(id)
     {:ok, _} = Messages.delete_message(message)

@@ -1,4 +1,6 @@
 defmodule LiveFeedbackWeb.QaComponent do
+  alias LiveFeedback.Messages
+  alias LiveFeedback.Messages.Message
   use Phoenix.LiveComponent
 
   import LiveFeedbackWeb.CoreComponents
@@ -57,10 +59,6 @@ defmodule LiveFeedbackWeb.QaComponent do
           Clear the Page
         </.button>
       <% end %>
-       <%!-- Items for anyone --%>
-      <.button phx-click="" phx-target={@myself} class="bg-red-600 hover:bg-red-600">
-        New Message
-      </.button>
       
       <div>
         <div class="my-2 lg:my-4">
@@ -91,14 +89,20 @@ defmodule LiveFeedbackWeb.QaComponent do
           </div>
         <% end %>
       </div>
+      
+      <.simple_form for={@form} phx-submit="create_message">
+        <.input field={@form[:content]} type="text" label="New Message" />
+        <:actions>
+          <.button>Save</.button>
+        </:actions>
+      </.simple_form>
        <%!-- Focus Modal --%>
       <.modal
         :if={@live_action == :focus}
         id="message-modal"
         show
-        on_cancel={Phoenix.LiveView.JS.patch("/page/#{@course_page.id}/#{@queue_id}")}
+        on_cancel={Phoenix.LiveView.JS.patch("/page/#{@course_page.slug}")}
       >
-        <%!-- on_cancel={Phoenix.LiveView.JS.patch("/page/#{@course_page.slug}")}  This is what it should be there when not on a test page --%>
         <div class="flex justify-between p-4 bg-brand_grey rounded-lg">
           <div class="">
             <p class="text-lg break-all"><%= @message.content %></p>
@@ -138,6 +142,12 @@ defmodule LiveFeedbackWeb.QaComponent do
       </.modal>
     </div>
     """
+  end
+
+  @impl true
+  def mount(socket) do
+    changeset = Messages.change_message(%Message{})
+    {:ok, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
   # Sort Messages Handle Event -- Updated for Question Occurrences

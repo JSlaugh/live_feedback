@@ -92,6 +92,7 @@ defmodule LiveFeedbackWeb.MessageComponent do
   end
 
   def handle_event("delete_message", %{"id" => id}, socket) do
+    IO.inspect(socket.assigns, label: "Socket Assigns")
     message = LiveFeedback.Messages.get_message!(id)
     page_admin = Map.get(socket.assigns, :page_admin)
     anonymous_id = Map.get(socket.assigns, :anonymous_id)

@@ -52,7 +52,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
 
     # Not sure if I need this but will leave it for now
     # Subscribe to the Pubsub for this Course ID
-    if connected?(socket), do: Messages.subscribe(course_page.id)
+    if connected?(socket), do: Messages.subscribe(queue_id)
 
     {:ok,
      socket
@@ -141,6 +141,54 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     {:noreply, socket}
   end
 
+  # Create Message Function called by the Form in the QA component
+  def handle_event("create_message", %{"message" => message_params}, socket) do
+    message_params =
+      Map.merge(message_params, %{
+        "anonymous_id" => socket.assigns.anonymous_id || nil,
+        "question_occurrence_id" => socket.assigns.current_question.id || nil,
+        "user_profile_id" => socket.assigns.profile_id || nil
+      })
+
+    case Messages.create_message(message_params) do
+      {:ok, message} ->
+        topic = "#{socket.assigns.queue_id}"
+        Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:new_message, message})
+        # Reset the form.
+        socket =
+          assign(socket, :form, to_form(Messages.change_message(%Message{}), action: :validate))
+
+        {:noreply, socket}
+
+      {:error, changeset} ->
+        form = to_form(changeset)
+        socket = assign(socket, :form, form)
+        {:noreply, socket}
+    end
+  end
+
+  # Event called by the new message pubsub
+  def handle_info({:new_message, message}, socket) do
+    # Update the messages stream with the new message
+    {:noreply, stream_insert(socket, :messages, message)}
+  end
+
+  # Event called by the delete message pubsub
+  def handle_info({:delete_message, message}, socket) do
+    # Update the messages stream with the new message
+    {:noreply, stream_delete(socket, :messages, message)}
+  end
+
+  # Event called by the delete all messages pubsub
+  def handle_info({:delete_all_messages}, socket) do
+    {:noreply, stream(socket, :messages, [], reset: true)}
+  end
+
+  # Event called by the Update message & like message pubsub
+  def handle_info({:update_message, message}, socket) do
+    {:noreply, stream_insert(socket, :messages, message)}
+  end
+
   def handle_info(
         {:change_question, next_question_num, next_question, question_responses, messages},
         socket
@@ -155,9 +203,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
 
   # Handle Info for PubSub Update --------------------------------------------------
   def handle_info({:toggle_update, _value}, socket) do
-    IO.inspect("here")
     slug = socket.assigns.course_page.slug
-    IO.inspect(slug)
     # Force remount by returning :noreply with new assigns
     {:noreply, redirect(socket, to: ~p"/page/#{slug}")}
   end
@@ -173,24 +219,22 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      |> stream(:messages, sorted_messages, reset: true)}
   end
 
-  # Handle Info for Deleteing all Messages ------------------------------------------
+  # Handle Info for Deleting all Messages ------------------------------------------
 
-  def handle_info({:deleted_all_messages, question_occurrence_id}, socket) do
-    {:noreply, stream(socket, :messages, [], reset: true)}
+  def handle_info({:deleted_all_messages, _question_occurrence_id}, socket) do
+    topic = "#{socket.assigns.queue_id}"
+    Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:delete_all_messages})
+    {:noreply, socket}
   end
 
   # Handle Info for Deleting a Message From Focus Mode ------------------------------
   def handle_info({:deleted_message_modal, message}, socket) do
+    topic = "#{socket.assigns.queue_id}"
+    Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:delete_message, message})
+
     {:noreply,
      socket
-     |> assign(:live_action, :index)
-     |> stream_delete(:messages, message)}
-  end
-
-  # This is needed for the pubsub in messages.ex
-
-  def handle_info({:deleted_message, message}, socket) do
-    {:noreply, socket}
+     |> assign(:live_action, :index)}
   end
 
   # Handle Info for Focusing on a Message -------------------------------------------
@@ -203,12 +247,8 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
 
   # Handle Info for Liking a message -----------------------------------------------
   def handle_info({:selected_message_liked, update_message}, socket) do
-    {:noreply, stream_insert(socket, :messages, update_message)}
-  end
-
-  # This is needed for the pubsub in messages.ex
-
-  def handle_info({:updated_message, updated_message}, socket) do
+    topic = "#{socket.assigns.queue_id}"
+    Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:update_message, update_message})
     {:noreply, socket}
   end
 
@@ -217,26 +257,22 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     {:noreply, assign(socket, live_action: :edit, message: message)}
   end
 
-  def handle_info({LiveFeedbackWeb.FeedbackLive.FormComponent, {:saved, _message}}, socket) do
-    # I think this should be moved but it does fix the issue.
-    messages = LiveFeedback.Repo.all(LiveFeedback.Messages.Message)
-    {:noreply, stream(socket, :messages, messages)}
+  def handle_info({LiveFeedbackWeb.FeedbackLive.FormComponent, {:saved, message}}, socket) do
+    topic = "#{socket.assigns.queue_id}"
+    Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:update_message, message})
+    {:noreply, socket}
   end
 
   # Handle Info for Deleting a Message From the Message Component ------------------
   def handle_info({:selected_message_delete, message}, socket) do
-    {:noreply, stream_delete(socket, :messages, message)}
+    topic = "#{socket.assigns.queue_id}"
+    Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:delete_message, message})
+    {:noreply, socket}
   end
 
   # Handle Info for Refreshing Responses to Quiz Questions
   def handle_info({:refresh_responses}, socket) do
     question_responses = Selection.get_question_responses(socket.assigns.current_question.id)
     {:noreply, assign(socket, :responses, question_responses)}
-  end
-
-  # Handle Info for testing/troubleshooting purposes only ------------------------------------------
-  def handle_info(msg, socket) do
-    IO.inspect(msg, label: "Unhandled message")
-    {:noreply, socket}
   end
 end
