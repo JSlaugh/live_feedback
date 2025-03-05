@@ -4,7 +4,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
   alias LiveFeedback.Messages
   alias LiveFeedback.Courses
   alias LiveFeedback.Questions
-  alias LiveFeedback.Queue
+  alias LiveFeedback.Queues
   alias LiveFeedback.Messages.Message
   alias LiveFeedback.Selection
   alias LiveFeedback.Activity
@@ -29,40 +29,50 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
       else
         case Selection.get_profile_id(user_id, course_page.id) do
           nil -> nil
-            #auto join functionality
-            #attrs = %{
-              #"user_id" => user_id,
-              #"course_page_id" => course_page.id,
-              #"role" => "user"
-            #}
+          # auto join functionality
+          # attrs = %{
+          # "user_id" => user_id,
+          # "course_page_id" => course_page.id,
+          # "role" => "user"
+          # }
 
-            #case Courses.join_class(attrs) do
-              #{:ok, profile} -> profile
-              #{:error, _reason} -> nil
-            #end
+          # case Courses.join_class(attrs) do
+          # {:ok, profile} -> profile
+          # {:error, _reason} -> nil
+          # end
 
           profile -> profile
         end
       end
+
     # Determine if they are the Presenter or not
+
     presenter = if profile && profile.role == "owner", do: true, else: false
 
     # Get the queue if it exists
     {queue, queue_id, first_question, messages, question_responses, max_question_num} =
-      case Queue.get_presenting_queue_for_course(course_page.id) do
+      case Queues.get_presenting_queue_for_course(course_page.id) do
         nil ->
           {nil, nil, nil, [], nil, nil}
+
         queue ->
           queue_id = queue.id
           first_question = Selection.get_question_from_queue(queue.id, 1)
           max_question_num = Questions.get_max_display_order(queue.id)
-          messages = if first_question && first_question.question_type == "QA", do: Messages.get_messages_for_question(first_question.id), else: nil
-          question_responses = if first_question,
-            do: (if presenter,
-              do: Selection.get_question_responses(first_question.id),
-              else: Selection.get_profile_responses(anonymous_id, first_question.id)),
-            else: nil
 
+          messages =
+            if first_question && first_question.question_type == "QA",
+              do: Messages.get_messages_for_question(first_question.id),
+              else: nil
+
+          question_responses =
+            if first_question,
+              do:
+                if(presenter,
+                  do: Selection.get_question_responses(first_question.id),
+                  else: Selection.get_profile_responses(anonymous_id, first_question.id)
+                ),
+              else: nil
 
           {queue, queue_id, first_question, messages, question_responses, max_question_num}
       end
@@ -72,6 +82,8 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
 
     # Subscribe to the Pubsub for this Course ID
     if connected?(socket), do: Messages.subscribe(course_page.id)
+    if connected?(socket), do: Messages.subscribe(queue_id)
+
     # Subscribe to the PubSub for presenter for this Course ID
     if connected?(socket) && presenter, do: Messages.subscribe("Host:#{course_page.id}")
 
@@ -79,7 +91,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      socket
      |> assign(:anonymous_id, anonymous_id)
      |> assign(:user_id, user_id)
-     |> assign(:profile_id, (if profile, do: profile.id, else: nil))
+     |> assign(:profile_id, if(profile, do: profile.id, else: nil))
      |> assign(:page_admin, presenter)
      |> assign(:qr_code_visible, qr_code_visible)
      |> assign(:show_results, false)
@@ -139,34 +151,68 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
   def handle_event("change_question", %{"direction" => direction}, socket) do
     current_question_num = socket.assigns.current_question_num
 
-    next_question_num = if(direction=="next", do: current_question_num + 1, else: current_question_num - 1 )
+    next_question_num =
+      if(direction == "next", do: current_question_num + 1, else: current_question_num - 1)
 
     next_question = Selection.get_question_from_queue(socket.assigns.queue_id, next_question_num)
 
-    question_responses = if(next_question.question_type != "QA",
-      do: Selection.get_question_responses(next_question.id), else: nil)
+    question_responses =
+      if(next_question.question_type != "QA",
+        do: Selection.get_question_responses(next_question.id),
+        else: nil
+      )
 
-    messages = if(next_question.question_type == "QA",
-      do: Messages.get_messages_for_question(next_question.id), else: [])
+    messages =
+      if(next_question.question_type == "QA",
+        do: Messages.get_messages_for_question(next_question.id),
+        else: []
+      )
 
-    topic = "#{socket.assigns.course_page.id}"
-    Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:change_question, next_question_num, next_question, question_responses, messages})
+    topic = "#{socket.assigns.queue_id}"
+    Phoenix.PubSub.broadcast(LiveFeedback.PubSub,topic,{:change_question, next_question_num, next_question, question_responses, messages})
 
     {:noreply, socket}
   end
 
+  # Create Message Function called by the Form in the QA component
+  def handle_event("create_message", %{"message" => message_params}, socket) do
+    message_params =
+      Map.merge(message_params, %{
+        "anonymous_id" => socket.assigns.anonymous_id || nil,
+        "question_occurrence_id" => socket.assigns.current_question.id || nil,
+        "user_profile_id" => socket.assigns.profile_id || nil
+      })
+
+    case Messages.create_message(message_params) do
+      {:ok, message} ->
+        topic = "#{socket.assigns.queue_id}"
+        Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:new_message, message})
+        # Reset the form.
+        socket =
+          assign(socket, :form, to_form(Messages.change_message(%Message{}), action: :validate))
+
+        {:noreply, socket}
+
+      {:error, changeset} ->
+        form = to_form(changeset)
+        socket = assign(socket, :form, form)
+        {:noreply, socket}
+    end
+  end
+
   def handle_event("join-class", %{}, socket) do
     if socket.assigns.user_id do
-      #make a join modal
+      # make a join modal
       Process.send_after(self(), :clear_flash, 3250)
-      {:noreply, socket
-      |> put_flash(:error, "Please add from course page")}
 
+      {:noreply,
+       socket
+       |> put_flash(:error, "Please add from course page")}
     else
       {:noreply,
-      socket
-      |> redirect(to: ~p"/users/log_in")
-      |> put_flash(:error, "You will need to login to save a class")}
+       socket
+       |> redirect(to: ~p"/users/log_in")
+       |> put_flash(:error, "You will need to login to save a class")}
     end
   end
 
@@ -189,7 +235,29 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
   end
 
   #changes sockets for pubsub broadcast
-  def handle_info({:change_question, next_question_num, next_question, question_responses, messages}, socket) do
+  # Event called by the new message pubsub
+  def handle_info({:new_message, message}, socket) do
+    # Update the messages stream with the new message
+    {:noreply, stream_insert(socket, :messages, message)}
+  end
+
+  # Event called by the delete message pubsub
+  def handle_info({:delete_message, message}, socket) do
+    # Update the messages stream with the new message
+    {:noreply, stream_delete(socket, :messages, message)}
+  end
+
+  # Event called by the delete all messages pubsub
+  def handle_info({:delete_all_messages}, socket) do
+    {:noreply, stream(socket, :messages, [], reset: true)}
+  end
+
+  # Event called by the Update message & like message pubsub
+  def handle_info({:update_message, message}, socket) do
+    {:noreply, stream_insert(socket, :messages, message)}
+  end
+
+  def handle_info({:change_question, next_question_num, next_question, question_responses, messages},socket) do
     {:noreply,
      socket
      |> assign(:current_question_num, next_question_num)
@@ -221,24 +289,22 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      |> stream(:messages, sorted_messages, reset: true)}
   end
 
-  # Handle Info for Deleteing all Messages ------------------------------------------
+  # Handle Info for Deleting all Messages ------------------------------------------
 
-  def handle_info({:deleted_all_messages, question_occurrence_id}, socket) do
-    {:noreply, stream(socket, :messages, [], reset: true)}
+  def handle_info({:deleted_all_messages, _question_occurrence_id}, socket) do
+    topic = "#{socket.assigns.queue_id}"
+    Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:delete_all_messages})
+    {:noreply, socket}
   end
 
   # Handle Info for Deleting a Message From Focus Mode ------------------------------
   def handle_info({:deleted_message_modal, message}, socket) do
+    topic = "#{socket.assigns.queue_id}"
+    Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:delete_message, message})
+
     {:noreply,
      socket
-     |> assign(:live_action, :index)
-     |> stream_delete(:messages, message)}
-  end
-
-  # This is needed for the pubsub in messages.ex
-
-  def handle_info({:deleted_message, message}, socket) do
-    {:noreply, socket}
+     |> assign(:live_action, :index)}
   end
 
   # Handle Info for Focusing on a Message -------------------------------------------
@@ -251,12 +317,8 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
 
   # Handle Info for Liking a message -----------------------------------------------
   def handle_info({:selected_message_liked, update_message}, socket) do
-    {:noreply, stream_insert(socket, :messages, update_message)}
-  end
-
-  # This is needed for the pubsub in messages.ex
-
-  def handle_info({:updated_message, updated_message}, socket) do
+    topic = "#{socket.assigns.queue_id}"
+    Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:update_message, update_message})
     {:noreply, socket}
   end
 
@@ -265,21 +327,28 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     {:noreply, assign(socket, live_action: :edit, message: message)}
   end
 
-  def handle_info({LiveFeedbackWeb.FeedbackLive.FormComponent, {:saved, _message}}, socket) do
-    # I think this should be moved but it does fix the issue.
-    messages = LiveFeedback.Repo.all(LiveFeedback.Messages.Message)
-    {:noreply, stream(socket, :messages, messages)}
+  def handle_info({LiveFeedbackWeb.FeedbackLive.FormComponent, {:saved, message}}, socket) do
+    topic = "#{socket.assigns.queue_id}"
+    Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:update_message, message})
+    {:noreply, socket}
   end
 
   # Handle Info for Deleting a Message From the Message Component ------------------
   def handle_info({:selected_message_delete, message}, socket) do
-    {:noreply, stream_delete(socket, :messages, message)}
+    topic = "#{socket.assigns.queue_id}"
+    Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:delete_message, message})
+    {:noreply, socket}
   end
 
   # Handle Info for Refreshing Responses to Quiz Questions ---------------------------
   def handle_info({:refresh_responses}, socket) do
-     question_responses = Selection.get_profile_responses(socket.assigns.anonymous_id, socket.assigns.current_question.id)
-     {:noreply, assign(socket, :responses, question_responses)}
+    question_responses =
+      Selection.get_profile_responses(
+        socket.assigns.anonymous_id,
+        socket.assigns.current_question.id
+      )
+
+    {:noreply, assign(socket, :responses, question_responses)}
   end
 
   # Handle Info for Refreshing Responses to Quiz Questions for Presenter ---------------------------

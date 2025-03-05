@@ -37,8 +37,7 @@ defmodule LiveFeedback.Questions.QuestionOccurrence do
       :queue_id,
       :is_required,
       :question_type,
-      :question_content,
-      :display_order
+      :question_content
     ])
     |> validate_length(:question_type, max: 50)
     |> foreign_key_constraint(:question_id)
