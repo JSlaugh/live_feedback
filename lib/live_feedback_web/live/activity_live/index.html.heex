@@ -67,32 +67,32 @@
         parent_pid={self()}
         />
       <% @current_question.question_type in ["multiple_choice", "multi-select", "TF"] -> %>
-      <%= if @page_admin && @show_results do %>
-        <.live_component
-        module={LiveFeedbackWeb.QuizResultsComponent}
-        id="activity-results"
-        profile_id={@profile_id}
-        anonymous_id={@anonymous_id}
-        course_page={@course_page}
-        current_question={@current_question}
-        responses={@responses}
-        processed_responses={@processed_responses}
-        page_admin={@page_admin}
-        parent_pid={self()}
-        />
-      <% else %>
-        <.live_component
-        module={LiveFeedbackWeb.QuizComponent}
-        id="example-activity2"
-        profile_id={@profile_id}
-        anonymous_id={@anonymous_id}
-        course_page={@course_page}
-        current_question={@current_question}
-        responses={@responses}
-        page_admin={@page_admin}
-        parent_pid={self()}
-        />
-      <% end %>
+        <%= if @page_admin && @show_results do %>
+          <.live_component
+          module={LiveFeedbackWeb.QuizResultsComponent}
+          id="activity-results"
+          profile_id={@profile_id}
+          anonymous_id={@anonymous_id}
+          course_page={@course_page}
+          current_question={@current_question}
+          responses={@responses}
+          processed_responses={@processed_responses}
+          page_admin={@page_admin}
+          parent_pid={self()}
+          />
+        <% else %>
+          <.live_component
+          module={LiveFeedbackWeb.QuizComponent}
+          id="example-activity2"
+          profile_id={@profile_id}
+          anonymous_id={@anonymous_id}
+          course_page={@course_page}
+          current_question={@current_question}
+          responses={@responses}
+          page_admin={@page_admin}
+          parent_pid={self()}
+          />
+        <% end %>
       <% true -> %>
 
     <% end %>
