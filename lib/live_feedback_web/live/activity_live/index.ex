@@ -8,6 +8,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
   alias LiveFeedback.Messages.Message
   alias LiveFeedback.Selection
   alias LiveFeedback.Activity
+  alias LiveFeedback.ActivityResults
   alias QRCode
 
   @impl true
@@ -79,10 +80,12 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     # Set the Visibility of the QR Code to be based on if they are a presenter or not
     qr_code_visible = presenter
 
-    # Not sure if I need this but will leave it for now
     # Subscribe to the Pubsub for this Course ID
     if connected?(socket), do: Messages.subscribe(course_page.id)
     if connected?(socket), do: Messages.subscribe(queue_id)
+
+    # Subscribe to the PubSub for presenter for this Course ID
+    if connected?(socket) && presenter, do: Messages.subscribe("Host:#{course_page.id}")
 
     {:ok,
      socket
@@ -91,6 +94,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      |> assign(:profile_id, if(profile, do: profile.id, else: nil))
      |> assign(:page_admin, presenter)
      |> assign(:qr_code_visible, qr_code_visible)
+     |> assign(:show_results, false)
      |> assign(:course_page, course_page)
      # This needs to have a default value
      |> assign(:live_action, :index)
@@ -103,11 +107,14 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      |> assign(:current_question, first_question)
      |> assign(:queue_id, queue_id)
      |> assign(:responses, question_responses)
+     |> assign(:processed_responses, [])
      |> stream(
        :messages,
        messages || []
      )}
   end
+
+
 
   # This is always ran after the mount function
   @impl true
@@ -209,6 +216,25 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     end
   end
 
+  # Toggle the activity results component event handler ----------------------------------------------
+  @impl true
+  def handle_event("toggle_results", _params, socket) do
+    # WRITE STUFF HERE TO CALL THE FUNCTIONS TO UPDATE THE RESULTS
+     # If results are not shown, process responses when toggling
+     processed_responses = if !socket.assigns.show_results do
+      ActivityResults.process_responses(socket.assigns.responses, socket.assigns.current_question)
+     else
+      []
+     end
+
+    {:noreply,
+      socket
+      |> assign(:show_results, !socket.assigns.show_results)
+      |> assign(:processed_responses, processed_responses)
+    }
+  end
+
+  #changes sockets for pubsub broadcast
   # Event called by the new message pubsub
   def handle_info({:new_message, message}, socket) do
     # Update the messages stream with the new message
@@ -245,7 +271,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     {:noreply, clear_flash(socket)}
   end
 
-  # Handle Info for PubSub Update --------------------------------------------------
+  # Handle Info for PubSub Update (start/stop presentation) --------------------------------------------------
   def handle_info({:toggle_update, _value}, socket) do
     slug = socket.assigns.course_page.slug
     # Force remount by returning :noreply with new assigns
@@ -314,7 +340,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     {:noreply, socket}
   end
 
-  # Handle Info for Refreshing Responses to Quiz Questions
+  # Handle Info for Refreshing Responses to Quiz Questions ---------------------------
   def handle_info({:refresh_responses}, socket) do
     question_responses =
       Selection.get_profile_responses(
@@ -324,6 +350,15 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
 
     {:noreply, assign(socket, :responses, question_responses)}
   end
+
+  # Handle Info for Refreshing Responses to Quiz Questions for Presenter ---------------------------
+  def handle_info({:refresh_presenter_responses}, socket) do
+    question_responses = Selection.get_question_responses(socket.assigns.current_question.id)
+    processed_responses = ActivityResults.process_responses(question_responses, socket.assigns.current_question)
+    {:noreply, socket
+    |> assign(:responses, question_responses)
+    |> assign(:processed_responses, processed_responses)}
+ end
 
   # Handle Info for testing/troubleshooting purposes only ------------------------------------------
   def handle_info(msg, socket) do

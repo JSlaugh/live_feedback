@@ -38,7 +38,10 @@
         <h1 class="text-2xl font-bold text-indigo-800 mb-4 border-b pb-3">
           <%= @current_question.question_content %>
         </h1>
-      </div>
+        <%= if @page_admin do %>
+      <h2>Responses: <%= if @responses, do: length(@responses), else: 0 %></h2>
+    <% end %>
+  </div>
     <% end %>
 
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -78,16 +81,33 @@
             parent_pid={self()}
           />
         <% @current_question.question_type in ["multiple_choice", "multi-select", "TF"] -> %>
+          <%= if @page_admin && @show_results do %>
           <.live_component
-            module={LiveFeedbackWeb.QuizComponent}
-            id="example-activity2"
-            profile_id={@profile_id}
-            anonymous_id={@anonymous_id}
-            current_question={@current_question}
-            responses={@responses}
-            parent_pid={self()}
+          module={LiveFeedbackWeb.QuizResultsComponent}
+          id="activity-results"
+          profile_id={@profile_id}
+          anonymous_id={@anonymous_id}
+          course_page={@course_page}
+          current_question={@current_question}
+          responses={@responses}
+          processed_responses={@processed_responses}
+          page_admin={@page_admin}
+          parent_pid={self()}
           />
-        <% true -> %>
+        <% else %>
+          <.live_component
+              module={LiveFeedbackWeb.QuizComponent}
+              id="example-activity2"
+              profile_id={@profile_id}
+              anonymous_id={@anonymous_id}
+              course_page={@course_page}
+          current_question={@current_question}
+              responses={@responses}
+              page_admin={@page_admin}
+          parent_pid={self()}
+            />
+          <% end %>
+      <% true -> %>
       <% end %>
     </div>
 
@@ -143,5 +163,14 @@
         <%= raw(@qr_code_svg) %>
       </:innerblock>
     </.live_component>
+
+    <%= if @page_admin && @current_question.question_type in ["multiple_choice", "multi-select", "TF"] do %>
+      <!-- Code for toggling quiz results -->
+      <button
+        phx-click="toggle_results"
+        class="px-4 py-2 mt-4 bg-blue-500 text-white rounded hover:bg-blue-600">
+        <%= if @show_results, do: "Hide Results", else: "Show Results" %>
+      </button>
+    <% end %>
   </:rightSidebar>
 </.activity_template>
