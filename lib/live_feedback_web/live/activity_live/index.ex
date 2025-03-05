@@ -8,6 +8,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
   alias LiveFeedback.Messages.Message
   alias LiveFeedback.Selection
   alias LiveFeedback.Activity
+  alias LiveFeedback.ActivityResults
   alias QRCode
 
   @impl true
@@ -94,11 +95,14 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      |> assign(:current_question, first_question)
      |> assign(:queue_id, queue_id)
      |> assign(:responses, question_responses)
+     |> assign(:processed_responses, [])
      |> stream(
        :messages,
        messages || []
      )}
   end
+
+
 
   # This is always ran after the mount function
   @impl true
@@ -164,6 +168,24 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
       |> redirect(to: ~p"/users/log_in")
       |> put_flash(:error, "You will need to login to save a class")}
     end
+  end
+
+  # Toggle the activity results component event handler ----------------------------------------------
+  @impl true
+  def handle_event("toggle_results", _params, socket) do
+    # WRITE STUFF HERE TO CALL THE FUNCTIONS TO UPDATE THE RESULTS
+     # If results are not shown, process responses when toggling
+     processed_responses = if !socket.assigns.show_results do
+      ActivityResults.process_responses(socket.assigns.responses, socket.assigns.current_question)
+     else
+      []
+     end
+
+    {:noreply,
+      socket
+      |> assign(:show_results, !socket.assigns.show_results)
+      |> assign(:processed_responses, processed_responses)
+    }
   end
 
   #changes sockets for pubsub broadcast

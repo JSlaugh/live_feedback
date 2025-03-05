@@ -2,6 +2,7 @@ defmodule LiveFeedbackWeb.QuizComponent do
   use Phoenix.LiveComponent
 
   alias LiveFeedback.Selection
+  alias LiveFeedback.ActivityResults
 
   @impl true
   def render(assigns) do
@@ -119,4 +120,72 @@ defmodule LiveFeedbackWeb.QuizComponent do
 
     {:noreply, socket}
   end
+end
+
+# QUIZ RESULTS COMPONENT - PROFESSOR VIEW -----------------------------------------------
+defmodule LiveFeedbackWeb.QuizResultsComponent do
+  use Phoenix.LiveComponent
+
+  alias LiveFeedback.ActivityResults
+  alias LiveFeedback.Selection
+
+  @impl true
+  def render(assigns) do
+    # Variables that we need
+    # Profile_id, current_question, responses
+    if not Map.has_key?(assigns, :profile_id) do
+      raise ArgumentError, "profile_id attribute is required"
+    end
+
+    if not Map.has_key?(assigns, :current_question) do
+      raise ArgumentError, "current_question attribute is required"
+    end
+
+    if not Map.has_key?(assigns, :responses) do
+      raise ArgumentError, "responses attribute is required"
+    end
+
+    if not Map.has_key?(assigns, :course_page) do
+      raise ArgumentError, "course_page attribute is required"
+    end
+
+    ~H"""
+      <div class="w-full max-w-xl mx-auto p-4 bg-white shadow-md rounded-lg">
+        <h2 class="text-xl font-semibold mb-4 text-gray-800">Question Responses</h2>
+
+        <div class="space-y-3">
+          <%= for {option, percentage, responses, index} <- @processed_responses do %>
+            <div class="flex items-center">
+              <div class="w-1/4 text-gray-700 pr-2">
+                <%= option %>
+              </div>
+              <div class="flex-grow bg-gray-200 rounded-full h-4 mr-2 relative">
+                <div
+                  class={[
+                    "h-4 rounded-full transition-all duration-500 ease-in-out",
+                    case index do
+                      0 -> "bg-blue-500"
+                      1 -> "bg-green-500"
+                      2 -> "bg-purple-500"
+                      3 -> "bg-orange-500"
+                      _ -> "bg-blue-500"  # Fallback color
+                    end
+                  ]}
+                  style={"width: #{percentage}%"}
+                >
+                <span class="absolute right-0 top-0 text-xs text-gray-700 mr-2">
+                  <%= responses %> <%= if responses == 1, do: "response", else: "responses" %>
+                </span>
+                </div>
+              </div>
+              <div class="w-12 text-right text-gray-600">
+                <%= percentage %>%
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    """
+  end
+
 end
