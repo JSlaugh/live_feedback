@@ -141,7 +141,7 @@
       </:innerblock>
     </.live_component>
 
-    <%= if @page_admin do %>
+    <%= if @page_admin && @current_question.question_type in ["multiple_choice", "multi-select", "TF"] do %>
       <!-- Code for toggling quiz results -->
       <button
         phx-click="toggle_results"
