@@ -185,6 +185,9 @@ defmodule LiveFeedbackWeb.QuizResultsComponent do
           <% end %>
         </div>
       </div>
+      <%= for item <- @items do %>
+    <li><%= item %></li>
+  <% end %>
     """
   end
 

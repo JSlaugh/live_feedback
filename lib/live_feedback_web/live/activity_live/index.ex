@@ -284,9 +284,11 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
 
   # Handle Info for Refreshing Responses to Quiz Questions for Presenter ---------------------------
   def handle_info({:refresh_presenter_responses}, socket) do
-    IO.inspect("sent to professor")
     question_responses = Selection.get_question_responses(socket.assigns.current_question.id)
-    {:noreply, assign(socket, :responses, question_responses)}
+    processed_responses = ActivityResults.process_responses(question_responses, socket.assigns.current_question)
+    {:noreply, socket
+    |> assign(:responses, question_responses)
+    |> assign(:processed_responses, processed_responses)}
  end
 
   # Handle Info for testing/troubleshooting purposes only ------------------------------------------
