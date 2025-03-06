@@ -9,7 +9,7 @@ defmodule LiveFeedbackWeb.MessageComponent do
     <div id={"message-#{@message.id}"} class="">
       <div class="bg-gray-200 p-4 rounded-lg flex flex-row justify-between">
         <div>
-          <p class="break-all">
+          <p class="break-normal">
             <%= @message.content %>
           </p>
         </div>
@@ -57,7 +57,9 @@ defmodule LiveFeedbackWeb.MessageComponent do
        <%!-- Display Like Count and Like Button --%>
       <div class="flex bg-brand_blue -mt-4 ml-4 w-14 p-1 mb-2 rounded-lg space-x-2  items-center">
         <button
-        phx-click={if @page_admin or @anonymous_id == @message.anonymous_id, do: nil, else: "like_message"}
+          phx-click={
+            if @page_admin or @anonymous_id == @message.anonymous_id, do: nil, else: "like_message"
+          }
           phx-value-id={@message.id}
           phx-value-value="like"
           phx-target={@myself}

@@ -49,32 +49,34 @@ defmodule LiveFeedbackWeb.QaComponent do
 
     ~H"""
     <div>
-      <%!-- If it is an admin or owner of the page it should show these items --%>
-      <%= if @page_admin do %>
-        <.button
-          phx-click="delete_all_messages"
-          phx-target={@myself}
-          class="bg-red-600 hover:bg-red-600"
-        >
-          Clear the Page
-        </.button>
-      <% end %>
-
-      <div>
-        <div class="my-2 lg:my-4">
+      <div class="flex justify-between mx-2 mb-4 xl:mb-6">
+        <div>
           <form phx-change="sort_messages" phx-target={@myself}>
-            <select id="sort" name="sort" class="p-2 border rounded-lg">
+            <select id="sort" name="sort" class="p-2 pr-8  border rounded-lg">
               <option value="oldest" selected={@sort_by == :oldest}>Oldest</option>
-
+              
               <option value="newest" selected={@sort_by == :newest}>Newest</option>
-
+              
               <option value="like_count" selected={@sort_by == :like_count}>Most Liked</option>
             </select>
           </form>
         </div>
+         <%!-- If it is an admin or owner of the page it should show these items --%>
+        <%= if @page_admin do %>
+          <.buttonCustomColor
+            phx-click="delete_all_messages"
+            phx-target={@myself}
+            class="bg-logo_red hover:bg-brand_dark_red text-white"
+          >
+            Clear the Page
+          </.buttonCustomColor>
+        <% end %>
       </div>
-
-      <div id="messages" phx-update="stream" class="block">
+      <div
+        id="messages"
+        phx-update="stream"
+        class="block max-h-[400px] lg:max-h-[40vh] overflow-y-scroll mx-2"
+      >
         <%= for {id, message} <- @streams.messages do %>
           <div id={id} class="">
             <!-- Message Box LiveView Component -->
@@ -90,12 +92,9 @@ defmodule LiveFeedbackWeb.QaComponent do
         <% end %>
       </div>
       <%= if !@page_admin do %>
-      <.simple_form for={@form} phx-submit="create_message">
-        <.input field={@form[:content]} type="text" label="New Message" />
-        <:actions>
-          <.button>Save</.button>
-        </:actions>
-      </.simple_form>
+        <.simple_form for={@form} phx-submit="create_message">
+          <.textareaWithSave field={@form[:content]} type="textarea" label="New Message" />
+        </.simple_form>
       <% end %>
        <%!-- Focus Modal --%>
       <.modal
@@ -106,7 +105,7 @@ defmodule LiveFeedbackWeb.QaComponent do
       >
         <div class="flex justify-between p-4 bg-brand_grey rounded-lg">
           <div class="">
-            <p class="text-lg break-all"><%= @message.content %></p>
+            <p class="text-lg break-normal"><%= @message.content %></p>
           </div>
 
           <div>
