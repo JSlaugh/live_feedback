@@ -38,7 +38,7 @@
         <h1 class="text-2xl font-bold text-indigo-800 mb-4 border-b pb-3">
           <%= @current_question.question_content %>
         </h1>
-        <%= if @page_admin do %>
+      <%= if @page_admin and @current_question.question_type in ["multiple_choice", "multi-select", "true_false"] do %>
       <h2>Responses: <%= if @responses, do: length(@responses), else: 0 %></h2>
     <% end %>
   </div>
@@ -80,7 +80,7 @@
             queue_id={@queue_id}
             parent_pid={self()}
           />
-        <% @current_question.question_type in ["multiple_choice", "multi-select", "TF"] -> %>
+        <% @current_question.question_type in ["multiple_choice", "multi-select", "true_false"] -> %>
           <%= if @page_admin && @show_results do %>
           <.live_component
           module={LiveFeedbackWeb.QuizResultsComponent}
@@ -164,7 +164,7 @@
       </:innerblock>
     </.live_component>
 
-    <%= if @page_admin && @current_question.question_type in ["multiple_choice", "multi-select", "TF"] do %>
+    <%= if @page_admin && @current_question.question_type in ["multiple_choice", "multi-select", "true_false"] do %>
       <!-- Code for toggling quiz results -->
       <button
         phx-click="toggle_results"

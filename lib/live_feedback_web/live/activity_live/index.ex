@@ -57,7 +57,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
 
         queue ->
           queue_id = queue.id
-          first_question = Selection.get_question_from_queue(queue.id, 1)
+          first_question = Selection.get_question_from_queue(queue.id, queue.current_question_num)
           max_question_num = Questions.get_max_display_order(queue.id)
 
           messages =
@@ -102,7 +102,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      |> assign(:message, nil)
      # Use existing sort_by or default to :oldest
      |> assign_new(:sort_by, fn -> :oldest end)
-     |> assign(:current_question_num, 1)
+     |> assign(:current_question_num, queue.current_question_num || 1)
      |> assign(:max_question_num, max_question_num)
      |> assign(:current_question, first_question)
      |> assign(:queue_id, queue_id)
@@ -258,12 +258,16 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
   end
 
   def handle_info({:change_question, next_question_num, next_question, question_responses, messages},socket) do
-    {:noreply,
-     socket
-     |> assign(:current_question_num, next_question_num)
-     |> assign(:current_question, next_question)
-     |> assign(:responses, question_responses)
-     |> stream(:messages, messages, reset: true)}
+    queue = Queues.get_queue!(socket.assigns.queue_id)
+    case Queues.update_queue(queue, %{"current_question_num" => next_question_num}) do
+      {:ok, _response} ->
+          {:noreply,
+        socket
+        |> assign(:current_question_num, next_question_num)
+        |> assign(:current_question, next_question)
+        |> assign(:responses, question_responses)
+        |> stream(:messages, messages, reset: true)}
+    end
   end
 
   @impl true

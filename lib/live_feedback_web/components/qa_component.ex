@@ -59,21 +59,21 @@ defmodule LiveFeedbackWeb.QaComponent do
           Clear the Page
         </.button>
       <% end %>
-      
+
       <div>
         <div class="my-2 lg:my-4">
           <form phx-change="sort_messages" phx-target={@myself}>
             <select id="sort" name="sort" class="p-2 border rounded-lg">
               <option value="oldest" selected={@sort_by == :oldest}>Oldest</option>
-              
+
               <option value="newest" selected={@sort_by == :newest}>Newest</option>
-              
+
               <option value="like_count" selected={@sort_by == :like_count}>Most Liked</option>
             </select>
           </form>
         </div>
       </div>
-      
+
       <div id="messages" phx-update="stream" class="block">
         <%= for {id, message} <- @streams.messages do %>
           <div id={id} class="">
@@ -89,13 +89,14 @@ defmodule LiveFeedbackWeb.QaComponent do
           </div>
         <% end %>
       </div>
-      
+      <%= if !@page_admin do %>
       <.simple_form for={@form} phx-submit="create_message">
         <.input field={@form[:content]} type="text" label="New Message" />
         <:actions>
           <.button>Save</.button>
         </:actions>
       </.simple_form>
+      <% end %>
        <%!-- Focus Modal --%>
       <.modal
         :if={@live_action == :focus}
@@ -107,7 +108,7 @@ defmodule LiveFeedbackWeb.QaComponent do
           <div class="">
             <p class="text-lg break-all"><%= @message.content %></p>
           </div>
-          
+
           <div>
             <%= if @page_admin || @anonymous_id == @message.anonymous_id do %>
               <button
@@ -124,7 +125,7 @@ defmodule LiveFeedbackWeb.QaComponent do
       </.modal>
        <%!-- New / Edit Message Modal --%>
       <.modal
-        :if={@live_action in [:new, :edit]}
+        :if={@live_action in [:edit]}
         id="message-modal"
         show
         on_cancel={Phoenix.LiveView.JS.patch("/page/#{@course_page.slug}")}

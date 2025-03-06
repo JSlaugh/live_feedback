@@ -64,6 +64,13 @@ defmodule LiveFeedback.Queues do
     end
   end
 
+  def next_question(queue_id, next_question_num) do
+    queue = get_queue!(queue_id)
+    queue
+        |> Ecto.Changeset.change(current_question_num: next_question_num)
+        |> Repo.update!()
+  end
+
   @doc """
   Creates a queue.
   """

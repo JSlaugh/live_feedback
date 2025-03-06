@@ -30,12 +30,15 @@ defmodule LiveFeedbackWeb.QuizComponent do
           <!-- #Check if this option matches a response for this profile -->
           <%= for {option, index} <- Enum.with_index(@current_question.question_options_occurrences) do %>
             <div class={[
-              "flex items-center justify-center p-6 rounded-xl shadow-lg cursor-pointer transition-transform hover:scale-105",
+              "flex items-center justify-center p-6 rounded-xl shadow-lg",
+              if !@page_admin do
+                "cursor-pointer transition-transform hover:scale-105"
+              end,
               case index do
-                0 -> "bg-blue-500 hover:bg-blue-600"
-                1 -> "bg-green-500 hover:bg-green-600"
-                2 -> "bg-purple-500 hover:bg-purple-600"
-                3 -> "bg-orange-500 hover:bg-orange-600"
+                0 -> if @page_admin, do: "bg-blue-500", else: ["bg-blue-500", "hover:bg-blue-600"]
+                1 -> if @page_admin, do: "bg-green-500", else: ["bg-green-500", "hover:bg-green-600"]
+                2 -> if @page_admin, do: "bg-purple-500", else: ["bg-purple-500", "hover:bg-purple-600"]
+                3 -> if @page_admin, do: "bg-orange-500", else: ["bg-orange-500", "hover:bg-orange-600"]
               end,
               if Enum.any?(@responses, fn %{anonymous_id: aid, question_options_occurrence_id: oid} -> aid == @anonymous_id and oid == option.id end) do
                 "opacity-50"
@@ -43,7 +46,7 @@ defmodule LiveFeedbackWeb.QuizComponent do
                 ""
               end
             ]}
-            phx-click="select-answer" phx-target={@myself} phx-value-id={option.id}>
+            phx-click={if !@page_admin, do: "select-answer"} phx-target={@myself} phx-value-id={option.id}>
               <p class="text-xl text-white font-semibold text-center"><%= option.option_content %></p>
             </div>
           <% end %>

@@ -8,6 +8,7 @@ defmodule LiveFeedback.Queues.Queue do
     field :description, :string
     field :presented_date, :date
     field :is_presenting, :boolean, default: false
+    field :current_question_num, :integer, default: 1
 
     has_many :question_occurrence, LiveFeedback.Questions.QuestionOccurrence
 
@@ -17,7 +18,7 @@ defmodule LiveFeedback.Queues.Queue do
   @doc false
   def changeset(queue, attrs) do
     queue
-    |> cast(attrs, [:course_page_id, :name, :description, :presented_date, :is_presenting])
+    |> cast(attrs, [:course_page_id, :name, :description, :presented_date, :is_presenting, :current_question_num])
     |> validate_required([:course_page_id, :name, :is_presenting])
     |> foreign_key_constraint(:course_page_id)
   end
