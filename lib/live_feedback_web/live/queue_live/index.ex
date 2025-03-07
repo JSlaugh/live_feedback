@@ -28,7 +28,7 @@ defmodule LiveFeedbackWeb.QueueLive.Index do
 
   defp apply_action(socket, :new, %{"id" => course_page_id}) do
     socket
-    |> assign(:page_title, "New Queue")
+    |> assign(:page_title, "New Deck")
     |> assign(:queue, %Queue{})
     |> assign(:course_page_id, course_page_id)
   end

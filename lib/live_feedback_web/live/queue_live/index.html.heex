@@ -1,21 +1,20 @@
 <.flash_group flash={@flash} /> <.back_button to={~p"/course_pages/host"} text="Back" />
 <div class="mx-auto max-w-4xl px-4 py-8">
   <div class="flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-semibold text-gray-900"><%= @course_name %> Queues</h1>
-    
+    <h1 class="mt-2 max-sm:text-2xl sm:text-4xl font-bold lg:text-6xl sm:py-4"><%= @course_name %> Question Decks</h1>
     <.link
       navigate={~p"/course_pages/#{@course_page_id}/queues/new"}
-      class="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-700"
+      class="bg-logo_red hover:bg-brand_dark_red text-white p-2 rounded-lg max-sm:text-2xl sm:text-2xl"
     >
-      New Queue
+      Deck <.icon name="hero-plus" class="h-5 w-5" />
     </.link>
   </div>
-  
+
   <div class="grid gap-4" phx-update="stream" id="queues">
     <%= for {id,queue} <- @streams.queues do %>
       <div
         id={id}
-        class="bg-blue-400 rounded-lg shadow p-6 transition-all duration-200 hover:shadow-lg hover:scale-[1.01] cursor-pointer relative group hover:bg-blue-500"
+        class="bg-brand_navy rounded-lg V p-6 transition-all duration-200 hover:shadow-lg hover:scale-[1.01] cursor-pointer relative group hover:opacity-95"
         phx-click={JS.navigate(~p"/course_pages/#{@course_page_id}/#{queue.id}/questions")}
       >
         <div class="flex items-center justify-between relative z-10">
@@ -23,12 +22,12 @@
             <h2 class="text-xl font-semibold text-white mb-2">
               <%= queue.name %>
             </h2>
-            
+
             <p class="text-blue-100">
               <%= queue.description %>
             </p>
           </div>
-          
+
           <div class="flex items-center gap-4">
             <.link
               navigate={~p"/course_page/#{@course_page_id}/#{queue.id}/edit"}
@@ -36,7 +35,7 @@
             >
               <.icon name="hero-pencil-square" class="text-white" />
             </.link>
-            
+
             <.link
               phx-click="delete_queue"
               phx-value-id={queue.id}

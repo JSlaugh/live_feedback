@@ -21,7 +21,7 @@ defmodule LiveFeedbackWeb.UserLoginLive do
         <:actions>
           <.input field={@form[:remember_me]} type="checkbox" label="Keep me logged in" />
           <.link href={~p"/users/reset_password"} class="text-sm font-semibold">
-            Forgot your password?
+            Reset your password?
           </.link>
         </:actions>
         
@@ -31,6 +31,28 @@ defmodule LiveFeedbackWeb.UserLoginLive do
           </.button>
         </:actions>
       </.simple_form>
+      
+      <.modal
+        :if={@live_action == :reset_password_prompt}
+        id="reset-password-modal"
+        show
+        on_cancel={JS.push("close_modal")}
+      >
+        <div class="">
+          <h2 class="text-lg font-bold">Reset Your Password</h2>
+          
+          <p class="mt-2">For security reasons, you need to reset your password before logging in.</p>
+          
+          <div class="mt-4 flex justify-end">
+            <.link
+              navigate={~p"/users/reset_password"}
+              class="px-4 py-2 text-white bg-logo_red rounded"
+            >
+              Reset Password
+            </.link>
+          </div>
+        </div>
+      </.modal>
     </div>
     """
   end
@@ -38,6 +60,8 @@ defmodule LiveFeedbackWeb.UserLoginLive do
   def mount(_params, _session, socket) do
     email = Phoenix.Flash.get(socket.assigns.flash, :email)
     form = to_form(%{"email" => email}, as: "user")
-    {:ok, assign(socket, form: form), temporary_assigns: [form: form]}
+
+    {:ok, assign(socket, form: form, live_action: :reset_password_prompt),
+     temporary_assigns: [form: form]}
   end
 end
