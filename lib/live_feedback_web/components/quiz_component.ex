@@ -193,14 +193,18 @@ defmodule LiveFeedbackWeb.QuizResultsComponent do
     ~H"""
     <div class="w-full mt-2 mx-auto border-t  p-4 bg-white shadow-md rounded-lg">
       <h2 class="text-xl font-semibold mb-4 text-gray-800">Question Responses</h2>
-      
+
       <div class="space-y-3">
-        <%= for {option, percentage, responses, index} <- @processed_responses do %>
+        <%= for {option, correctness, percentage, responses, index} <- @processed_responses do %>
           <div class="flex items-center">
             <div class="w-1/4 text-gray-700 pr-2">
               <%= option %>
+              <%= if correctness do %>
+                <span class="font-bold italic text-brand_navy mb-4">(correct)</span>
+              <% else %>
+              <% end %>
             </div>
-            
+
             <div class="flex-grow bg-gray-200 rounded-lg h-10 mr-2 relative">
               <div
                 class={
@@ -221,7 +225,7 @@ defmodule LiveFeedbackWeb.QuizResultsComponent do
                 <span class="absolute right-0 top-1 text-xs font-bold text-gray-700 mr-2"></span>
               </div>
             </div>
-            
+
             <div class="w-12 text-right text-black">
               <span class="font-bold">
                 <%= percentage %>%

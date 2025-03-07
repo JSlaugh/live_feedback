@@ -4,6 +4,7 @@ defmodule LiveFeedback.ActivityResults do
   alias LiveFeedback.Questions.QuestionOptionsOccurrence
 
   def process_responses(responses, current_question) do
+
     # Group responses by their question_options_occurrence_id
     grouped_responses = Enum.group_by(responses, & &1.question_options_occurrence_id)
 
@@ -32,12 +33,15 @@ defmodule LiveFeedback.ActivityResults do
       # Fetch the text for this option
       option_text = fetch_option_text(response_count.option_id)
 
+      # Fetch correctness for the option
+      correctness = fetch_correctness(response_count.option_id)
+
       # Return a tuple
-      {option_text, percentage, response_count.count, index}
+      {option_text, correctness, percentage, response_count.count, index}
     end)
 
     # Sort the processed responses by count in descending order
-    Enum.sort_by(processed_responses, fn {_, _, count, _} -> count end, &>=/2)
+    Enum.sort_by(processed_responses, fn {_, _, _, count, _} -> count end, &>=/2)
   end
 
   # You'll need to implement this based on your schema
@@ -46,5 +50,13 @@ defmodule LiveFeedback.ActivityResults do
     QuestionOptionsOccurrence
     |> Repo.get(option_occurrence_id)
     |> Map.get(:option_content)
+  end
+
+  # You'll need to implement this based on your schema
+  defp fetch_correctness(option_occurrence_id) do
+    # Fetch is_correct from QuestionOptionsOccurrence table
+    QuestionOptionsOccurrence
+    |> Repo.get(option_occurrence_id)
+    |> Map.get(:is_correct)
   end
 end
