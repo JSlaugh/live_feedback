@@ -10,9 +10,9 @@ defmodule LiveFeedbackWeb.QueueLive.FormComponent do
     <div>
       <.header>
         <%= @title %> <%!-- NEEDS WORK Subtitle Updated Potentially to match Add or Edit --%>
-        <:subtitle>Use this form to manage queue records in your database.</:subtitle>
+        <:subtitle>Use this form to manage question deck records in your database.</:subtitle>
       </.header>
-      
+
       <.simple_form
         for={@form}
         id="queue-form"
@@ -20,11 +20,11 @@ defmodule LiveFeedbackWeb.QueueLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={@form[:name]} type="text" label="Queue Name:" />
+        <.input field={@form[:name]} type="text" label="Deck Name:" />
         <.input field={@form[:description]} type="text" label="Description:" />
         <.input field={@form[:presented_date]} type="date" label="Presentation Date" />
         <:actions>
-          <.button phx-disable-with="Saving...">Save Queue</.button>
+          <.button phx-disable-with="Saving...">Save Deck</.button>
         </:actions>
       </.simple_form>
     </div>

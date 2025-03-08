@@ -48,7 +48,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
       phx-mounted={@show && show_modal(@id)}
       phx-remove={hide_modal(@id)}
       data-cancel={JS.exec(@on_cancel, "phx-remove")}
-      class="relative z-50 hidden"
+      class="relative z-40 hidden"
     >
       <div id={"#{@id}-bg"} class="fixed inset-0 transition-opacity bg-zinc-50/90" aria-hidden="true" />
       <div
@@ -116,7 +116,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
       role="alert"
       class={[
-        "fixed top-2 right-2 mr-2 w-80 sm:w-96 z-50 rounded-lg p-3 ring-1",
+        "fixed top-20 right-2 mr-2 w-80 sm:w-96 z-50 rounded-lg p-3 ring-1 ",
         @kind == :info && "bg-emerald-50 text-emerald-800 ring-emerald-500 fill-cyan-900",
         @kind == :error && "bg-rose-50 text-rose-900 shadow-md ring-rose-500 fill-rose-900"
       ]}
@@ -127,7 +127,11 @@ defmodule LiveFeedbackWeb.CoreComponents do
         <.icon :if={@kind == :error} name="hero-exclamation-circle-mini" class="w-4 h-4" /> <%= @title %>
       </p>
 
+
+
       <p class="mt-2 text-sm leading-5"><%= msg %></p>
+
+
 
       <button type="button" class="absolute p-2 group top-1 right-1" aria-label={gettext("close")}>
         <.icon name="hero-x-mark-solid" class="w-5 h-5 opacity-40 group-hover:opacity-70" />
@@ -249,9 +253,11 @@ defmodule LiveFeedbackWeb.CoreComponents do
     assigns = assign_new(assigns, :text, fn -> "Back" end)
 
     ~H"""
-    <.link navigate={@to} class={"inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 transition-colors duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 #{@class}"}>
-      <.icon name="hero-arrow-left" class="h-4 w-4 mr-2" />
-      <span><%= @text %></span>
+    <.link
+      navigate={@to}
+      class={"inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 transition-colors duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 #{@class}"}
+    >
+      <.icon name="hero-arrow-left" class="h-4 w-4 mr-2" /> <span><%= @text %></span>
     </.link>
     """
   end
@@ -406,6 +412,96 @@ defmodule LiveFeedbackWeb.CoreComponents do
   end
 
   @doc """
+  Text Input with Save Button.
+  """
+  attr :id, :any, default: nil
+  attr :name, :any
+  attr :label, :string, default: nil
+  attr :value, :any
+
+  attr :type, :string,
+    default: "text",
+    values: ~w(checkbox color date datetime-local email file month number password
+               range search select tel text textarea time url week)
+
+  attr :field, Phoenix.HTML.FormField,
+    doc: "a form field struct retrieved from the form, for example: @form[:email]"
+
+  attr :errors, :list, default: []
+  attr :checked, :boolean, doc: "the checked flag for checkbox inputs"
+  attr :prompt, :string, default: nil, doc: "the prompt for select inputs"
+  attr :options, :list, doc: "the options to pass to Phoenix.HTML.Form.options_for_select/2"
+  attr :multiple, :boolean, default: false, doc: "the multiple flag for select inputs"
+
+  attr :rest, :global,
+    include: ~w(accept autocomplete capture cols disabled form list max maxlength min minlength
+                multiple pattern placeholder readonly required rows size step)
+
+  def textareaWithSave(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
+    errors = if Phoenix.Component.used_input?(field), do: field.errors, else: []
+
+    assigns
+    |> assign(field: nil, id: assigns.id || field.id)
+    |> assign(:errors, Enum.map(errors, &translate_error(&1)))
+    |> assign_new(:name, fn -> if assigns.multiple, do: field.name <> "[]", else: field.name end)
+    |> assign_new(:value, fn -> field.value end)
+    |> textareaWithSave()
+  end
+
+  def textareaWithSave(%{type: "textarea"} = assigns) do
+    ~H"""
+    <div class="mb-4">
+      <.label for={@id}><%= @label %></.label>
+
+      <div class="mt-2 flex">
+        <textarea
+          id={@id}
+          name={@name}
+          class={[
+            "flex-1",
+            "rounded-r-none",
+            "rounded-l-md",
+            "border border-zinc-300 focus:border-zinc-400 focus:ring-0",
+            "text-zinc-900 sm:text-sm sm:leading-6"
+          ]}
+          {@rest}
+        ><%= Phoenix.HTML.Form.normalize_value("textarea", @value) %></textarea>
+        <.buttonCustomColor
+          type="submit"
+          class="rounded-l-none bg-black text-white hover:bg-brand_navy"
+        >
+          <.icon name="hero-arrow-right-circle" class="w-8 h-8" />
+        </.buttonCustomColor>
+      </div>
+
+      <.error :for={msg <- @errors}><%= msg %></.error>
+    </div>
+    """
+  end
+
+  attr :type, :string, default: nil
+  attr :class, :string, default: nil
+  attr :rest, :global, include: ~w(disabled form name value)
+
+  slot :inner_block, required: true
+
+  def buttonCustomColor(assigns) do
+    ~H"""
+    <button
+      type={@type}
+      class={[
+        "phx-submit-loading:opacity-75 rounded-lg px-3",
+        "text-sm font-semibold",
+        @class
+      ]}
+      {@rest}
+    >
+      <%= render_slot(@inner_block) %>
+    </button>
+    """
+  end
+
+  @doc """
   Renders a label.
   """
   attr :for, :string, default: nil
@@ -445,8 +541,8 @@ defmodule LiveFeedbackWeb.CoreComponents do
 
   def header(assigns) do
     ~H"""
-    <header class={[@actions != [] && "flex items-center justify-between gap-6", @class]}>
-      <div>
+    <header class={[@actions != [] && " flex items-center justify-between gap-6", @class]}>
+      <div class="">
         <h1 class="text-lg lg:text-3xl font-semibold leading-8 text-zinc-800">
           <%= render_slot(@inner_block) %>
         </h1>
@@ -495,12 +591,12 @@ defmodule LiveFeedbackWeb.CoreComponents do
     ~H"""
     <div class="sm:px-4 sm:px-0">
       <table class="mt-11 w-full">
-        <thead class="text-sm leading-6 text-left text-zinc-500">
+        <thead class="sm:text-2xl font-bold lg:text-4xl leading-6 text-left text-brand_blue">
           <tr>
-            <th :for={col <- @col} class="p-0 pb-4 sm:pr-6 font-normal"><%= col[:label] %></th>
+            <th :for={col <- @col} class="p-0 pb-4 sm:pr-6 font-bold"><%= col[:label] %></th>
 
             <th :if={@action != []} class="relative p-0 pb-4">
-              <span class="sr-only"><%= gettext("Actions") %></span>
+              <span class=""><%= gettext("Actions") %></span>
             </th>
           </tr>
         </thead>
@@ -508,7 +604,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
         <tbody
           id={@id}
           phx-update={match?(%Phoenix.LiveView.LiveStream{}, @rows) && "stream"}
-          class="relative text-sm leading-6 border-t divide-y divide-zinc-100 border-zinc-200 text-zinc-700"
+          class="relative text-lg xl:text-xl leading-6 border-t divide-y divide-zinc-100 border-zinc-200 text-zinc-700"
         >
           <tr :for={row <- @rows} id={@row_id && @row_id.(row)} class="group hover:bg-zinc-50">
             <td
@@ -525,7 +621,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
             </td>
 
             <td :if={@action != []} class="relative p-0">
-              <div class="flex flex-col sm:flex-row justify-between py-4 text-sm font-medium text-left whitespace-nowrap">
+              <div class="flex flex-col sm:flex-row  py-4 text-sm font-medium text-left whitespace-nowrap">
                 <span class="group-hover:bg-zinc-50 sm:rounded-r-xl" />
                 <span
                   :for={action <- @action}
@@ -562,6 +658,8 @@ defmodule LiveFeedbackWeb.CoreComponents do
       <dl class="-my-4 divide-y divide-zinc-100">
         <div :for={item <- @item} class="flex gap-4 py-4 text-sm leading-6 sm:gap-8">
           <dt class="flex-none w-1/4 text-zinc-500"><%= item.title %></dt>
+
+
 
           <dd class="text-zinc-700"><%= render_slot(item) %></dd>
         </div>
@@ -737,7 +835,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
       >
         <%= render_slot(@button) %>
       </button>
-      
+
       <nav
         hidden="true"
         class="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5"

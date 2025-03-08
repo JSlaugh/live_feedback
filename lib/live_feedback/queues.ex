@@ -17,12 +17,11 @@ defmodule LiveFeedback.Queues do
 
   def authorize(:delete_queue, _user, _queue), do: :error
 
-  @spec get_queue(any()) :: any()
   @doc """
    get a single queue
   """
 
-  def get_queue(id) do
+  def get_queue!(id) do
     Repo.get!(Queue, id)
   end
 
@@ -65,12 +64,17 @@ defmodule LiveFeedback.Queues do
     end
   end
 
+  def next_question(queue_id, next_question_num) do
+    queue = get_queue!(queue_id)
+    queue
+        |> Ecto.Changeset.change(current_question_num: next_question_num)
+        |> Repo.update!()
+  end
+
   @doc """
   Creates a queue.
   """
   def create_queue(attrs \\ %{}) do
-    IO.inspect(attrs, label: "Queue Params")
-
     %Queue{}
     |> Queue.changeset(attrs)
     |> Repo.insert()
@@ -107,5 +111,42 @@ defmodule LiveFeedback.Queues do
   def change_queue(%Queue{} = queue, attrs) do
     queue
     |> Queue.changeset(attrs)
+  end
+
+  def get_presenting_queue_for_course(course_id) do
+    from(queue in Queue,
+      where: queue.course_page_id == ^course_id and queue.is_presenting == true
+    )
+    |> Repo.one()
+  end
+
+  def toggle_present_queue(course_page_id, queue_id) do
+    Repo.transaction(fn ->
+      # Find the queue
+      queue = Repo.get!(Queue, queue_id)
+
+      if queue.is_presenting do
+        # If currently presenting, turn it off
+        queue
+        |> Ecto.Changeset.change(is_presenting: false)
+        |> Repo.update!()
+
+        "Ending Presentation"
+      else
+        # If not presenting, first turn off all other queues for this course
+        from(q in Queue,
+          where: q.course_page_id == ^course_page_id,
+          update: [set: [is_presenting: false]]
+        )
+        |> Repo.update_all([])
+
+        # Now turn on the selected queue
+        queue
+        |> Ecto.Changeset.change(is_presenting: true)
+        |> Repo.update!()
+
+        "Presentation is starting"
+      end
+    end)
   end
 end

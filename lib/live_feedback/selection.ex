@@ -38,7 +38,7 @@ defmodule LiveFeedback.Selection do
     from(response in QuestionOptionsResponse,
     join: option in QuestionOptionsOccurrence,
     on: response.question_options_occurrence_id == option.id,
-      where: option.question_occurrence_id == ^question_id and response.user_profile_id == ^profile_id
+      where: option.question_occurrence_id == ^question_id and response.anonymous_id == ^profile_id
     )
     |> Repo.all()
   end
@@ -61,7 +61,7 @@ defmodule LiveFeedback.Selection do
   #deletes specific response
   def delete_response_for_profile_for_question(profile_id, option_id) do
     from(response in QuestionOptionsResponse,
-    where: response.user_profile_id == ^profile_id and response.question_options_occurrence_id == ^option_id)
+    where: response.anonymous_id == ^profile_id and response.question_options_occurrence_id == ^option_id)
     |> Repo.delete_all()
   end
 
@@ -70,7 +70,7 @@ defmodule LiveFeedback.Selection do
     from(response in QuestionOptionsResponse,
     join: option in QuestionOptionsOccurrence,
     on: response.question_options_occurrence_id == option.id,
-    where: response.user_profile_id == ^profile_id and
+    where: response.anonymous_id == ^profile_id and
            option.question_occurrence_id == ^question_id)
   |> Repo.delete_all()
   end
@@ -81,7 +81,7 @@ defmodule LiveFeedback.Selection do
       from(response in QuestionOptionsResponse,
         join: option in QuestionOptionsOccurrence,
         on: response.question_options_occurrence_id == option.id,
-        where: response.user_profile_id == ^profile_id and
+        where: response.anonymous_id == ^profile_id and
                option.question_occurrence_id == ^question_id
       )
 

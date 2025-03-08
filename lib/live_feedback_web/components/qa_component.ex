@@ -1,4 +1,6 @@
 defmodule LiveFeedbackWeb.QaComponent do
+  alias LiveFeedback.Messages
+  alias LiveFeedback.Messages.Message
   use Phoenix.LiveComponent
 
   import LiveFeedbackWeb.CoreComponents
@@ -46,93 +48,106 @@ defmodule LiveFeedbackWeb.QaComponent do
     end
 
     ~H"""
-      <div>
-        <%!-- If it is an admin or owner of the page it should show these items --%>
-        <%= if @page_admin do %>
-        <.button phx-click="delete_all_messages" phx-target={@myself} class="bg-red-600 hover:bg-red-600">
-          Clear the Page
-        </.button>
-        <% end %>
-
-        <%!-- Items for anyone --%>
-        <.link patch={"/page/#{@course_page.slug}/new"}>
-          <.button>New Message</.button>
-        </.link>
-
+    <div>
+      <div class="flex justify-between mx-2 mb-4 xl:mb-6">
         <div>
-          <div class="my-2 lg:my-4">
-            <form phx-change="sort_messages" phx-target={@myself}>
-              <select id="sort" name="sort" class="p-2 border rounded-lg">
-                <option value="oldest" selected={@sort_by == :oldest}>Oldest</option>
-
-                <option value="newest" selected={@sort_by == :newest}>Newest</option>
-
-                <option value="like_count" selected={@sort_by == :like_count}>Most Liked</option>
-              </select>
-            </form>
-          </div>
+          <form phx-change="sort_messages" phx-target={@myself}>
+            <select id="sort" name="sort" class="p-2 pr-8  border rounded-lg">
+              <option value="oldest" selected={@sort_by == :oldest}>Oldest</option>
+              
+              <option value="newest" selected={@sort_by == :newest}>Newest</option>
+              
+              <option value="like_count" selected={@sort_by == :like_count}>Most Liked</option>
+            </select>
+          </form>
         </div>
-
-        <div id="messages" phx-update="stream" class="block">
-          <%= for {id, message} <- @streams.messages do %>
-            <div id={id} class="">
-              <!-- Message Box LiveView Component -->
-              <.live_component
-                module={LiveFeedbackWeb.MessageComponent}
-                id={"message-#{id}"}
-                message={message}
-                anonymous_id={@anonymous_id}
-                page_admin={@page_admin}
-                parent_pid={self()}
-              />
-            </div>
-          <% end %>
-        </div>
-
-        <%!-- Focus Modal --%>
-        <.modal
-          :if={@live_action == :focus}
-          id="message-modal"
-          show
-          on_cancel={Phoenix.LiveView.JS.patch("/page/#{@course_page.id}/#{@queue_id}")}
-        >
-        <%!-- on_cancel={Phoenix.LiveView.JS.patch("/page/#{@course_page.slug}")}  This is what it should be there when not on a test page --%>
-          <div class="flex justify-between p-4 bg-brand_grey rounded-lg">
-            <div class="">
-              <p class="text-lg break-all"><%= @message.content %></p>
-            </div>
-
-            <div>
-              <%= if @page_admin || @anonymous_id == @message.anonymous_id do %>
-                <button phx-click="delete_message" phx-target={@myself} phx-value-id={@message.id} class="ml-2 text-red-500">
-                  <.icon name="hero-trash" />
-                </button>
-              <% end %>
-            </div>
-          </div>
-        </.modal>
-
-        <%!-- New / Edit Message Modal --%>
-        <.modal
-          :if={@live_action in [:new, :edit]}
-          id="message-modal"
-          show
-          on_cancel={Phoenix.LiveView.JS.patch("/page/#{@course_page.id}/#{@queue_id}")}
-        >
-        <%!-- on_cancel={Phoenix.LiveView.JS.patch("/page/#{@course_page.slug}")} This is what should be there when not a test page --%>
-          <.live_component
-            module={LiveFeedbackWeb.FeedbackLive.FormComponent}
-            id={@message.id || :new}
-            course_page={@course_page}
-            title={@page_title}
-            action={@live_action}
-            message={@message}
-            anonymous_id={@anonymous_id}
-            patch={"/page/#{@course_page.id}/#{@queue_id}"}
-          />
-        </.modal>
+         <%!-- If it is an admin or owner of the page it should show these items --%>
+        <%= if @page_admin do %>
+          <.buttonCustomColor
+            phx-click="delete_all_messages"
+            phx-target={@myself}
+            class="bg-logo_red hover:bg-brand_dark_red text-white"
+          >
+            Clear the Page
+          </.buttonCustomColor>
+        <% end %>
       </div>
+      <div
+        id="messages"
+        phx-update="stream"
+        class="block max-h-[400px] lg:max-h-[40vh] overflow-y-scroll mx-2"
+      >
+        <%= for {id, message} <- @streams.messages do %>
+          <div id={id} class="">
+            <!-- Message Box LiveView Component -->
+            <.live_component
+              module={LiveFeedbackWeb.MessageComponent}
+              id={"message-#{id}"}
+              message={message}
+              anonymous_id={@anonymous_id}
+              page_admin={@page_admin}
+              parent_pid={self()}
+            />
+          </div>
+        <% end %>
+      </div>
+      <%= if !@page_admin do %>
+        <.simple_form for={@form} phx-submit="create_message">
+          <.textareaWithSave field={@form[:content]} type="textarea" label="New Message" />
+        </.simple_form>
+      <% end %>
+       <%!-- Focus Modal --%>
+      <.modal
+        :if={@live_action == :focus}
+        id="message-modal"
+        show
+        on_cancel={Phoenix.LiveView.JS.patch("/page/#{@course_page.slug}")}
+      >
+        <div class="flex justify-between p-4 bg-brand_grey rounded-lg">
+          <div class="">
+            <p class="text-lg break-normal"><%= @message.content %></p>
+          </div>
+
+          <div>
+            <%= if @page_admin || @anonymous_id == @message.anonymous_id do %>
+              <button
+                phx-click="delete_message"
+                phx-target={@myself}
+                phx-value-id={@message.id}
+                class="ml-2 text-red-500"
+              >
+                <.icon name="hero-trash" />
+              </button>
+            <% end %>
+          </div>
+        </div>
+      </.modal>
+       <%!-- New / Edit Message Modal --%>
+      <.modal
+        :if={@live_action in [:edit]}
+        id="message-modal"
+        show
+        on_cancel={Phoenix.LiveView.JS.patch("/page/#{@course_page.slug}")}
+      >
+        <.live_component
+          module={LiveFeedbackWeb.FeedbackLive.FormComponent}
+          id={@message.id || :new}
+          course_page={@course_page}
+          title={@page_title}
+          action={@live_action}
+          message={@message}
+          anonymous_id={@anonymous_id}
+          patch={"/page/#{@course_page.id}/#{@queue_id}"}
+        />
+      </.modal>
+    </div>
     """
+  end
+
+  @impl true
+  def mount(socket) do
+    changeset = Messages.change_message(%Message{})
+    {:ok, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
   # Sort Messages Handle Event -- Updated for Question Occurrences
@@ -144,7 +159,8 @@ defmodule LiveFeedbackWeb.QaComponent do
     current_question_id = socket.assigns.current_question.id
 
     # Fetch and update the sorted messages
-    sorted_messages = LiveFeedback.Messages.get_messages_for_question(current_question_id, sort_by_atom)
+    sorted_messages =
+      LiveFeedback.Messages.get_messages_for_question(current_question_id, sort_by_atom)
 
     send(socket.assigns.parent_pid, {:sorted_messages, sort_by_atom, sorted_messages})
     {:noreply, socket}
@@ -154,7 +170,10 @@ defmodule LiveFeedbackWeb.QaComponent do
   @impl true
   def handle_event("delete_all_messages", _params, socket) do
     if socket.assigns.page_admin do
-      LiveFeedback.Messages.delete_all_messages_for_question_occurrence(socket.assigns.current_question.id)
+      LiveFeedback.Messages.delete_all_messages_for_question_occurrence(
+        socket.assigns.current_question.id
+      )
+
       send(socket.assigns.parent_pid, {:deleted_all_messages, socket.assigns.current_question.id})
       {:noreply, socket}
     else
@@ -168,7 +187,7 @@ defmodule LiveFeedbackWeb.QaComponent do
     message = LiveFeedback.Messages.get_message!(id)
 
     if socket.assigns.page_admin ||
-          message.anonymous_id == socket.assigns.anonymous_id do
+         message.anonymous_id == socket.assigns.anonymous_id do
       LiveFeedback.Messages.delete_message(message)
       send(socket.assigns.parent_pid, {:deleted_message_modal, message})
       {:noreply, socket}
@@ -183,13 +202,13 @@ defmodule LiveFeedbackWeb.QaComponent do
     {:noreply, socket}
   end
 
-  # Like Message Handle Event ---Inside the MessageComponent--- Updated for Question Occurences
+  # Like Message Handle Event ---Inside the MessageComponent--- Updated for Question Occurrences
   def handle_info({:selected_message_liked, update_message}, socket) do
     send(socket.assigns.parent_pid, {:selected_message_liked, update_message})
     {:noreply, socket}
   end
 
-  # Edit Message Handle Event ---Inside the MessageComponent--- Updated for Question Occurences
+  # Edit Message Handle Event ---Inside the MessageComponent--- Updated for Question Occurrences
   def handle_info({:selected_message_edit, message}, socket) do
     send(socket.assigns.parent_pid, {:selected_message_edit, message})
     {:noreply, socket}
@@ -200,5 +219,4 @@ defmodule LiveFeedbackWeb.QaComponent do
     send(socket.assigns.parent_pid, {:selected_message_delete, message})
     {:noreply, socket}
   end
-
 end

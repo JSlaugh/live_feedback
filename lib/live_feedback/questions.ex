@@ -17,7 +17,7 @@ defmodule LiveFeedback.Questions do
   #gets all question for that queue so it can be displayed on the page
   def list_questions_for_queue(queue_id) do
     from(question in QuestionOccurrence,
-      where: question.queue_id == ^queue_id,
+      where: question.queue_id == ^queue_id and question.is_archived == false,
       order_by: [asc: question.display_order],
       preload: [:question_options_occurrences]
     )
@@ -83,8 +83,19 @@ defmodule LiveFeedback.Questions do
   end
 
   def update_question(%QuestionOccurrence{} = question, attrs) do
-    IO.inspect(attrs)
+    question
+    |> QuestionOccurrence.changeset(attrs)
+    |> Repo.update()
+  end
 
+  def archive_question(%QuestionOccurrence{} = question, attrs) do
+    if question.display_order < get_max_display_order(question.queue_id) do
+      from(q in QuestionOccurrence,
+        where: q.queue_id == ^question.queue_id and q.display_order > ^question.display_order,
+        update: [set: [display_order: q.display_order - 1]]
+      )
+      |> Repo.update_all([])
+    end
     question
     |> QuestionOccurrence.changeset(attrs)
     |> Repo.update()

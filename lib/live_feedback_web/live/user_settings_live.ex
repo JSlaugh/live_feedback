@@ -7,12 +7,17 @@ defmodule LiveFeedbackWeb.UserSettingsLive do
     ~H"""
     <div class="mx-auto max-w-sm lg:max-w-lg">
       <.header class="text-center">
-        Account Settings
+        <h1 class="text-2xl font-bold lg:text-4xl">Account Settings</h1>
+
         <:subtitle>Manage your account email address and password settings</:subtitle>
       </.header>
-      
+
       <div class="space-y-12 divide-y">
+        <div></div>
+
         <div>
+          <h2 class="pt-4 text-xl lg:text-2xl font-bold">Change Email</h2>
+
           <.simple_form
             for={@email_form}
             id="email_form"
@@ -34,8 +39,10 @@ defmodule LiveFeedbackWeb.UserSettingsLive do
             </:actions>
           </.simple_form>
         </div>
-        
+
         <div>
+          <h2 class="pt-4 text-2xl font-bold">Change Password</h2>
+
           <.simple_form
             for={@password_form}
             id="password_form"
@@ -71,14 +78,14 @@ defmodule LiveFeedbackWeb.UserSettingsLive do
             </:actions>
           </.simple_form>
         </div>
-        
-        <.link
+
+        <%!-- <.link
           href={~p"/users/log_out"}
           method="delete"
           class="block text-center mx-auto mt-10 phx-submit-loading:opacity-75 rounded-lg bg-red-600 hover:bg-red-700 py-2 px-4 text-base font-semibold text-white active:text-white/80"
         >
           Log out
-        </.link>
+        </.link> --%>
       </div>
     </div>
     """

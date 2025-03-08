@@ -1,14 +1,15 @@
 <.activity_template>
   <:leftSidebar></:leftSidebar>
+  
   <:activity>
     <.header>
       <h1 class="text-2xl font-title font-semibold ">
         Send a message <.icon name="hero-arrow-long-right" />
       </h1>
-
+      
       <p><%= @course_page.description %></p>
     </.header>
-
+    
     <%= if @page_admin do %>
       <.button phx-click="delete_all_messages" class="bg-red-600 hover:bg-red-600">
         Clear the Page
@@ -18,21 +19,21 @@
     <.link patch={~p"/page/#{@course_page.slug}/new"}>
       <.button>New Message</.button>
     </.link>
-
+    
     <div>
       <div class="my-2 lg:my-4">
         <form phx-change="sort_messages">
           <select id="sort" name="sort" class="p-2 border rounded-lg">
             <option value="oldest" selected={@sort_by == :oldest}>Oldest</option>
-
+            
             <option value="newest" selected={@sort_by == :newest}>Newest</option>
-
+            
             <option value="like_count" selected={@sort_by == :like_count}>Most Liked</option>
           </select>
         </form>
       </div>
     </div>
-
+    
     <div id="messages" phx-update="stream" class="block">
       <%= for {id, message} <- @streams.messages do %>
         <div id={id} class="">
@@ -49,6 +50,7 @@
       <% end %>
     </div>
   </:activity>
+  
   <:rightSidebar>
     <!-- QR Code -->
     <.live_component
@@ -73,9 +75,9 @@
 >
   <div class="flex justify-between p-4 bg-brand_grey rounded-lg">
     <div class="">
-      <p class="text-lg break-all"><%= @message.content %></p>
+      <p class="text-lg break-normal"><%= @message.content %></p>
     </div>
-
+    
     <div>
       <%= if @page_admin || @anonymous_id == @message.anonymous_id do %>
         <button phx-click="delete_message" phx-value-id={@message.id} class="ml-2 text-red-500">

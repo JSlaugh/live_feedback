@@ -1,94 +1,184 @@
 <.activity_template>
   <:leftSidebar>
-    <.back_button to={~p"/course_pages"} text="Back" />
-  </:leftSidebar>
-  <:activity>
-  <%= if @current_question != nil do %>
-  <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-    <h1 class="text-2xl font-bold text-indigo-800 mb-4 border-b pb-3">
-      <%= @current_question.question_content %>
-    </h1>
-  </div>
-  <% end %>
-  <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-    <%= cond do %>
-      <% @current_question == nil -> %>
-        <div class="bg-gray-50 border-l-4 border-gray-300 p-4">
-          <p class="text-gray-700 italic">Nothing is currently being presented</p>
+    <%= if @user_id != nil do %>
+      <div class="mb-6">
+        <.back_button
+          to={~p"/course_pages"}
+          text="Back"
+          class="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-2"
+        />
+      </div>
+    <% end %>
+    
+    <%= if @profile_id == nil do %>
+      <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg shadow-sm border border-blue-100 mb-6">
+        <div class="flex flex-col items-center sm:items-start gap-4">
+          <div class="text-center sm:text-left">
+            <h2 class="text-xl font-bold text-gray-800 mb-2">Join This Class</h2>
+            
+            <p class="text-gray-600">
+              Joining allows you to save this class to your account and participate in tracked questions.
+            </p>
+          </div>
+          
+          <button
+            phx-click="join-class"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md font-medium flex items-center gap-2 transition-colors duration-150 shadow-sm"
+          >
+            Join <.icon name="hero-plus" class="h-5 w-5" />
+          </button>
         </div>
-      <% @current_question.is_required == true and @profile_id == nil -> %>
-        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
-          <div class="flex">
-            <div class="flex-shrink-0">
-              <.icon name="hero-exclamation-triangle" class="h-5 w-5 text-yellow-400" />
-            </div>
-            <div class="ml-3">
-              <p class="text-sm text-yellow-700">
-                This question is being tracked, you must login to continue.
-              </p>
+      </div>
+    <% end %>
+  </:leftSidebar>
+  
+  <:activity>
+    <%= if @current_question != nil do %>
+      <div class="bg-white rounded-lg shadow-md border-t border-gray-200 p-6 mb-6">
+        <h1 class="text-2xl font-bold text-brand_navy mb-4">
+          <%= @current_question.question_content %>
+        </h1>
+        
+        <%= if @page_admin and @current_question.question_type in ["multiple_choice", "multi-select", "true_false"] do %>
+          <h2 class="font-bold  inline-block p-2 rounded-lg  text-brand_navy text-xl ">
+            <.icon name="hero-chat-bubble-left-right" class=" w-8 h-8" /> <%= if @responses,
+              do: length(@responses),
+              else: 0 %>
+          </h2>
+        <% end %>
+      </div>
+    <% end %>
+    
+    <div class="bg-white rounded-lg shadow-md border-t border-gray-200 p-6 mb-6">
+      <%= cond do %>
+        <% @current_question == nil -> %>
+          <div class="bg-gray-50 border-l-4 border-gray-300 p-4">
+            <p class="text-gray-700 italic">Nothing is currently being presented</p>
+          </div>
+        <% @current_question.is_required == true and @profile_id == nil -> %>
+          <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <.icon name="hero-exclamation-triangle" class="h-5 w-5 text-yellow-400" />
+              </div>
+              
+              <div class="ml-3">
+                <p class="text-sm text-yellow-700">This question is being tracked, you must loggin to participate.</p>
+              </div>
             </div>
           </div>
+        <% @current_question.question_type == "QA" -> %>
+          <.live_component
+            module={LiveFeedbackWeb.QaComponent}
+            id="example-activity"
+            page_admin={@page_admin}
+            course_page={@course_page}
+            current_question={@current_question}
+            sort_by={@sort_by}
+            streams={@streams}
+            anonymous_id={@anonymous_id}
+            live_action={@live_action}
+            message={@message}
+            page_title={@page_title}
+            queue_id={@queue_id}
+            parent_pid={self()}
+          />
+        <% @current_question.question_type in ["multiple_choice", "multi-select", "true_false"] -> %>
+          <%= if @page_admin  do %>
+            <!-- Code for toggling quiz results -->
+            <button
+              phx-click="toggle_results"
+              class="p-2  text-logo_red font-bold rounded-lg border border-logo_red bg-white hover:text-white hover:bg-logo_red transition-colors duration-500 "
+            >
+              <%= if @show_results do %>
+                Hide <.icon name="hero-chart-bar-solid" class="h-5 w-5 mb-2 scale-x-[-1]" />
+              <% else %>
+                Show <.icon name="hero-chart-bar-solid" class="h-5 w-5 mb-2 scale-x-[-1]" />
+              <% end %>
+            </button>
+          <% end %>
+          
+          <%= if @page_admin && @show_results do %>
+            <.live_component
+              module={LiveFeedbackWeb.QuizResultsComponent}
+              id="activity-results"
+              profile_id={@profile_id}
+              anonymous_id={@anonymous_id}
+              course_page={@course_page}
+              current_question={@current_question}
+              responses={@responses}
+              processed_responses={@processed_responses}
+              page_admin={@page_admin}
+              parent_pid={self()}
+            />
+          <% else %>
+            <.live_component
+              module={LiveFeedbackWeb.QuizComponent}
+              id="example-activity2"
+              profile_id={@profile_id}
+              anonymous_id={@anonymous_id}
+              course_page={@course_page}
+              current_question={@current_question}
+              responses={@responses}
+              page_admin={@page_admin}
+              parent_pid={self()}
+            />
+          <% end %>
+        <% true -> %>
+      <% end %>
+    </div>
+    
+    <div class="flex justify-between items-center mt-8 mb-4">
+      <div>
+        <%= if @page_admin and @current_question_num != 1 do %>
+          <button
+            class="inline-flex items-center px-4 py-2 rounded-md  bg-sky-700 text-white hover:bg-brand_navy transition-colors duration-200 shadow-sm"
+            phx-click="change_question"
+            phx-value-direction="previous"
+          >
+            <.icon name="hero-chevron-left" class="h-5 w-5 mr-2" /> <span>Previous</span>
+          </button>
+        <% else %>
+          <div class="w-24"></div>
+          <!-- Spacer to maintain layout when button is hidden -->
+        <% end %>
+      </div>
+      
+      <%= if @current_question != nil do %>
+        <div class="text-sm text-gray-500 font-medium">
+          Question <%= @current_question_num %> of <%= @max_question_num %>
         </div>
-      <% @current_question.question_type == "QA" -> %>
-        <.live_component
-        module={LiveFeedbackWeb.QaComponent}
-        id="example-activity"
-        page_admin={@page_admin}
-        course_page={@course_page}
-        current_question={@current_question}
-        sort_by={@sort_by}
-        streams={@streams}
-        anonymous_id={@anonymous_id}
-        live_action={@live_action}
-        message={@message}
-        page_title={@page_title}
-        queue_id={@queue_id}
-        parent_pid={self()}
-        />
-      <% @current_question.question_type in ["multiple_choice", "multi-select", "TF"] -> %>
-        <.live_component
-        module={LiveFeedbackWeb.QuizComponent}
-        id="example-activity2"
-        profile_id={@profile_id}
-        current_question={@current_question}
-        responses={@responses}
-        parent_pid={self()}
-        />
-      <% true -> %>
-
-    <% end %>
-  </div>
-  <div class="flex justify-between items-center mt-8 mb-4">
-    <div>
-      <%= if @current_question_num != 1 do %>
-        <button class="inline-flex items-center px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-200 shadow-sm" phx-click="change_question" phx-value-direction="previous">
-          <.icon name="hero-chevron-left" class="h-5 w-5 mr-2" />
-          <span>Previous</span>
-        </button>
-      <% else %>
-        <div class="w-24"></div> <!-- Spacer to maintain layout when button is hidden -->
       <% end %>
+      
+      <div>
+        <%= if @page_admin and @current_question != nil and @current_question_num != @max_question_num do %>
+          <button
+            class="inline-flex items-center px-4 py-2 rounded-md bg-sky-700 text-white hover:bg-brand_navy transition-colors duration-200 shadow-sm"
+            phx-click="change_question"
+            phx-value-direction="next"
+          >
+            <span>Next</span> <.icon name="hero-chevron-right" class="h-5 w-5 ml-2" />
+          </button>
+        <% else %>
+          <div class="w-24"></div>
+          <!-- Spacer to maintain layout when button is hidden -->
+        <% end %>
+      </div>
     </div>
-
-    <%= if @current_question != nil do %>
-    <div class="text-sm text-gray-500 font-medium">
-      Question <%= @current_question_num %> of <%= @max_question_num %>
-    </div>
-    <% end %>
-
-    <div>
-      <%= if @current_question != nil and @current_question_num != @max_question_num do %>
-        <button class="inline-flex items-center px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-200 shadow-sm" phx-click="change_question" phx-value-direction="next">
-          <span>Next</span>
-          <.icon name="hero-chevron-right" class="h-5 w-5 ml-2" />
-        </button>
-      <% else %>
-        <div class="w-24"></div> <!-- Spacer to maintain layout when button is hidden -->
-      <% end %>
-    </div>
-  </div>
-</:activity>
+  </:activity>
+  
   <:rightSidebar>
-    <div>Right Sidebar</div>
+    <!-- QR Code -->
+    <.live_component
+      module={LiveFeedbackWeb.ToggleableImage}
+      id="qr-code"
+      visible_bool={@qr_code_visible}
+      icon="hero-qr-code"
+      parent_pid={self()}
+    >
+      <:innerblock>
+        <%= raw(@qr_code_svg) %>
+      </:innerblock>
+    </.live_component>
   </:rightSidebar>
 </.activity_template>
