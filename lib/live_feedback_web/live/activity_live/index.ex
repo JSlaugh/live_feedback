@@ -263,6 +263,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
       {:ok, _response} ->
           {:noreply,
         socket
+        |> assign(:show_results, false)
         |> assign(:current_question_num, next_question_num)
         |> assign(:current_question, next_question)
         |> assign(:responses, question_responses)

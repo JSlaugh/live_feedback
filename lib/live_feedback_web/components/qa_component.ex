@@ -54,11 +54,20 @@ defmodule LiveFeedbackWeb.QaComponent do
           <form phx-change="sort_messages" phx-target={@myself}>
             <select id="sort" name="sort" class="p-2 pr-8  border rounded-lg">
               <option value="oldest" selected={@sort_by == :oldest}>Oldest</option>
-              
+
               <option value="newest" selected={@sort_by == :newest}>Newest</option>
-              
+
               <option value="like_count" selected={@sort_by == :like_count}>Most Liked</option>
             </select>
+            <button
+              type="button"
+              phx-click="sort_messages"
+              phx-value-sort={@sort_by}
+              phx-target={@myself}
+              class="ml-2 p-2 border rounded-lg bg-gray-200 hover:bg-gray-300"
+            >
+              <.icon name="hero-arrow-path"/>
+            </button>
           </form>
         </div>
          <%!-- If it is an admin or owner of the page it should show these items --%>
