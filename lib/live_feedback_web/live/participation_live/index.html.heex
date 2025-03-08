@@ -4,44 +4,52 @@
   <h1 class="text-2xl font-semibold text-gray-800 mb-4">All Available Question Queues</h1>
 
   <div class="overflow-x-auto">
-    <table class="w-full border border-gray-300 rounded-lg shadow-sm">
-      <thead class="bg-gray-200 text-gray-700">
-        <tr class="text-left">
-          <th class="py-2 px-4 border-b">Queue</th>
-          <th class="py-2 px-4 border-b">Readable Date</th>
-          <th class="py-2 px-4 border-b">Date</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-200">
-        <%= for date <- @participation_dates do %>
-          <tr class="hover:bg-gray-100">
-            <td class="py-2 px-4 border-b"><%= date.name %></td>
-            <td class="py-2 px-4 border-b">
-              <%= if date.presented_date do %>
-              <%= Timex.Format.DateTime.Formatter.format!(date.presented_date, "{WDfull}, {Mfull} {D}, {YYYY}") %>
-              <% else %>
-                <i>Queue not presented yet</i>
-              <% end %>
-            </td>
-            <td class="py-2 px-4 border-b">
-              <%= if date.presented_date do %>
-                <%= date.presented_date %>
-              <% else %>
-                <i>Queue not presented yet</i>
-              <% end %>
-            </td>
+    <%= if @participation_dates != [] do %>
+      <table class="w-full border border-gray-300 rounded-lg shadow-sm">
+        <thead class="bg-gray-200 text-gray-700">
+          <tr class="text-left">
+            <th class="py-2 px-4 border-b">Queue</th>
+            <th class="py-2 px-4 border-b">Readable Date</th>
+            <th class="py-2 px-4 border-b">Date</th>
           </tr>
-        <% end %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          <%= for date <- @participation_dates do %>
+            <tr class="hover:bg-gray-100 cursor-pointer"
+                phx-click="add_pr"
+                phx-value-date={if date.presented_date, do: date.presented_date, else: nil}>
+              <td class="py-2 px-4 border-b"><%= date.name %></td>
+              <td class="py-2 px-4 border-b">
+                <%= if date.presented_date do %>
+                <%= Timex.Format.DateTime.Formatter.format!(date.presented_date, "{WDfull}, {Mfull} {D}, {YYYY}") %>
+                <% else %>
+                  <i>Queue not presented yet</i>
+                <% end %>
+              </td>
+              <td class="py-2 px-4 border-b">
+                <%= if date.presented_date do %>
+                  <%= date.presented_date %>
+                <% else %>
+                  <i>Queue not presented yet</i>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <i>No queues to show. Create a queue, present it, and gather responses to download the data.</i>
+    <% end %>
   </div>
 </div>
 <% end %>
 
-<.form for={@form} phx-submit="add_pr">
-  <.input field={@form[:date]} type="date" name="date" label="Date You're Requesting"/>
-  <.button>Request Participation Summary</.button>
-</.form>
+<%= if @participation_dates != [] do %>
+  <.form for={@form} phx-submit="add_pr">
+    <.input field={@form[:date]} type="date" name="date" label="Date You're Requesting"/>
+    <.button>Request Participation Summary</.button>
+  </.form>
+<% end %>
 
 <%= if @csv_gathered do %>
 
@@ -64,19 +72,19 @@
             <th class="py-2 px-4 border-b">Participant ID</th>
             <th class="py-2 px-4 border-b">Question ID</th>
             <th class="py-2 px-4 border-b">Question</th>
-            <th class="py-2 px-4 border-b">Option</th>
-            <th class="py-2 px-4 border-b">Option Picked</th>
+            <th class="py-2 px-4 border-b">Option(s)</th>
+            <th class="py-2 px-4 border-b">Option(s) Picked</th>
             <th class="py-2 px-4 border-b">Correct</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200">
-          <%= for [presented_date, display_name, custom_registration_id, question_id, question_content, option_content, option_order, correct_yn] <- @participation_data do %>
+          <%= for [presented_date, display_name, custom_registration_id, question_occurrence_id, question_content, option_content, option_order, correct_yn] <- @participation_data do %>
             <tr class="hover:bg-gray-100 text-gray-700">
               <td class="py-2 px-4 border-b"><%= @course_page_id %></td>
               <td class="py-2 px-4 border-b"><%= presented_date %></td>
               <td class="py-2 px-4 border-b"><%= display_name %></td>
               <td class="py-2 px-4 border-b"><%= custom_registration_id %></td>
-              <td class="py-2 px-4 border-b"><%= question_id %></td>
+              <td class="py-2 px-4 border-b"><%= question_occurrence_id %></td>
               <td class="py-2 px-4 border-b"><%= question_content %></td>
               <td class="py-2 px-4 border-b"><%= option_content %></td>
               <td class="py-2 px-4 border-b"><%= option_order %></td>

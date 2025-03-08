@@ -85,6 +85,19 @@
 
   <:col :let={{_id, course_page}} label="Slug"><%= course_page.slug %></:col>
 
+  <:col :let={{_id, course_page}} label="Participation Data">
+  <%= if @present_mode == "owner" do %>
+    <.link patch={~p"/course_pages/#{course_page}/participation"}>
+      <span>View</span>
+      <.icon name="hero-document-text" class="text-blue-500" />
+    </.link>
+  <% end %>
+  </:col>
+
+  <:action :let={{_id, course_page}}>
+
+  </:action>
+
   <:action :let={{_id, course_page}}>
     <%= if @present_mode == "owner" do %>
       <.link patch={~p"/course_pages/#{course_page}/edit"}>

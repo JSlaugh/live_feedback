@@ -5,10 +5,9 @@ defmodule LiveFeedbackWeb.ParticipationController do
   def download_csv(conn, params) do
 
     # Pull the parameters from the URL
-    course_page_id = params["course_page_id"]
+    course_page_id = params["id"]
     date = params["date"]
 
-    IO.inspect(params["date"])
     {:ok, file_path} = ParticipationCsvExport.export_participation_requests(course_page_id, date)
 
 
