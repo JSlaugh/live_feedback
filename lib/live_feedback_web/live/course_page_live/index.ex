@@ -31,7 +31,7 @@ defmodule LiveFeedbackWeb.CoursePageLive.Index do
              course_page
            ) do
       socket
-      |> assign(:page_title, "Edit Feedback page")
+      |> assign(:page_title, "Edit Class")
       |> assign(:course_page, course_page)
     else
       {:error, _reason} ->
@@ -44,7 +44,7 @@ defmodule LiveFeedbackWeb.CoursePageLive.Index do
   defp apply_action(socket, :new, _params) do
     IO.inspect(Map.get(socket.assigns.streams, :course_pages), label: "My Stream Data")
     socket
-    |> assign(:page_title, "New Feedback page")
+    |> assign(:page_title, "Create Class")
     |> assign(:course_page, %CoursePage{})
   end
 

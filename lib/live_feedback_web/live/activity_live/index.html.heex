@@ -96,6 +96,16 @@
                 Show <.icon name="hero-chart-bar-solid" class="h-5 w-5 mb-2 scale-x-[-1]" />
               <% end %>
             </button>
+            <button
+              phx-click="toggle_lock"
+              class="p-2  text-logo_red font-bold rounded-lg border border-logo_red bg-white hover:text-white hover:bg-logo_red transition-colors duration-500 "
+            >
+              <%= if @locked do %>
+                Unlock <.icon name="hero-lock-closed" class="h-5 w-5 mb-2 scale-x-[-1]" />
+              <% else %>
+                Lock <.icon name="hero-lock-open" class="h-5 w-5 mb-2 scale-x-[-1]" />
+              <% end %>
+            </button>
           <% end %>
 
           <%= if @page_admin && @show_results do %>
@@ -121,6 +131,7 @@
               current_question={@current_question}
               responses={@responses}
               page_admin={@page_admin}
+              locked={@locked}
               parent_pid={self()}
             />
           <% end %>

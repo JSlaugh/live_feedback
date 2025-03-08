@@ -102,7 +102,7 @@ defmodule LiveFeedbackWeb.CoursePageLive.NewCourseFormComponent do
     <div>
       <.header>
         <%= @title %>
-        <:subtitle>Manage your feedback pages</:subtitle>
+        <:subtitle>Manage your class</:subtitle>
       </.header>
 
       <.simple_form
