@@ -56,7 +56,8 @@ defmodule LiveFeedbackWeb.QuizComponent do
                 ""
               end
             ]}
-            phx-click={if !@page_admin, do: "select-answer"}
+            phx-click={if !@page_admin && !@locked, do: "select-answer"}
+            phx-throttle="500"
             phx-target={@myself}
             phx-value-id={option.id}
           >
@@ -197,7 +198,7 @@ defmodule LiveFeedbackWeb.QuizResultsComponent do
       <div class="space-y-3">
         <%= for {option, correctness, percentage, responses, index} <- @processed_responses do %>
           <div class="flex items-center">
-            <div class="w-1/4 text-gray-700 pr-2">
+            <div class={["w-1/4 text-gray-700 pr-2", if correctness do "font-bold" end]} >
               <%= option %>
               <%= if correctness do %>
                 <span class="font-bold italic text-brand_navy mb-4">(correct)</span>
@@ -217,7 +218,8 @@ defmodule LiveFeedbackWeb.QuizResultsComponent do
                       3 -> "bg-orange-500"
                       # Fallback color
                       _ -> "bg-blue-500"
-                    end
+                    end,
+                    if !correctness do "opacity-40" end
                   ]
                 }
                 style={"width: #{percentage}%"}

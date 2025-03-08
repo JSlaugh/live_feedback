@@ -95,7 +95,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      |> assign(:page_admin, presenter)
      |> assign(:qr_code_visible, qr_code_visible)
      |> assign(:show_results, false)
-     |> assign(:locked, false)
+     |> assign(:locked, queue.is_locked)
      |> assign(:course_page, course_page)
      # This needs to have a default value
      |> assign(:live_action, :index)
@@ -238,8 +238,10 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
   # Toggle the answering lock ----------------------------------------------
   @impl true
   def handle_event("toggle_lock", _params, socket) do
+    is_locked = !socket.assigns.locked
+    Queues.toggle_queue_lock(socket.assigns.queue_id, is_locked)
     topic = "#{socket.assigns.queue_id}"
-    Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:toggle_lock, !socket.assigns.locked})
+    Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:toggle_lock, is_locked})
     {:noreply, socket}
   end
 

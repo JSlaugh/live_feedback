@@ -71,6 +71,14 @@ defmodule LiveFeedback.Queues do
         |> Repo.update!()
   end
 
+  def toggle_queue_lock(queue_id, is_locked) do
+    from(q in Queue,
+          where: q.id == ^queue_id,
+          update: [set: [is_locked: ^is_locked]]
+        )
+        |> Repo.update_all([])
+  end
+
   @doc """
   Creates a queue.
   """
