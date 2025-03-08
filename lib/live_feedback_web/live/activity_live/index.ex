@@ -50,16 +50,17 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     presenter = if profile && profile.role == "owner", do: true, else: false
 
     # Get the queue if it exists
-    {queue, queue_id, first_question, messages, question_responses, max_question_num} =
+    {queue, queue_id, first_question, messages, question_responses, max_question_num, current_question_num, is_locked} =
       case Queues.get_presenting_queue_for_course(course_page.id) do
         nil ->
-          {nil, nil, nil, [], nil, nil}
+          {nil, nil, nil, [], nil, nil, 1, nil}
 
         queue ->
           queue_id = queue.id
           first_question = Selection.get_question_from_queue(queue.id, queue.current_question_num)
           max_question_num = Questions.get_max_display_order(queue.id)
-
+          current_question_num = queue.current_question_num
+          is_locked = queue.is_locked
           messages =
             if first_question && first_question.question_type == "QA",
               do: Messages.get_messages_for_question(first_question.id),
@@ -74,7 +75,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
                 ),
               else: nil
 
-          {queue, queue_id, first_question, messages, question_responses, max_question_num}
+          {queue, queue_id, first_question, messages, question_responses, max_question_num, current_question_num, is_locked}
       end
 
     # Set the Visibility of the QR Code to be based on if they are a presenter or not
@@ -95,7 +96,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      |> assign(:page_admin, presenter)
      |> assign(:qr_code_visible, qr_code_visible)
      |> assign(:show_results, false)
-     |> assign(:locked, queue.is_locked)
+     |> assign(:locked, is_locked)
      |> assign(:course_page, course_page)
      # This needs to have a default value
      |> assign(:live_action, :index)
@@ -103,7 +104,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      |> assign(:message, nil)
      # Use existing sort_by or default to :oldest
      |> assign_new(:sort_by, fn -> :oldest end)
-     |> assign(:current_question_num, queue.current_question_num || 1)
+     |> assign(:current_question_num, current_question_num)
      |> assign(:max_question_num, max_question_num)
      |> assign(:current_question, first_question)
      |> assign(:queue_id, queue_id)
@@ -243,6 +244,23 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     topic = "#{socket.assigns.queue_id}"
     Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:toggle_lock, is_locked})
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("toggle_present", _params, socket) do
+    case Queues.toggle_present_queue(socket.assigns.course_page.id, socket.assigns.queue_id) do
+      {:ok, message} ->
+        topic = "#{socket.assigns.course_page.id}"
+        Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:toggle_update, message})
+
+        {:noreply,
+         socket
+         |> assign(:queue, Questions.get_queue!(socket.assigns.queue_id))
+         |> put_flash(:info, message)}
+
+      {:error, _reason} ->
+        {:noreply, put_flash(socket, :error, "Something went wrong")}
+    end
   end
 
   #changes sockets for pubsub broadcast

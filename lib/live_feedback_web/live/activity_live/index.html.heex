@@ -54,6 +54,14 @@
         <% @current_question == nil -> %>
           <div class="bg-gray-50 border-l-4 border-gray-300 p-4">
             <p class="text-gray-700 italic">Nothing is currently being presented</p>
+            <%= if @page_admin do %>
+              <.link
+                href={~p"/course_pages/#{@course_page.id}/queues"}
+                class="inline-flex items-center px-4 py-2 rounded-md bg-sky-700 text-white hover:bg-brand_navy transition-colors duration-200 shadow-sm"
+              >
+                <span>Start Presentation</span>
+              </.link>
+            <% end %>
           </div>
         <% @current_question.is_required == true and @profile_id == nil -> %>
           <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
@@ -162,14 +170,23 @@
       <% end %>
 
       <div>
-        <%= if @page_admin and @current_question != nil and @current_question_num != @max_question_num do %>
-          <button
-            class="inline-flex items-center px-4 py-2 rounded-md bg-sky-700 text-white hover:bg-brand_navy transition-colors duration-200 shadow-sm"
-            phx-click="change_question"
-            phx-value-direction="next"
-          >
-            <span>Next</span> <.icon name="hero-chevron-right" class="h-5 w-5 ml-2" />
-          </button>
+        <%= if @page_admin and @current_question != nil do %>
+          <%= if @current_question_num != @max_question_num do%>
+            <button
+              class="inline-flex items-center px-4 py-2 rounded-md bg-sky-700 text-white hover:bg-brand_navy transition-colors duration-200 shadow-sm"
+              phx-click="change_question"
+              phx-value-direction="next"
+            >
+              <span>Next</span> <.icon name="hero-chevron-right" class="h-5 w-5 ml-2" />
+            </button>
+          <% else %>
+            <button
+              class="inline-flex items-center px-4 py-2 rounded-md bg-sky-700 text-white hover:bg-brand_navy transition-colors duration-200 shadow-sm"
+              phx-click="toggle_present"
+            >
+              <span>End Presentation</span>
+            </button>
+          <% end %>
         <% else %>
           <div class="w-24"></div>
           <!-- Spacer to maintain layout when button is hidden -->
@@ -191,5 +208,11 @@
         <%= raw(@qr_code_svg) %>
       </:innerblock>
     </.live_component>
+    <button
+      class="inline-flex items-center px-4 py-2 rounded-md bg-sky-700 text-white hover:bg-brand_navy transition-colors duration-200 shadow-sm"
+      phx-click="toggle_present"
+    >
+      <span>End Presentation</span>
+    </button>
   </:rightSidebar>
 </.activity_template>
