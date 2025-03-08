@@ -20,7 +20,7 @@ defmodule LiveFeedbackWeb.CoursePageLive.JoinCourseFormComponent do
       >
         <.input field={@form[:class_code]} type="text" label="Class Code" />
         <.input field={@form[:display_name]} type="text" label="Display Name" />
-        <.input field={@form[:custom_registration_name]} type="text" label="NetID" />
+        <.input field={@form[:custom_registration_name]} type="text" label="Organization ID" placeholder="Optional"/>
         <:actions>
           <.button phx-disable-with="Joining...">Join Class</.button>
         </:actions>

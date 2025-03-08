@@ -3,7 +3,7 @@
   <h3 class="text-lg font-semibold mb-2 pb-1 border-b border-gray-300 w-md text-center">
     Presentation
   </h3>
-  
+
   <div class="flex items-center justify-center gap-4">
     <label
       phx-click="toggle_present"
@@ -26,7 +26,7 @@
         <% end %>
       </div>
     </label>
-    
+
     <button
       phx-click="navigate"
       phx-value-url={~p"/page/#{@course_page.slug}"}
@@ -81,20 +81,20 @@
     phx-click="toggle_new_form"
     class="relative z-10 inline-flex items-center justify-center p-0 w-8 h-8 bg-white border-2 border-gray-300 rounded-md"
   >
-    <.icon name="hero-plus" class="text-gray-300 h-5 w-5 stroke-3" />
+    <.icon name={if @show_add_form, do: "hero-minus" , else: "hero-plus"} class="text-gray-300 h-5 w-5 stroke-3" />
   </button>
 </div>
 <!-- #modal for confirming deletion -->
 <.modal :if={@confirm_delete} id="message-modal" show>
   <div class="bg-white p-6 rounded-lg shadow-lg w-full">
     <h2 class="text-lg font-semibold text-gray-800">Confirm Deletion</h2>
-    
+
     <p class="text-gray-600 mt-2">
       This will delete all responses associated with this question.
     </p>
-    
+
     <p class="text-gray-600 mt-2">To retain question responses archive the question.</p>
-    
+
     <div class="flex justify-end mt-4 space-x-2">
       <button
         phx-click="delete_question"
@@ -103,7 +103,7 @@
       >
         Delete <.icon name="hero-trash" class="inline-block w-5 h-5 ml-1" />
       </button>
-      
+
       <button
         phx-click="archive_question"
         phx-value-id={@delete_id}
