@@ -113,6 +113,12 @@ defmodule LiveFeedback.Messages do
     end
   end
 
+  def answer_message(%Message{} = message, attrs) do
+    message
+    |> Message.changeset(attrs)
+    |> Repo.update()
+  end
+
   @doc """
   Deletes a message.
 
@@ -280,7 +286,7 @@ defmodule LiveFeedback.Messages do
       end
 
     from(message in Message,
-      where: message.question_occurrence_id == ^question_id,
+      where: message.question_occurrence_id == ^question_id and message.is_answered == false,
       order_by: ^sort_order
     )
     |> Repo.all()
