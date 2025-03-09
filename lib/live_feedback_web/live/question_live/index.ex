@@ -1,4 +1,5 @@
 defmodule LiveFeedbackWeb.QuestionLive.Index do
+  alias LiveFeedback.Questions.Question
   use LiveFeedbackWeb, :live_view
 
   alias LiveFeedback.Questions
@@ -6,6 +7,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
   alias LiveFeedback.Courses
 
   @impl true
+  @spec mount(map(), any(), map()) :: {:ok, Phoenix.LiveView.Socket.t()}
   def mount(%{"queue" => queue_id}, _session, socket) do
     # if connected?(socket), do: Questions.subscribe(queue_id)
     queue = Questions.get_queue!(queue_id)
@@ -110,7 +112,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
 
         # get the full question + options packaged together
         question = Questions.get_question!(question.id)
-
+        send_updates_to_presentation(socket)
         {:noreply,
          socket
          # close the form
@@ -256,7 +258,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
 
         # get the question again from the database to include updated options
         question = Questions.get_question!(question.id)
-
+        send_updates_to_presentation(socket)
         {:noreply,
          socket
          # close form
@@ -291,6 +293,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     # delete question
     case Questions.delete_question(question) do
       {:ok, deleted_question} ->
+        send_updates_to_presentation(socket)
         {:noreply,
          socket
          # replace max_question_num so the arrows can change
@@ -318,6 +321,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     #update question with so it is archived
     case Questions.archive_question(question, attrs) do
       {:ok, _question} ->
+        send_updates_to_presentation(socket)
         {:noreply,
          socket
          # close modal
@@ -350,6 +354,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     # sends question id and what direction it should go
     case Questions.move_question(id, direction) do
       {:ok, {q1, q2}} ->
+        send_updates_to_presentation(socket)
         {:noreply,
          socket
          |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue.id),
@@ -418,5 +423,12 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
      |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue.id),
        reset: false
      )}
+  end
+
+  defp send_updates_to_presentation(socket) do
+    max_question_num = Questions.get_max_display_order(socket.assigns.queue.id)
+    IO.inspect(max_question_num)
+    topic = "#{socket.assigns.queue.id}"
+    Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:receive_question_update, max_question_num})
   end
 end
