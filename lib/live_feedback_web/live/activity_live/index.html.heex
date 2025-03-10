@@ -196,6 +196,14 @@
   </:activity>
 
   <:rightSidebar>
+    <%= if @page_admin do %>
+    <button
+      class="inline-flex items-center px-4 py-2 rounded-md bg-sky-700 text-white hover:bg-brand_navy transition-colors duration-200 shadow-sm"
+      phx-click="toggle_present"
+    >
+      <span>End Presentation</span>
+    </button>
+    <% end %>
     <!-- QR Code -->
     <.live_component
       module={LiveFeedbackWeb.ToggleableImage}
@@ -208,11 +216,6 @@
         <%= raw(@qr_code_svg) %>
       </:innerblock>
     </.live_component>
-    <button
-      class="inline-flex items-center px-4 py-2 rounded-md bg-sky-700 text-white hover:bg-brand_navy transition-colors duration-200 shadow-sm"
-      phx-click="toggle_present"
-    >
-      <span>End Presentation</span>
-    </button>
+    
   </:rightSidebar>
 </.activity_template>
