@@ -24,7 +24,7 @@ defmodule LiveFeedback.ParticipationCsvExport do
         join: qo in "question_occurrences", on: qoo.question_occurrence_id == qo.id,
         join: q in "queues", on: qo.queue_id == q.id,
         join: up in "user_profiles", on: qor.user_profile_id == up.id,
-        where: up.course_page_id == ^course_page_id,
+        where: q.course_page_id == ^course_page_id,
         where: q.presented_date == ^parsed_date,
         group_by: [q.presented_date, up.display_name, up.custom_registration_id, qo.id, qo.question_content],
         order_by: [asc: q.presented_date, asc: up.custom_registration_id],
@@ -76,7 +76,8 @@ defmodule LiveFeedback.ParticipationCsvExport do
             |> MyCSV.dump_to_iodata()
 
           # Define file path
-          file_path = "priv/static/participation_summaries/#{filename}.csv"
+          # Hardcode the current version/release
+          file_path = "/app/lib/live_feedback-0.1.0/priv/static/participation_summaries/#{filename}.csv"
 
           # Write to file
           File.write!(file_path, csv_data)
