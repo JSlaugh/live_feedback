@@ -1725,6 +1725,16 @@ Repo.insert!(%Queue{
 )
 
 Repo.insert!(%Queue{
+  course_page_id: 2,
+  name: "Attendance Questions",
+  description: "",
+  inserted_at: now,
+  updated_at: now
+},
+  on_conflict: :nothing
+)
+
+Repo.insert!(%Queue{
   course_page_id: 3,
   name: "Monday Schedule",
   description: "",
