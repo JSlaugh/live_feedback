@@ -50,16 +50,17 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     presenter = if profile && profile.role == "owner", do: true, else: false
 
     # Get the queue if it exists
-    {queue, queue_id, first_question, messages, question_responses, max_question_num} =
+    {queue, queue_id, first_question, messages, question_responses, max_question_num, current_question_num, is_locked} =
       case Queues.get_presenting_queue_for_course(course_page.id) do
         nil ->
-          {nil, nil, nil, [], nil, nil}
+          {nil, nil, nil, [], nil, nil, 1, nil}
 
         queue ->
           queue_id = queue.id
           first_question = Selection.get_question_from_queue(queue.id, queue.current_question_num)
           max_question_num = Questions.get_max_display_order(queue.id)
-
+          current_question_num = queue.current_question_num
+          is_locked = queue.is_locked
           messages =
             if first_question && first_question.question_type == "QA",
               do: Messages.get_messages_for_question(first_question.id),
@@ -74,7 +75,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
                 ),
               else: nil
 
-          {queue, queue_id, first_question, messages, question_responses, max_question_num}
+          {queue, queue_id, first_question, messages, question_responses, max_question_num, current_question_num, is_locked}
       end
 
     # Set the Visibility of the QR Code to be based on if they are a presenter or not
@@ -95,6 +96,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      |> assign(:page_admin, presenter)
      |> assign(:qr_code_visible, qr_code_visible)
      |> assign(:show_results, false)
+     |> assign(:locked, is_locked)
      |> assign(:course_page, course_page)
      # This needs to have a default value
      |> assign(:live_action, :index)
@@ -102,7 +104,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      |> assign(:message, nil)
      # Use existing sort_by or default to :oldest
      |> assign_new(:sort_by, fn -> :oldest end)
-     |> assign(:current_question_num, queue.current_question_num || 1)
+     |> assign(:current_question_num, current_question_num)
      |> assign(:max_question_num, max_question_num)
      |> assign(:current_question, first_question)
      |> assign(:queue_id, queue_id)
@@ -234,6 +236,33 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     }
   end
 
+  # Toggle the answering lock ----------------------------------------------
+  @impl true
+  def handle_event("toggle_lock", _params, socket) do
+    is_locked = !socket.assigns.locked
+    Queues.toggle_queue_lock(socket.assigns.queue_id, is_locked)
+    topic = "#{socket.assigns.queue_id}"
+    Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:toggle_lock, is_locked})
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("toggle_present", _params, socket) do
+    case Queues.toggle_present_queue(socket.assigns.course_page.id, socket.assigns.queue_id) do
+      {:ok, message} ->
+        topic = "#{socket.assigns.course_page.id}"
+        Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:toggle_update, message})
+
+        {:noreply,
+         socket
+         |> assign(:queue, Questions.get_queue!(socket.assigns.queue_id))
+         |> put_flash(:info, message)}
+
+      {:error, _reason} ->
+        {:noreply, put_flash(socket, :error, "Something went wrong")}
+    end
+  end
+
   #changes sockets for pubsub broadcast
   # Event called by the new message pubsub
   def handle_info({:new_message, message}, socket) do
@@ -263,11 +292,63 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
       {:ok, _response} ->
           {:noreply,
         socket
+        |> assign(:show_results, false)
+        |> assign(:locked, false)
         |> assign(:current_question_num, next_question_num)
         |> assign(:current_question, next_question)
         |> assign(:responses, question_responses)
         |> stream(:messages, messages, reset: true)}
     end
+  end
+
+  def handle_info({:receive_question_update, max_question_num},socket) do
+    if max_question_num > 0 do
+      current_question_num = if socket.assigns.current_question_num > max_question_num, do: max_question_num, else: socket.assigns.current_question_num
+
+      current_question = Selection.get_question_from_queue(socket.assigns.queue_id, current_question_num)
+
+      question_responses =
+        if(current_question.question_type != "QA",
+          do: Selection.get_question_responses(current_question.id),
+          else: nil
+        )
+      messages =
+        if(current_question.question_type == "QA",
+          do: Messages.get_messages_for_question(current_question.id),
+          else: []
+        )
+
+      queue = Queues.get_queue!(socket.assigns.queue_id)
+      case Queues.update_queue(queue, %{"current_question_num" => current_question_num}) do
+        {:ok, _response} ->
+          {:noreply,
+        socket
+        |> assign(:show_results, false)
+        |> assign(:locked, false)
+        |> assign(:current_question_num, current_question_num)
+        |> assign(:current_question, current_question)
+        |> assign(:max_question_num, max_question_num)
+        |> assign(:responses, question_responses)
+        |> stream(:messages, messages, reset: true)}
+      end
+    else
+      {:noreply,
+        socket
+        |> assign(:show_results, false)
+        |> assign(:locked, false)
+        |> assign(:current_question_num, nil)
+        |> assign(:current_question, nil)
+        |> assign(:max_question_num, nil)
+        |> assign(:responses, nil)
+        |> stream(:messages, [], reset: true)}
+    end
+  end
+
+  def handle_info({:toggle_lock, lock_status}, socket) do
+    {:noreply,
+      socket
+      |> assign(:locked, lock_status)
+    }
   end
 
   @impl true

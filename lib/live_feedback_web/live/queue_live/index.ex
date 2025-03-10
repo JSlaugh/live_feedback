@@ -46,11 +46,16 @@ defmodule LiveFeedbackWeb.QueueLive.Index do
 
   @impl true
   def handle_event("delete_queue", %{"id" => id}, socket) do
-    delete_queue(socket, id)
+    queue = Queues.get_queue!(id)
+    if queue.is_presenting do
+      {:noreply, put_flash(socket, :error, "Cannot delete queue while presenting")}
+    else
+      delete_queue(socket, queue)
+    end
   end
 
-  defp delete_queue(socket, id) do
-    queue = Queues.get_queue!(id)
+  defp delete_queue(socket, queue) do
+
 
     with :ok <- Bodyguard.permit(Queues, :delete_queue, socket.assigns.current_user, queue) do
       Queues.delete_queue(queue)

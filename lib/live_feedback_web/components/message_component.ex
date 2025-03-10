@@ -41,15 +41,26 @@ defmodule LiveFeedbackWeb.MessageComponent do
           </div>
 
           <div>
-            <%= if @page_admin || @anonymous_id == @message.anonymous_id do %>
-              <button
-                phx-click="delete_message"
-                phx-value-id={@message.id}
-                phx-target={@myself}
-                class="text-red-500"
-              >
-                <.icon name="hero-trash" />
-              </button>
+            <%= cond do %>
+              <% @page_admin -> %>
+                <button
+                  phx-click="answer_message"
+                  phx-value-id={@message.id}
+                  phx-target={@myself}
+                  class="text-red-500"
+                >
+                  <.icon name="hero-archive-box" />
+                </button>
+              <% @anonymous_id == @message.anonymous_id -> %>
+                <button
+                  phx-click="delete_message"
+                  phx-value-id={@message.id}
+                  phx-target={@myself}
+                  class="text-red-500"
+                >
+                  <.icon name="hero-trash" />
+                </button>
+              <% true -> %>
             <% end %>
           </div>
         </div>
@@ -104,6 +115,22 @@ defmodule LiveFeedbackWeb.MessageComponent do
       {:noreply, socket}
     else
       {:noreply, put_flash(socket, :error, "You are not authorized to delete this message.")}
+    end
+  end
+
+  def handle_event("answer_message", %{"id" => id}, socket) do
+    message = LiveFeedback.Messages.get_message!(id)
+    page_admin = Map.get(socket.assigns, :page_admin)
+    anonymous_id = Map.get(socket.assigns, :anonymous_id)
+
+    if page_admin || message.anonymous_id == anonymous_id do
+      attrs = %{"is_answered" => true}
+      LiveFeedback.Messages.answer_message(message, attrs)
+      #deletes message from stream
+      send(socket.assigns.parent_pid, {:selected_message_delete, message})
+      {:noreply, socket}
+    else
+      {:noreply, put_flash(socket, :error, "You are not authorized to mark this question as answered.")}
     end
   end
 

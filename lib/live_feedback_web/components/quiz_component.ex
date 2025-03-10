@@ -32,31 +32,32 @@ defmodule LiveFeedbackWeb.QuizComponent do
           <div
             class={[
               "flex items-center justify-center  rounded-xl shadow-lg",
-              if !@page_admin do
+              if !@page_admin && !@locked do
                 "cursor-pointer transition-transform hover:scale-105"
               end,
               case index do
                 0 ->
-                  if @page_admin, do: "bg-blue-500", else: ["bg-blue-500", "hover:bg-blue-600"]
+                  if @page_admin || @locked, do: "bg-blue-500", else: ["bg-blue-500", "hover:bg-blue-600"]
 
                 1 ->
-                  if @page_admin, do: "bg-green-500", else: ["bg-green-500", "hover:bg-green-600"]
+                  if @page_admin || @locked, do: "bg-green-500", else: ["bg-green-500", "hover:bg-green-600"]
 
                 2 ->
-                  if @page_admin, do: "bg-purple-500", else: ["bg-purple-500", "hover:bg-purple-600"]
+                  if @page_admin || @locked, do: "bg-purple-500", else: ["bg-purple-500", "hover:bg-purple-600"]
 
                 3 ->
-                  if @page_admin, do: "bg-orange-500", else: ["bg-orange-500", "hover:bg-orange-600"]
+                  if @page_admin || @locked, do: "bg-orange-500", else: ["bg-orange-500", "hover:bg-orange-600"]
               end,
               if Enum.any?(@responses, fn %{anonymous_id: aid, question_options_occurrence_id: oid} ->
                    aid == @anonymous_id and oid == option.id
-                 end) do
+                 end) || (@locked && !@page_admin) do
                 "opacity-50"
               else
                 ""
               end
             ]}
-            phx-click={if !@page_admin, do: "select-answer"}
+            phx-click={if !@page_admin && !@locked, do: "select-answer"}
+            phx-throttle="500"
             phx-target={@myself}
             phx-value-id={option.id}
           >
@@ -197,7 +198,7 @@ defmodule LiveFeedbackWeb.QuizResultsComponent do
       <div class="space-y-3">
         <%= for {option, correctness, percentage, responses, index} <- @processed_responses do %>
           <div class="flex items-center">
-            <div class="w-1/4 text-gray-700 pr-2">
+            <div class={["w-1/4 text-gray-700 pr-2", if correctness do "font-bold" end]} >
               <%= option %>
               <%= if correctness do %>
                 <span class="font-bold italic text-brand_navy mb-4">(correct)</span>
@@ -217,7 +218,8 @@ defmodule LiveFeedbackWeb.QuizResultsComponent do
                       3 -> "bg-orange-500"
                       # Fallback color
                       _ -> "bg-blue-500"
-                    end
+                    end,
+                    if !correctness do "opacity-40" end
                   ]
                 }
                 style={"width: #{percentage}%"}
