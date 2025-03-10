@@ -15,7 +15,7 @@ defmodule LiveFeedbackWeb.ParticipationController do
     filename = "course_#{course_page_id}_attendance_export_#{date}"
 
     # Define file path
-    file_path = "priv/static/participation_summaries/#{filename}.csv"
+    file_path = "/app/lib/live_feedback-0.1.0/priv/static/participation_summaries/#{filename}.csv"
 
     conn
     |> put_resp_content_type("text/csv")
