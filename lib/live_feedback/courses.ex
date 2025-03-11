@@ -183,7 +183,9 @@ defmodule LiveFeedback.Courses do
       from cp in CoursePage,
         join: profile in UserProfile,
         on: profile.course_page_id == cp.id,
-        where: profile.user_id == ^user_id and profile.role == ^role and profile.is_active == true
+        where: profile.user_id == ^user_id and profile.role == ^role and profile.is_active == true,
+        preload: [user_profile: profile],
+        select: %{cp | user_profile: profile}
     )
   end
 
