@@ -20,10 +20,10 @@ defmodule LiveFeedback.ParticipationCsvExport do
     # Query your data in the format for participation summaries
       query =
         from qor in "question_options_responses",
-        join: qoo in "question_options_occurrences", on: qor.question_options_occurrence_id == qoo.id,
-        join: qo in "question_occurrences", on: qoo.question_occurrence_id == qo.id,
-        join: q in "queues", on: qo.queue_id == q.id,
-        join: up in "user_profiles", on: qor.user_profile_id == up.id,
+        left_join: qoo in "question_options_occurrences", on: qor.question_options_occurrence_id == qoo.id,
+        left_join: qo in "question_occurrences", on: qoo.question_occurrence_id == qo.id,
+        left_join: q in "queues", on: qo.queue_id == q.id,
+        left_join: up in "user_profiles", on: qor.user_profile_id == up.id,
         where: q.course_page_id == ^course_page_id,
         where: q.presented_date == ^parsed_date,
         group_by: [q.presented_date, up.display_name, up.custom_registration_id, qo.id, qo.question_content],
@@ -75,9 +75,16 @@ defmodule LiveFeedback.ParticipationCsvExport do
             [headers | formatted_results]
             |> MyCSV.dump_to_iodata()
 
-          # Define file path
-          # Hardcode the current version/release
-          file_path = "/app/lib/live_feedback-0.1.0/priv/static/participation_summaries/#{filename}.csv"
+
+          # Logic to determine what directory to write to based on your environment
+          file_path = if Mix.env() == :prod do
+            # Code that should run on the server (production)
+            # Use var for version num
+            "/app/lib/live_feedback-0.1.0/priv/static/participation_summaries/#{filename}.csv"
+          else
+            # Code that should run on your local machine (dev or test)
+            "priv/static/participation_summaries/#{filename}.csv"
+          end
 
           # Write to file
           File.write!(file_path, csv_data)
