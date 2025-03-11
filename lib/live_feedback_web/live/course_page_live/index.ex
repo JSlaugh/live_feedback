@@ -112,6 +112,20 @@ defmodule LiveFeedbackWeb.CoursePageLive.Index do
     end
   end
 
+  def handle_event("toggle-favorite", %{"id" => id}, socket) do
+    case Courses.toggle_favorite(socket.assigns.current_user.id, id) do
+      {:ok, _updated_profile} ->
+        # Re-fetch all course pages to get the updated data
+        course_list = Courses.list_course_pages_by_user(socket.assigns.current_user.id, socket.assigns.present_mode)
+
+        # Reset the stream with updated data
+        {:noreply, stream(socket, :course_pages, course_list, reset: true)}
+
+      {:error, _reason} ->
+        {:noreply, put_flash(socket, :error, "Failed to update favorite status")}
+    end
+  end
+
 
   #def handle_event("toggle_course_list", %{"role" => role}, socket) do
     #course_list = Courses.list_course_pages_by_user(socket.assigns.current_user.id, role)

@@ -195,4 +195,21 @@ defmodule LiveFeedback.Courses do
         where: profile.user_id == ^user_id and profile.course_page_id == ^course_page_id
     )
   end
+
+  def toggle_favorite(user_id, course_page_id) do
+    # First, find the profile
+    query = from(profile in UserProfile,
+      where: profile.user_id == ^user_id and profile.course_page_id == ^course_page_id)
+
+    # Get the profile
+    case Repo.one(query) do
+      nil ->
+        {:error, :not_found}
+      profile ->
+        # Toggle the is_course_page_favorite field to its opposite value
+        profile
+        |> Ecto.Changeset.change(is_course_page_favorite: not profile.is_course_page_favorite)
+        |> Repo.update()
+    end
+  end
 end

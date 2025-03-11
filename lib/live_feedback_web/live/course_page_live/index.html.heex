@@ -131,8 +131,17 @@
             </.link>
           </div>
 
-          <div class="absolute top-0 right-0 p-4 ">
-            <.icon name="hero-star" class="text-brand_blue" />
+          <div
+            phx-click="toggle-favorite"
+            phx-value-id={course_page.id}
+            class="absolute top-0 right-0 p-4 cursor-pointer group"
+          >
+            <span class="block group-hover:hidden">
+              <.icon name="hero-star-solid" class="text-brand_blue" />
+            </span>
+            <span class="hidden group-hover:block">
+              <.icon name="hero-star" class="text-brand_blue" />
+            </span>
           </div>
         </div>
 
@@ -167,8 +176,17 @@
             </.link>
           </div>
 
-          <div class="absolute top-0 right-0 p-4 ">
-            <.icon name="hero-star" class="text-brand_blue" />
+          <div
+            phx-click="toggle-favorite"
+            phx-value-id={course_page.id}
+            class="absolute top-0 right-0 p-4 cursor-pointer group"
+          >
+            <span class="block group-hover:hidden">
+              <.icon name="hero-star" class="text-brand_blue" />
+            </span>
+            <span class="hidden group-hover:block">
+              <.icon name="hero-star-solid" class="text-brand_blue" />
+            </span>
           </div>
         </div>
 
