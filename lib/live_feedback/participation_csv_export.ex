@@ -26,8 +26,8 @@ defmodule LiveFeedback.ParticipationCsvExport do
         left_join: up in "user_profiles", on: qor.user_profile_id == up.id,
         where: q.course_page_id == ^course_page_id,
         where: q.presented_date == ^parsed_date,
-        group_by: [q.presented_date, up.display_name, up.custom_registration_id, qo.id, qo.question_content],
-        order_by: [asc: q.presented_date, asc: up.custom_registration_id],
+        group_by: [q.presented_date, up.display_name, up.custom_registration_id, qor.anonymous_id, qo.id, qo.question_content],
+        order_by: [asc: q.presented_date, asc: qo.id, asc: up.custom_registration_id],
         select: %{
           presented_date: q.presented_date,
           display_name: up.display_name,
@@ -85,6 +85,7 @@ defmodule LiveFeedback.ParticipationCsvExport do
           #   "priv/static/participation_summaries/#{filename}.csv"
           # end
 
+          #file_path = "priv/static/participation_summaries/#{filename}.csv"
           file_path = "/app/lib/live_feedback-0.1.0/priv/static/participation_summaries/#{filename}.csv"
 
           # Write to file

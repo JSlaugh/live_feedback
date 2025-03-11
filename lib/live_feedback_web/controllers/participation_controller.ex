@@ -27,6 +27,7 @@ defmodule LiveFeedbackWeb.ParticipationController do
     #   "priv/static/participation_summaries/#{filename}.csv"
     # end
 
+    #file_path = "priv/static/participation_summaries/#{filename}.csv"
     file_path = "/app/lib/live_feedback-0.1.0/priv/static/participation_summaries/#{filename}.csv"
 
     conn
