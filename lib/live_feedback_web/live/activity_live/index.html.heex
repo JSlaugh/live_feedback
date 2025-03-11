@@ -193,6 +193,26 @@
         <% end %>
       </div>
     </div>
+    <%= if @live_action == :join do %>
+          <p> liveaction works </p>
+    <% end %>
+
+    <.modal
+    :if={@live_action in [:join]}
+    id="activity-join-modal"
+    show
+    on_cancel={JS.patch(~p"/page/#{@course_page.slug}")}
+  >
+    <.live_component
+      module={LiveFeedbackWeb.JoinCourseFormComponent}
+      id={:join}
+      title={@page_title}
+      action={@live_action}
+      course_page={@course_page}
+      current_user={@current_user}
+      patch={~p"/page/#{@course_page.slug}"}
+    />
+  </.modal>
   </:activity>
 
   <:rightSidebar>

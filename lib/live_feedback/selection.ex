@@ -29,7 +29,7 @@ defmodule LiveFeedback.Selection do
 
   def get_profile_id(user_id, course_page_id) do
     from(profile in UserProfile,
-      where: profile.user_id == ^user_id and profile.course_page_id == ^course_page_id
+      where: profile.user_id == ^user_id and profile.course_page_id == ^course_page_id and profile.is_active == true
     )
     |> Repo.one()
   end
