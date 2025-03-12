@@ -438,25 +438,22 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
   end
 
   defp send_updates_to_presentation(socket) do
-    max_question_num = Questions.get_max_display_order(socket.assigns.queue.id)
-    max_question_num = if(max_question_num <= 0, do: 1)
+    max_display_order = Questions.get_max_display_order(socket.assigns.queue.id)
+    max_question_num = if(max_display_order <= 0, do: 1, else: max_display_order)
     current_question_num = if(max_question_num < socket.assigns.queue.current_question_num, do: max_question_num, else: socket.assigns.queue.current_question_num)
     Queues.update_queue(socket.assigns.queue, %{"current_question_num" => current_question_num})
     current_question = Selection.get_question_from_queue(socket.assigns.queue.id, current_question_num)
-    question_responses = nil
-    messages = []
-    if current_question do
-    ^question_responses =
-      if(current_question.question_type != "QA",
+
+    question_responses =
+      if(current_question && current_question.question_type != "QA",
         do: Selection.get_question_responses(current_question.id),
         else: nil
       )
-    ^messages =
-      if(current_question.question_type == "QA",
+    messages =
+      if(current_question && current_question.question_type == "QA",
         do: Messages.get_messages_for_question(current_question.id),
         else: []
       )
-    end
     topic = "#{socket.assigns.queue.id}"
     Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:receive_question_update, max_question_num, current_question_num, current_question, question_responses, messages})
   end
