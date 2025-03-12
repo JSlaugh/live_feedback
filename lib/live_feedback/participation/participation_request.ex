@@ -13,7 +13,7 @@ defmodule LiveFeedback.Participation.ParticipationRequest do
   end
 
   @doc false
-  def changeset(participation_request, attrs) do
+  def changeset(participation_request, attrs \\ %{}) do
     participation_request
     |> cast(attrs, [:course_page_id, :participation_date, :date_requested])
     |> validate_required([:course_page_id, :participation_date, :date_requested])

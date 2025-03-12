@@ -73,7 +73,6 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
                   else: Selection.get_profile_responses(anonymous_id, first_question.id)
                 ),
               else: nil
-          IO.inspect(question_responses)
           {queue, queue_id, first_question, messages, question_responses, max_question_num, current_question_num, is_locked}
       end
 
@@ -317,6 +316,56 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
         |> assign(:max_question_num, max_question_num)
         |> assign(:responses, question_responses)
         |> stream(:messages, messages, reset: true)}
+  end
+
+  def handle_info({:toggle_lock, lock_status}, socket) do
+    {:noreply,
+      socket
+      |> assign(:locked, lock_status)
+    }
+  end
+
+  def handle_info({:receive_question_update, max_question_num},socket) do
+    if max_question_num > 0 do
+      current_question_num = if socket.assigns.current_question_num > max_question_num, do: max_question_num, else: socket.assigns.current_question_num
+
+      current_question = Selection.get_question_from_queue(socket.assigns.queue_id, current_question_num)
+
+      question_responses =
+        if(current_question.question_type != "QA",
+          do: Selection.get_question_responses(current_question.id),
+          else: nil
+        )
+      messages =
+        if(current_question.question_type == "QA",
+          do: Messages.get_messages_for_question(current_question.id),
+          else: []
+        )
+
+      queue = Queues.get_queue!(socket.assigns.queue_id)
+      case Queues.update_queue(queue, %{"current_question_num" => current_question_num}) do
+        {:ok, _response} ->
+          {:noreply,
+        socket
+        |> assign(:show_results, false)
+        |> assign(:locked, false)
+        |> assign(:current_question_num, current_question_num)
+        |> assign(:current_question, current_question)
+        |> assign(:max_question_num, max_question_num)
+        |> assign(:responses, question_responses)
+        |> stream(:messages, messages, reset: true)}
+      end
+    else
+      {:noreply,
+        socket
+        |> assign(:show_results, false)
+        |> assign(:locked, false)
+        |> assign(:current_question_num, nil)
+        |> assign(:current_question, nil)
+        |> assign(:max_question_num, nil)
+        |> assign(:responses, nil)
+        |> stream(:messages, [], reset: true)}
+    end
   end
 
   def handle_info({:toggle_lock, lock_status}, socket) do
