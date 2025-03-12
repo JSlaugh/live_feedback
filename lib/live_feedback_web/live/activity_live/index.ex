@@ -44,7 +44,6 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
           profile -> profile
         end
       end
-
     # Determine if they are the Presenter or not
 
     presenter = if profile && profile.role == "owner", do: true, else: false
@@ -74,7 +73,6 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
                   else: Selection.get_profile_responses(anonymous_id, first_question.id)
                 ),
               else: nil
-
           {queue, queue_id, first_question, messages, question_responses, max_question_num, current_question_num, is_locked}
       end
 
@@ -99,8 +97,6 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      |> assign(:locked, is_locked)
      |> assign(:course_page, course_page)
      # This needs to have a default value
-     |> assign(:live_action, :index)
-     # This needs to have a default value
      |> assign(:message, nil)
      # Use existing sort_by or default to :oldest
      |> assign_new(:sort_by, fn -> :oldest end)
@@ -116,25 +112,23 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      )}
   end
 
-
-
   # This is always ran after the mount function
   @impl true
   def handle_params(params, url, socket) do
-    url =
-      URI.parse(url)
+    url = URI.parse(url)
 
     {:ok, qr_code_svg} =
       QRCode.create("#{url.scheme}://#{url.authority}/page/#{socket.assigns.course_page.slug}")
       |> QRCode.render()
 
-    {:noreply,
-     socket
-     |> assign(:qr_code_svg, qr_code_svg)
-     |> apply_action(socket.assigns.live_action)}
+    socket =
+      socket
+      |> assign(:qr_code_svg, qr_code_svg)
+
+    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
-  defp apply_action(socket, :index) do
+  defp apply_action(socket, :index, _params) do
     page_title =
       if socket.assigns.current_question == nil do
         "#{socket.assigns.course_page.title} is Not Currently Presenting"
@@ -142,6 +136,13 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
         "#{socket.assigns.course_page.title}: Question #{socket.assigns.current_question_num}"
       end
 
+    socket
+    |> assign(:page_title, page_title)
+  end
+
+  defp apply_action(socket, :join, _params) do
+    IO.inspect("join action")
+    page_title = "Join"
     socket
     |> assign(:page_title, page_title)
   end
@@ -169,10 +170,12 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
         do: Messages.get_messages_for_question(next_question.id),
         else: []
       )
-
-    topic = "#{socket.assigns.queue_id}"
-    Phoenix.PubSub.broadcast(LiveFeedback.PubSub,topic,{:change_question, next_question_num, next_question, question_responses, messages})
-
+    queue = Queues.get_queue!(socket.assigns.queue_id)
+    case Queues.update_queue(queue, %{"current_question_num" => next_question_num}) do
+      {:ok, _response} ->
+        topic = "#{socket.assigns.queue_id}"
+        Phoenix.PubSub.broadcast(LiveFeedback.PubSub,topic,{:change_question, next_question_num, next_question, question_responses, messages})
+    end
     {:noreply, socket}
   end
 
@@ -205,11 +208,10 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
   def handle_event("join-class", %{}, socket) do
     if socket.assigns.user_id do
       # make a join modal
-      Process.send_after(self(), :clear_flash, 3250)
-
+      #Process.send_after(self(), :clear_flash, 3250)
       {:noreply,
        socket
-       |> put_flash(:error, "Please add from course page")}
+       |> redirect(to: ~p"/page/#{socket.assigns.course_page.slug}/join")}
     else
       {:noreply,
        socket
@@ -228,7 +230,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      else
       []
      end
-
+     IO.inspect(processed_responses)
     {:noreply,
       socket
       |> assign(:show_results, !socket.assigns.show_results)
@@ -287,18 +289,40 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
   end
 
   def handle_info({:change_question, next_question_num, next_question, question_responses, messages},socket) do
-    queue = Queues.get_queue!(socket.assigns.queue_id)
-    case Queues.update_queue(queue, %{"current_question_num" => next_question_num}) do
-      {:ok, _response} ->
-          {:noreply,
+    {:noreply,
+      socket
+      |> assign(:show_results, false)
+      |> assign(:locked, false)
+      |> assign(:current_question_num, next_question_num)
+      |> assign(:current_question, next_question)
+      |> assign(:responses, question_responses)
+      |> stream(:messages, messages, reset: true)}
+
+  end
+
+  def handle_info({:receive_question_update, max_question_num, current_question_num, current_question, question_responses, messages},socket) do
+    locked = false
+    show_results = false
+    if current_question == socket.assigns.current_question do
+      ^locked = socket.assigns.locked
+      ^show_results = socket.assigns.show_results
+    end
+      {:noreply,
         socket
-        |> assign(:show_results, false)
-        |> assign(:locked, false)
-        |> assign(:current_question_num, next_question_num)
-        |> assign(:current_question, next_question)
+        |> assign(:show_results, show_results)
+        |> assign(:locked, locked)
+        |> assign(:current_question_num, current_question_num)
+        |> assign(:current_question, current_question)
+        |> assign(:max_question_num, max_question_num)
         |> assign(:responses, question_responses)
         |> stream(:messages, messages, reset: true)}
-    end
+  end
+
+  def handle_info({:toggle_lock, lock_status}, socket) do
+    {:noreply,
+      socket
+      |> assign(:locked, lock_status)
+    }
   end
 
   def handle_info({:receive_question_update, max_question_num},socket) do
@@ -426,14 +450,8 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
   end
 
   # Handle Info for Refreshing Responses to Quiz Questions ---------------------------
-  def handle_info({:refresh_responses}, socket) do
-    question_responses =
-      Selection.get_profile_responses(
-        socket.assigns.anonymous_id,
-        socket.assigns.current_question.id
-      )
-
-    {:noreply, assign(socket, :responses, question_responses)}
+  def handle_info({:refresh_responses, updated_responses}, socket) do
+    {:noreply, assign(socket, :responses, updated_responses)}
   end
 
   # Handle Info for Refreshing Responses to Quiz Questions for Presenter ---------------------------

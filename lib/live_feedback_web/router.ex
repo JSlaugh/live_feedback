@@ -6,6 +6,7 @@ defmodule LiveFeedbackWeb.Router do
   alias QuestionLive.Index, as: QuestionLive
   alias SelectionLive.Index, as: SelectionLive
   alias QueueLive.Index, as: QueueLive
+  alias ActivityLive.Index, as: ActivityLive
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -86,8 +87,8 @@ defmodule LiveFeedbackWeb.Router do
 
       # This is a test/template page
 
-      live "/page/testtemplate", ActivityLive.Index, :index
-      live "/page/testtemplate/new", ActivityLive.Index, :new
+      live "/page/testtemplate", ActivityLive, :index
+      live "/page/testtemplate/new", ActivityLive, :new
     end
 
     live_session :require_course_owner,
@@ -118,13 +119,8 @@ defmodule LiveFeedbackWeb.Router do
 
     live_session :feedback,
       on_mount: [{LiveFeedbackWeb.UserAuth, :mount_current_user}] do
-      live "/page/:coursepage", ActivityLive.Index, :index
-      live "/page/:coursepage/new", ActivityLive.Index, :new
-      #test routes
-      live "/page/:coursepage/:queue", ActivityLive.Index, :index
-      live "/:id/queues", QueueLive, :delete
-      live "/course_page/:id/:queues/edit", QueueLive, :edit
-      live "/page/:coursepage/:queue/selectionTest", SelectionLive, :index
+      live "/page/:coursepage", ActivityLive, :index
+      live "/page/:coursepage/join", ActivityLive, :join
     end
   end
 end

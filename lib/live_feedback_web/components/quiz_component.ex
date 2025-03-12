@@ -76,89 +76,103 @@ defmodule LiveFeedbackWeb.QuizComponent do
     # gets the question type and gets a list of all responses for a profile for the question out of the socket
     question_type = socket.assigns.current_question.question_type
     profile_responses = socket.assigns.responses
+    option_id_int = String.to_integer(option_id)
 
-    # if the response selected is already in the database for that question & profile, delete it
-    if Enum.any?(profile_responses, fn %LiveFeedback.Questions.QuestionOptionsResponse{
-                                         question_options_occurrence_id: id
-                                       } ->
-         id == String.to_integer(option_id)
-       end) do
+    # Check if response already exists
+    existing_response = Enum.find(profile_responses, fn %LiveFeedback.Questions.QuestionOptionsResponse{
+                                       question_options_occurrence_id: id
+                                     } ->
+       id == option_id_int
+     end)
+
+    updated_responses = if existing_response do
+      # Delete case - remove from responses in socket
+      updated_responses = Enum.reject(profile_responses, fn r ->
+        r.question_options_occurrence_id == option_id_int
+      end)
+
+      # Delete from DB
       Selection.delete_response_for_profile_for_question(socket.assigns.anonymous_id, option_id)
-      {:noreply, socket}
-    else
-      # if it is a new response (not in the DB), determine what question type it is
-      # if multiple choice || T/F
-      if question_type != "multi-select" do
-        # if there is a previous response, update it
-        if profile_responses != [] do
-          attrs = %{
-            "question_options_occurrence_id" => option_id
-          }
 
-          attrs =
-            if socket.assigns.profile_id != nil &&
-                 socket.assigns.current_question.is_required == true,
+      updated_responses
+    else
+      # Handle new response based on question type
+      if question_type != "multi-select" do
+        # For single-select questions (multiple choice or T/F)
+        attrs = %{
+          "question_options_occurrence_id" => option_id
+        }
+
+        attrs = if socket.assigns.profile_id != nil && socket.assigns.current_question.is_required == true,
                do: Map.put(attrs, "user_profile_id", socket.assigns.profile_id),
                else: attrs
 
+        if profile_responses != [] do
+          # Update existing response - replace in socket
           Selection.update_response_for_profile_for_question(
             socket.assigns.anonymous_id,
             socket.assigns.current_question.id,
             attrs
           )
 
-          {:noreply, socket}
-          # if there are no previous responses, simply add a new one
-        else
-          attrs = %{
-            "anonymous_id" => socket.assigns.anonymous_id,
-            "question_options_occurrence_id" => option_id
-          }
+          # Create updated response struct for the socket
+          old_response = List.first(profile_responses)
+          updated_response = %{old_response | question_options_occurrence_id: option_id_int}
 
-          attrs =
-            if socket.assigns.profile_id != nil &&
-                 socket.assigns.current_question.is_required == true,
-               do: Map.put(attrs, "user_profile_id", socket.assigns.profile_id),
-               else: attrs
+          [updated_response]
+        else
+          # Add new response
+          attrs = Map.put(attrs, "anonymous_id", socket.assigns.anonymous_id)
 
           case Selection.add_response(attrs) do
-            {:ok, _response} ->
-              {:noreply,
-               socket
-               |> put_flash(:info, "successfully recorded response")}
+            {:ok, new_response} ->
+              {[new_response], :added}
           end
         end
-
-        # if it is multiselect then add it
       else
+        # For multi-select questions - add to collection
         attrs = %{
           "anonymous_id" => socket.assigns.anonymous_id,
           "question_options_occurrence_id" => option_id
         }
 
-        attrs =
-          if socket.assigns.profile_id != nil &&
-               socket.assigns.current_question.is_required == true,
-             do: Map.put(attrs, "user_profile_id", socket.assigns.profile_id),
-             else: attrs
+        attrs = if socket.assigns.profile_id != nil && socket.assigns.current_question.is_required == true,
+               do: Map.put(attrs, "user_profile_id", socket.assigns.profile_id),
+               else: attrs
 
         case Selection.add_response(attrs) do
-          {:ok, _response} ->
-            {:noreply,
-             socket
-             |> put_flash(:info, "successfully recorded response")}
+          {:ok, new_response} -> profile_responses ++ [new_response]
         end
       end
     end
 
-    # update the question responses list
-    send(socket.assigns.parent_pid, {:refresh_responses})
+    # Send the updated responses to the parent process
+    send(socket.assigns.parent_pid, {:refresh_responses, updated_responses})
 
-    # broadcast changes to the presenter
+    # Broadcast changes to the presenter
     topic = "Host:#{socket.assigns.course_page.id}"
     Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:refresh_presenter_responses})
 
-    {:noreply, socket}
+    # Update this socket with the new responses
+    updated_socket = assign(socket, :responses, updated_responses)
+
+    {:noreply, updated_socket}
+  end
+
+  # Modified handler for the parent component to directly accept the updated responses
+  def handle_info({:update_responses, updated_responses}, socket) do
+    {:noreply, assign(socket, :responses, updated_responses)}
+  end
+
+  # Keep the original handler as a fallback, if needed
+  def handle_info({:refresh_responses}, socket) do
+    question_responses =
+      Selection.get_profile_responses(
+        socket.assigns.anonymous_id,
+        socket.assigns.current_question.id
+      )
+
+    {:noreply, assign(socket, :responses, question_responses)}
   end
 end
 
