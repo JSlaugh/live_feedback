@@ -12,7 +12,7 @@ defmodule LiveFeedbackWeb.QueueLive.FormComponent do
         <%= @title %> <%!-- NEEDS WORK Subtitle Updated Potentially to match Add or Edit --%>
         <:subtitle>Use this form to manage question deck records in your database.</:subtitle>
       </.header>
-
+      
       <.simple_form
         for={@form}
         id="queue-form"
