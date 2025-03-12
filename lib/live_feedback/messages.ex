@@ -280,7 +280,7 @@ defmodule LiveFeedback.Messages do
       case sort_by do
         :newest -> [desc: :inserted_at]
         :oldest -> [asc: :inserted_at]
-        :like_count -> [desc: :like_count]
+        :like_count -> [desc: :like_count, asc: :inserted_at]
         # Default to oldest
         _ -> [asc: :inserted_at]
       end

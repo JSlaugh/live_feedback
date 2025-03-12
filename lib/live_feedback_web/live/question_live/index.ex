@@ -7,6 +7,8 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
   alias LiveFeedback.Courses
   alias LiveFeedback.Selection
   alias LiveFeedback.Messages
+  alias LiveFeedback.Selection
+  alias LiveFeedback.Messages
 
   @impl true
   @spec mount(map(), any(), map()) :: {:ok, Phoenix.LiveView.Socket.t()}
@@ -365,6 +367,9 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     # sends question id and what direction it should go
     case Questions.move_question(id, direction) do
       {:ok, {q1, q2}} ->
+        if socket.assigns.queue.is_presenting do
+          send_updates_to_presentation(socket)
+        end
         if socket.assigns.queue.is_presenting do
           send_updates_to_presentation(socket)
         end
