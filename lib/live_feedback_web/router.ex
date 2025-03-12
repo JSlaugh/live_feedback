@@ -92,17 +92,18 @@ defmodule LiveFeedbackWeb.Router do
     end
 
     live_session :require_course_owner,
-    on_mount: [
-      {LiveFeedbackWeb.UserAuth, :ensure_authenticated},  # Ensure user is logged in
-      {LiveFeedbackWeb.UserAuth, :require_course_owner}   # Ensure user is course owner
-    ] do
-    live "/course_pages/:id/:queue/questions", QuestionLive, :index
-    live "/course_pages/:id/queues/", QueueLive, :index
-    live "/course_pages/:id/queues/new", QueueLive, :new
-    # Download the participation (attendance) summary data
-    live "/course_pages/:id/participation", ParticipationLive.Index, :index
-    get "/course_pages/:id/participation/export", ParticipationController, :download_csv
-
+      on_mount: [
+        # Ensure user is logged in
+        {LiveFeedbackWeb.UserAuth, :ensure_authenticated},
+        # Ensure user is course owner
+        {LiveFeedbackWeb.UserAuth, :require_course_owner}
+      ] do
+      live "/course_pages/:id/:queue/questions", QuestionLive, :index
+      live "/course_pages/:id/queues/", QueueLive, :index
+      live "/course_pages/:id/queues/new", QueueLive, :new
+      # Download the participation (attendance) summary data
+      live "/course_pages/:id/participation", ParticipationLive.Index, :index
+      get "/course_pages/:id/participation/export", ParticipationController, :download_csv
     end
   end
 
@@ -119,6 +120,8 @@ defmodule LiveFeedbackWeb.Router do
 
     live_session :feedback,
       on_mount: [{LiveFeedbackWeb.UserAuth, :mount_current_user}] do
+      live "/:id/queues", QueueLive, :delete
+      live "/course_page/:id/:queues/edit", QueueLive, :edit
       live "/page/:coursepage", ActivityLive, :index
       live "/page/:coursepage/join", ActivityLive, :join
     end
