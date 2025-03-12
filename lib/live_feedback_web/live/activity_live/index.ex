@@ -106,6 +106,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      |> assign(:queue_id, queue_id)
      |> assign(:responses, question_responses)
      |> assign(:processed_responses, [])
+     |> assign(:live_refresh, false)
      |> stream(
        :messages,
        messages || []
@@ -387,6 +388,22 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     {:noreply, redirect(socket, to: ~p"/page/#{slug}")}
   end
 
+  # Handle Info for Sort Messages --------------------------------------------------
+  @impl true
+  def handle_info({:sort_messages, sort_by}, socket) do
+    # Ensure that sort_by is an atom
+    sort_by_atom = String.to_existing_atom(sort_by)
+
+    current_question_id = socket.assigns.current_question.id
+
+    # Fetch and update the sorted messages
+    sorted_messages =
+      LiveFeedback.Messages.get_messages_for_question(current_question_id, sort_by_atom)
+
+    send(self(), {:sorted_messages, sort_by_atom, sorted_messages})
+    {:noreply, socket}
+  end
+
   # Handle Info for Sorting Messages -----------------------------------------------
   @impl true
   def handle_info({:sorted_messages, sort_by_atom, sorted_messages}, socket) do
@@ -396,6 +413,21 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      |> assign(:sort_by, sort_by_atom)
      # Stream the sorted messages
      |> stream(:messages, sorted_messages, reset: true)}
+  end
+
+  # Handle Info for live refresh toggle ---------------------------------------------
+  def handle_info({:toggle_live_refresh, live_refresh}, socket) do
+    {:noreply,
+    socket
+    |> assign(:live_refresh, live_refresh)}
+  end
+
+  def handle_info({:run_sort, sort_by}, socket) do
+    if socket.assigns.live_refresh do
+      send(self(), {:sort_messages, sort_by})
+      Process.send_after(self(), {:run_sort, sort_by}, 2000)
+    end
+   {:noreply, socket}
   end
 
   # Handle Info for Deleting all Messages ------------------------------------------

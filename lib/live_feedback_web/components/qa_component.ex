@@ -51,8 +51,8 @@ defmodule LiveFeedbackWeb.QaComponent do
     <div>
       <div class="flex justify-between mx-2 mb-4 xl:mb-6">
         <div>
-          <form phx-change="sort_messages" phx-target={@myself}>
-            <select id="sort" name="sort" class="p-2 pr-8  border rounded-lg">
+          <form phx-target={@myself}>
+            <select phx-change="sort_messages_parent" id="sort" name="sort" class="p-2 pr-8  border rounded-lg">
               <option value="oldest" selected={@sort_by == :oldest}>Oldest</option>
 
               <option value="newest" selected={@sort_by == :newest}>Newest</option>
@@ -68,6 +68,33 @@ defmodule LiveFeedbackWeb.QaComponent do
             >
               <.icon name="hero-arrow-path"/>
             </button>
+
+            <%!-- If it is an admin or owner of the page it should show this item --%>
+            <%= if @page_admin do %>
+              <label
+                phx-click="toggle_live_refresh"
+                phx-value-sort={@sort_by}
+                phx-target={@myself}
+                class="relative inline-flex items-center cursor-pointer"
+                title={"#{if @live_refresh, do: "Stop", else: "Start"} Live Sort"}
+              >
+                <input
+                  type="checkbox"
+                  name="is_required"
+                  checked={@live_refresh}
+                  class="sr-only peer"
+                />
+                <div class="w-20 h-8 flex items-center justify-between px-2 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-12 peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-600">
+                  <%= if @live_refresh do %>
+                    <span class="text-xs text-white font-bold pl-0.5 z-10">Stop</span>
+                    <span class="text-xs text-gray-800 font-bold pr-0.5 z-10 opacity-0">Start</span>
+                  <% else %>
+                    <span class="text-xs text-white font-bold pl-0.5 z-10 opacity-0">Stop</span>
+                    <span class="text-xs text-gray-800 font-bold pr-0.5 z-10">Start</span>
+                  <% end %>
+                </div>
+              </label>
+            <% end %>
           </form>
         </div>
          <%!-- If it is an admin or owner of the page it should show these items --%>
@@ -159,19 +186,39 @@ defmodule LiveFeedbackWeb.QaComponent do
     {:ok, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
+  # Sort Messages Parent Handle Event
+  @impl true
+  def handle_event("sort_messages_parent", %{"sort" => sort_by}, socket) do
+    # Run Sort
+    send(socket.assigns.parent_pid, {:sort_messages, sort_by})
+
+    # If live_refresh is on, turn it off
+    if socket.assigns.live_refresh do
+      live_refresh = false
+      send(socket.assigns.parent_pid, {:toggle_live_refresh, live_refresh})
+    end
+
+    {:noreply, socket}
+  end
+
   # Sort Messages Handle Event -- Updated for Question Occurrences
   @impl true
   def handle_event("sort_messages", %{"sort" => sort_by}, socket) do
-    # Ensure that sort_by is an atom
-    sort_by_atom = String.to_existing_atom(sort_by)
+    send(socket.assigns.parent_pid, {:sort_messages, sort_by})
+    {:noreply, socket}
+  end
 
-    current_question_id = socket.assigns.current_question.id
+  # Live Refresh/Sort
+  def handle_event("toggle_live_refresh", %{"sort" => sort_by}, socket) do
+    # toggle boolean
+    live_refresh = !socket.assigns.live_refresh
+    send(socket.assigns.parent_pid, {:toggle_live_refresh, live_refresh})
 
-    # Fetch and update the sorted messages
-    sorted_messages =
-      LiveFeedback.Messages.get_messages_for_question(current_question_id, sort_by_atom)
+    # Run Sort
+    if live_refresh do
+      Process.send_after(self(), {:run_sort, sort_by}, 2000)
+    end
 
-    send(socket.assigns.parent_pid, {:sorted_messages, sort_by_atom, sorted_messages})
     {:noreply, socket}
   end
 
