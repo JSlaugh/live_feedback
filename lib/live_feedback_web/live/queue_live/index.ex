@@ -3,6 +3,7 @@ defmodule LiveFeedbackWeb.QueueLive.Index do
 
   alias LiveFeedback.Queues.Queue
   alias LiveFeedback.Queues
+  import LiveFeedbackWeb.Components.Accordion
 
   @impl true
   def mount(%{"id" => course_page_id}, _session, socket) do
