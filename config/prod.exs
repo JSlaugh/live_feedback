@@ -20,3 +20,6 @@ config :logger, level: :info
 
 # Runtime production configuration, including reading
 # of environment variables, is done on config/runtime.exs.
+
+# Create environment variable, denoting prod environment, for creating the file_path in CSV download (The file_path varies due to the different file structure in prod)
+config :live_feedback, :environment, :prod

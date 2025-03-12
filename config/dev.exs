@@ -83,3 +83,6 @@ config :phoenix_live_view,
 
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
+
+# Create environment variable, denoting dev environment, for creating the file_path in CSV download (The file_path varies due to the different file structure in prod)
+config :live_feedback, :environment, :dev

@@ -15,20 +15,13 @@ defmodule LiveFeedbackWeb.ParticipationController do
     filename = "course_#{course_page_id}_attendance_export_#{date}"
 
     # Logic to determine what directory to write to based on your environment
-    # file_path = if Mix.env() == :prod do
-    #   # Code that should run on the server (production)
-    #   # Use var for version num
-    #   # Check project version
-    #  project_version = LiveFeedback.MixProject.project([:version])
-
-    #   "/app/lib/live_feedback-#{project_version}/priv/static/participation_summaries/#{filename}.csv"
-    # else
-    #   # Code that should run on your local machine (dev or test)
-    #   "priv/static/participation_summaries/#{filename}.csv"
-    # end
-
-    #file_path = "priv/static/participation_summaries/#{filename}.csv"
-    file_path = "/app/lib/live_feedback-0.1.0/priv/static/participation_summaries/#{filename}.csv"
+    file_path = if Application.get_env(:live_feedback, :environment) == :prod do
+      # prod branch - Code that should only run in production
+      "/app/lib/live_feedback-0.1.0/priv/static/participation_summaries/#{filename}.csv"
+    else
+      # dev/test branch - Code that should run in development or test
+      "priv/static/participation_summaries/#{filename}.csv"
+    end
 
     conn
     |> put_resp_content_type("text/csv")
