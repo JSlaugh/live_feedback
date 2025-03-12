@@ -73,7 +73,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
                   else: Selection.get_profile_responses(anonymous_id, first_question.id)
                 ),
               else: nil
-
+          IO.inspect(question_responses)
           {queue, queue_id, first_question, messages, question_responses, max_question_num, current_question_num, is_locked}
       end
 
@@ -231,7 +231,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      else
       []
      end
-
+     IO.inspect(processed_responses)
     {:noreply,
       socket
       |> assign(:show_results, !socket.assigns.show_results)
@@ -401,14 +401,8 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
   end
 
   # Handle Info for Refreshing Responses to Quiz Questions ---------------------------
-  def handle_info({:refresh_responses}, socket) do
-    question_responses =
-      Selection.get_profile_responses(
-        socket.assigns.anonymous_id,
-        socket.assigns.current_question.id
-      )
-
-    {:noreply, assign(socket, :responses, question_responses)}
+  def handle_info({:refresh_responses, updated_responses}, socket) do
+    {:noreply, assign(socket, :responses, updated_responses)}
   end
 
   # Handle Info for Refreshing Responses to Quiz Questions for Presenter ---------------------------
