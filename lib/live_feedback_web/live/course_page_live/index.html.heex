@@ -78,14 +78,22 @@
           JS.navigate(~p"/page/#{course_page.slug}")
         end
       end
-    }
-  >
+  }
+>
+
     <:col :let={{_id, course_page}} label="Title"><%= course_page.title %></:col>
 
     <:col :let={{_id, course_page}} label="Description"><%= course_page.description %></:col>
 
     <:col :let={{_id, course_page}} label="Slug"><%= course_page.slug %></:col>
-
+      
+    <:col :let={{_id, course_page}} label="Participation Data">
+      <.link patch={~p"/course_pages/#{course_page}/participation"}>
+        <span>View</span>
+        <.icon name="hero-document-text" class="text-blue-500" />
+      </.link>
+    </:col>
+    
     <:action :let={{_id, course_page}}>
       <.link patch={~p"/course_pages/#{course_page}/edit"}>
         <.icon name="hero-pencil-square" class="text-brand_blue" />

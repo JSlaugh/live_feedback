@@ -99,6 +99,10 @@ defmodule LiveFeedbackWeb.Router do
     live "/course_pages/:id/:queue/questions", QuestionLive, :index
     live "/course_pages/:id/queues/", QueueLive, :index
     live "/course_pages/:id/queues/new", QueueLive, :new
+    # Download the participation (attendance) summary data
+    live "/course_pages/:id/participation", ParticipationLive.Index, :index
+    get "/course_pages/:id/participation/export", ParticipationController, :download_csv
+
     end
   end
 

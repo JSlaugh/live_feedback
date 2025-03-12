@@ -302,6 +302,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
         if socket.assigns.queue.is_presenting do
           send_updates_to_presentation(socket)
         end
+        send_updates_to_presentation(socket)
         {:noreply,
          socket
          # replace max_question_num so the arrows can change
