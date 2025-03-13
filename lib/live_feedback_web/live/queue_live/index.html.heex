@@ -83,7 +83,11 @@
                 </h2>
                 
                 <p class="text-blue-100">
-                  Scheduled for: <%= queue.presented_date %>
+                  <%= if !queue.presented_date do %>
+                    Unscheduled
+                  <% else %>
+                    Scheduled for: <%= queue.presented_date %>
+                  <% end %>
                 </p>
                 
                 <p class="text-blue-100">
