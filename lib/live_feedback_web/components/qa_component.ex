@@ -52,13 +52,19 @@ defmodule LiveFeedbackWeb.QaComponent do
       <div class="flex justify-between mx-2 mb-4 xl:mb-6">
         <div>
           <form phx-target={@myself}>
-            <select phx-change="sort_messages_parent" id="sort" name="sort" class="p-2 pr-8  border rounded-lg">
+            <select
+              phx-change="sort_messages_parent"
+              id="sort"
+              name="sort"
+              class="p-2 pr-8  border rounded-lg"
+            >
               <option value="oldest" selected={@sort_by == :oldest}>Oldest</option>
-
+              
               <option value="newest" selected={@sort_by == :newest}>Newest</option>
-
+              
               <option value="like_count" selected={@sort_by == :like_count}>Most Liked</option>
             </select>
+            
             <button
               type="button"
               phx-click="sort_messages"
@@ -66,10 +72,9 @@ defmodule LiveFeedbackWeb.QaComponent do
               phx-target={@myself}
               class="ml-2 p-2 border rounded-lg bg-gray-200 hover:bg-gray-300"
             >
-              <.icon name="hero-arrow-path"/>
+              <.icon name="hero-arrow-path" />
             </button>
-
-            <%!-- If it is an admin or owner of the page it should show this item --%>
+             <%!-- If it is an admin or owner of the page it should show this item --%>
             <%= if @page_admin do %>
               <label
                 phx-click="toggle_live_refresh"
@@ -108,6 +113,7 @@ defmodule LiveFeedbackWeb.QaComponent do
           </.buttonCustomColor>
         <% end %>
       </div>
+      
       <div
         id="messages"
         phx-update="stream"
@@ -127,6 +133,7 @@ defmodule LiveFeedbackWeb.QaComponent do
           </div>
         <% end %>
       </div>
+      
       <%= if !@page_admin do %>
         <.simple_form for={@form} phx-submit="create_message">
           <.textareaWithSave field={@form[:content]} type="textarea" label="New Message" />
@@ -143,16 +150,16 @@ defmodule LiveFeedbackWeb.QaComponent do
           <div class="">
             <p class="text-lg break-normal"><%= @message.content %></p>
           </div>
-
+          
           <div>
             <%= if @page_admin || @anonymous_id == @message.anonymous_id do %>
               <button
-                phx-click="delete_message"
+                phx-click="answer_message"
                 phx-target={@myself}
                 phx-value-id={@message.id}
                 class="ml-2 text-red-500"
               >
-                <.icon name="hero-trash" />
+                <.icon name="hero-archive-box" />
               </button>
             <% end %>
           </div>
@@ -249,6 +256,24 @@ defmodule LiveFeedbackWeb.QaComponent do
       {:noreply, socket}
     else
       {:noreply, put_flash(socket, :error, "You are not authorized to delete this message.")}
+    end
+  end
+
+  def handle_event("answer_message", %{"id" => id}, socket) do
+    message = Messages.get_message!(id)
+    page_admin = Map.get(socket.assigns, :page_admin)
+    anonymous_id = Map.get(socket.assigns, :anonymous_id)
+
+    if page_admin || message.anonymous_id == anonymous_id do
+      attrs = %{"is_answered" => true}
+      Messages.answer_message(message, attrs)
+      # deletes message from stream
+
+      send(socket.assigns.parent_pid, {:selected_message_delete, message})
+      {:noreply, socket |> push_patch(to: "/page/#{socket.assigns.course_page.slug}")}
+    else
+      {:noreply,
+       put_flash(socket, :error, "You are not authorized to mark this question as answered.")}
     end
   end
 
