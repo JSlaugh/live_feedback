@@ -209,7 +209,6 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
   def handle_event("join-class", %{}, socket) do
     if socket.assigns.user_id do
       # make a join modal
-      #Process.send_after(self(), :clear_flash, 3250)
       {:noreply,
        socket
        |> redirect(to: ~p"/page/#{socket.assigns.course_page.slug}/join")}
@@ -217,7 +216,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
       {:noreply,
        socket
        |> redirect(to: ~p"/users/log_in")
-       |> put_flash(:error, "You will need to login to save a class")}
+       |> put_flash(:info, "You will need to login to save a class")}
     end
   end
 
@@ -255,7 +254,6 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
       {:ok, message} ->
         topic = "#{socket.assigns.course_page.id}"
         Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:toggle_update, message})
-
         {:noreply,
          socket
          |> assign(:queue, Questions.get_queue!(socket.assigns.queue_id))
@@ -374,11 +372,6 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
       socket
       |> assign(:locked, lock_status)
     }
-  end
-
-  @impl true
-  def handle_info(:clear_flash, socket) do
-    {:noreply, clear_flash(socket)}
   end
 
   # Handle Info for PubSub Update (start/stop presentation) --------------------------------------------------

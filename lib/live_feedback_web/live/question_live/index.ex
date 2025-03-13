@@ -129,7 +129,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
          |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue.id),
            reset: false
          )
-         |> put_flash(:info, "Question added successfully.")}
+         |> put_flash(:success, "Question added successfully.")}
 
       {:error, changeset} ->
         # In case of error, return the socket with an error message
@@ -271,7 +271,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
          socket
          # close form
          |> assign(show_form: "none")
-         |> put_flash(:info, "Question updated successfully.")
+         |> put_flash(:success, "Question updated successfully.")
          |> stream_insert(:questions, question)}
 
       {:error, changeset} ->
@@ -311,7 +311,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
          |> assign(:max_question_num, Questions.get_max_display_order(socket.assigns.queue.id))
          # close modal
          |> assign(:confirm_delete, false)
-         |> put_flash(:info, "Successfully deleted the question.")
+         |> put_flash(:success, "Successfully deleted the question.")
          |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue.id),
            reset: true
          )}
@@ -339,7 +339,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
          socket
          # close modal
          |> assign(:confirm_delete, false)
-         |> put_flash(:info, "Question archived successfully.")
+         |> put_flash(:success, "Question archived successfully.")
          |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue.id),
            reset: false
          )}

@@ -59,7 +59,7 @@ defmodule LiveFeedbackWeb.SelectionLive.Index do
             {:ok, _response} ->
               {:noreply,
               socket
-              |> put_flash(:info, "successfully recorded response")
+              |> put_flash(:success, "successfully recorded response")
               }
           end
         end
@@ -73,7 +73,7 @@ defmodule LiveFeedbackWeb.SelectionLive.Index do
           {:ok, _response} ->
             {:noreply,
             socket
-            |> put_flash(:info, "successfully recorded response")
+            |> put_flash(:success, "successfully recorded response")
             }
         end
       end

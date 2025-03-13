@@ -78,7 +78,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
                   <.icon name="hero-x-mark-solid" class="w-5 h-5" />
                 </button>
               </div>
-              
+
               <div id={"#{@id}-content"}>
                 <%= render_slot(@inner_block) %>
               </div>
@@ -101,7 +101,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
   attr :id, :string, doc: "the optional id of flash container"
   attr :flash, :map, default: %{}, doc: "the map of flash messages to display"
   attr :title, :string, default: nil
-  attr :kind, :atom, values: [:info, :error], doc: "used for styling and flash lookup"
+  attr :kind, :atom, values: [:success, :info, :warning, :error], doc: "used for styling and flash lookup"
   attr :rest, :global, doc: "the arbitrary HTML attributes to add to the flash container"
 
   slot :inner_block, doc: "the optional inner block that renders the flash message"
@@ -113,22 +113,27 @@ defmodule LiveFeedbackWeb.CoreComponents do
     <div
       :if={msg = render_slot(@inner_block) || Phoenix.Flash.get(@flash, @kind)}
       id={@id}
+      phx-hook="AutoClearFlash"
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
       role="alert"
       class={[
         "fixed top-20 right-2 mr-2 w-80 sm:w-96 z-50 rounded-lg p-3 ring-1 ",
-        @kind == :info && "bg-emerald-50 text-emerald-800 ring-emerald-500 fill-cyan-900",
-        @kind == :error && "bg-rose-50 text-rose-900 shadow-md ring-rose-500 fill-rose-900"
+        @kind == :success && "bg-emerald-50 text-emerald-800 ring-emerald-500 fill-cyan-900",
+        @kind == :warning && "bg-amber-50 text-amber-800 ring-amber-500 fill-amber-900",
+        @kind == :error && "bg-rose-50 text-rose-900 shadow-md ring-rose-500 fill-rose-900",
+        @kind == :info && "bg-blue-50 text-blue-800 ring-blue-500 fill-blue-900"
       ]}
       {@rest}
     >
       <p :if={@title} class="flex items-center gap-1.5 text-sm font-semibold leading-6">
-        <.icon :if={@kind == :info} name="hero-information-circle-mini" class="w-4 h-4" />
-        <.icon :if={@kind == :error} name="hero-exclamation-circle-mini" class="w-4 h-4" /> <%= @title %>
+        <.icon :if={@kind == :success} name="hero-information-circle-mini" class="w-4 h-4" />
+        <.icon :if={@kind == :warning} name="hero-exclamation-triangle-mini" class="w-4 h-4" />
+        <.icon :if={@kind == :error} name="hero-exclamation-circle-mini" class="w-4 h-4" />
+        <.icon :if={@kind == :info} name="hero-information-circle-mini" class="w-4 h-4" /> <%= @title %>
       </p>
-      
+
       <p class="mt-2 text-sm leading-5"><%= msg %></p>
-      
+
       <button type="button" class="absolute p-2 group top-1 right-1" aria-label={gettext("close")}>
         <.icon name="hero-x-mark-solid" class="w-5 h-5 opacity-40 group-hover:opacity-70" />
       </button>
@@ -149,8 +154,10 @@ defmodule LiveFeedbackWeb.CoreComponents do
   def flash_group(assigns) do
     ~H"""
     <div id={@id}>
-      <.flash kind={:info} title={gettext("Success!")} flash={@flash} />
+      <.flash kind={:success} title={gettext("Success!")} flash={@flash} />
+      <.flash kind={:warning} title={gettext("Warning!")} flash={@flash} />
       <.flash kind={:error} title={gettext("Error!")} flash={@flash} />
+      <.flash kind={:info} title={gettext("Info")} flash={@flash} />
       <.flash
         id="client-error"
         kind={:error}
@@ -162,7 +169,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
         <%= gettext("Attempting to reconnect") %>
         <.icon name="hero-arrow-path" class="w-3 h-3 ml-1 animate-spin" />
       </.flash>
-      
+
       <.flash
         id="server-error"
         kind={:error}
@@ -338,7 +345,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
           {@rest}
         /> <%= @label %>
       </label>
-      
+
       <.error :for={msg <- @errors}><%= msg %></.error>
     </div>
     """
@@ -348,7 +355,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
     ~H"""
     <div>
       <.label for={@id}><%= @label %></.label>
-      
+
       <select
         id={@id}
         name={@name}
@@ -359,7 +366,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
         <option :if={@prompt} value=""><%= @prompt %></option>
          <%= Phoenix.HTML.Form.options_for_select(@options, @value) %>
       </select>
-      
+
       <.error :for={msg <- @errors}><%= msg %></.error>
     </div>
     """
@@ -389,7 +396,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
     ~H"""
     <div>
       <.label for={@id}><%= @label %></.label>
-      
+
       <input
         type={@type}
         name={@name}
@@ -448,7 +455,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
     ~H"""
     <div class="mb-4">
       <.label for={@id}><%= @label %></.label>
-      
+
       <div class="mt-2 flex">
         <textarea
           id={@id}
@@ -469,7 +476,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
           <.icon name="hero-arrow-right-circle" class="w-8 h-8" />
         </.buttonCustomColor>
       </div>
-      
+
       <.error :for={msg <- @errors}><%= msg %></.error>
     </div>
     """
@@ -542,12 +549,12 @@ defmodule LiveFeedbackWeb.CoreComponents do
         <h1 class="text-lg lg:text-3xl font-semibold leading-8 text-zinc-800">
           <%= render_slot(@inner_block) %>
         </h1>
-        
+
         <p :if={@subtitle != []} class="mt-2 text-sm lg:text-lg leading-6 text-zinc-600">
           <%= render_slot(@subtitle) %>
         </p>
       </div>
-      
+
       <div class="flex-none"><%= render_slot(@actions) %></div>
     </header>
     """
@@ -590,13 +597,13 @@ defmodule LiveFeedbackWeb.CoreComponents do
         <thead class="sm:text-2xl font-bold lg:text-4xl leading-6 text-left text-brand_blue">
           <tr>
             <th :for={col <- @col} class="p-0 pb-4 sm:pr-6 font-bold"><%= col[:label] %></th>
-            
+
             <th :if={@action != []} class="relative p-0 pb-4">
               <span class=""><%= gettext("Actions") %></span>
             </th>
           </tr>
         </thead>
-        
+
         <tbody
           id={@id}
           phx-update={match?(%Phoenix.LiveView.LiveStream{}, @rows) && "stream"}
@@ -615,7 +622,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
                 </span>
               </div>
             </td>
-            
+
             <td :if={@action != []} class="relative p-0">
               <div class="flex flex-col sm:flex-row  py-4 text-sm font-medium text-left whitespace-nowrap">
                 <span class="group-hover:bg-zinc-50 sm:rounded-r-xl" />
@@ -654,7 +661,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
       <dl class="-my-4 divide-y divide-zinc-100">
         <div :for={item <- @item} class="flex gap-4 py-4 text-sm leading-6 sm:gap-8">
           <dt class="flex-none w-1/4 text-zinc-500"><%= item.title %></dt>
-          
+
           <dd class="text-zinc-700"><%= render_slot(item) %></dd>
         </div>
       </dl>
@@ -830,7 +837,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
       >
         <%= render_slot(@button) %>
       </button>
-      
+
       <nav
         hidden="true"
         class="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5"

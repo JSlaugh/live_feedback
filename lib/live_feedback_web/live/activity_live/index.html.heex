@@ -42,6 +42,7 @@
             </h1>
             <p class="text-sm text-gray-500 mt-1">
               <%= case @current_question.question_type do %>
+                <% "QA" -> %>Question & Answer
                 <% "multiple_choice" -> %>Multiple Choice
                 <% "multi-select" -> %>Multi-Select
                 <% "true_false" -> %>True/False

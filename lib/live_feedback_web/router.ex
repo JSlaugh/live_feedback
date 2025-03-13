@@ -7,7 +7,6 @@ defmodule LiveFeedbackWeb.Router do
   alias SelectionLive.Index, as: SelectionLive
   alias QueueLive.Index, as: QueueLive
   alias ActivityLive.Index, as: ActivityLive
-  alias ActivityLive.Index, as: ActivityLive
 
   pipeline :browser do
     plug :accepts, ["html"]
