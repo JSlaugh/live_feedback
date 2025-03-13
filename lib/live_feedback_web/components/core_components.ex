@@ -591,7 +591,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
     ~H"""
     <div class="sm:px-4 sm:px-0">
       <table class="mt-11 w-full">
-        <thead class="sm:text-2xl font-bold lg:text-4xl leading-6 text-left text-brand_blue">
+        <thead class="max-sm:text-lg sm:text-2xl font-bold lg:text-4xl leading-6 text-left text-brand_blue">
           <tr>
             <th :for={col <- @col} class="p-0 pb-4 sm:pr-6 font-bold"><%= col[:label] %></th>
 
@@ -604,7 +604,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
         <tbody
           id={@id}
           phx-update={match?(%Phoenix.LiveView.LiveStream{}, @rows) && "stream"}
-          class="relative text-lg xl:text-xl leading-6 border-t divide-y divide-zinc-100 border-zinc-200 text-zinc-700"
+          class="relative max-sm:text-base text-lg xl:text-xl leading-6 border-t divide-y divide-zinc-100 border-zinc-200 text-zinc-700"
         >
           <tr :for={row <- @rows} id={@row_id && @row_id.(row)} class="group hover:bg-zinc-50">
             <td
