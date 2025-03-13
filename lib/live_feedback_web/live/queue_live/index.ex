@@ -42,7 +42,8 @@ defmodule LiveFeedbackWeb.QueueLive.Index do
 
   @impl true
   def handle_info({LiveFeedbackWeb.QueueLive.FormComponent, {:saved, queue}}, socket) do
-    {:noreply, stream_insert(socket, :queues, queue)}
+    {:noreply,
+     stream(socket, :queues, Queues.get_queues_for_course(queue.course_page_id), reset: true)}
   end
 
   @impl true

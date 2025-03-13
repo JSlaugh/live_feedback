@@ -16,7 +16,7 @@
   <.accordion>
     <:content title="Upcoming Presentations" id="upcoming-presentations">
       <div class="grid gap-4" phx-update="stream" id="queues">
-        <%= for {id,queue} <- @streams.queues,
+        <%= for {id,queue} <- @streams.queues, queue.presented_date,
       Timex.after?(
     queue.presented_date,
     Timex.now() |> Timex.shift(days: -1)
@@ -66,7 +66,7 @@
     
     <:content title="Past & Unscheduled Presentations" id="past_presentations" start_closed={true}>
       <div class="grid gap-4 my-4" phx-update="stream" id="queues">
-        <%= for {id,queue} <- @streams.queues,
+        <%= for {id,queue} <- @streams.queues, !queue.presented_date ||
     Timex.before?(
   queue.presented_date,
   Timex.now()
