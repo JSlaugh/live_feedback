@@ -22,8 +22,10 @@ FROM ${BUILDER_IMAGE} as builder
 
 # install build dependencies
 RUN apt-get update -y && apt-get install -y build-essential git \
-    && apt-get clean && rm -f /var/lib/apt/lists/*_* \
-    && apt-get install -y curl
+    && apt-get clean && rm -f /var/lib/apt/lists/*_* 
+    
+#install curl
+RUN apt-get install -y curl
 
 # Install node and npm
 RUN curl -fsSL http://deb.nodesource.com/setup_20.x | bash
