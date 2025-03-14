@@ -127,18 +127,10 @@ defmodule LiveFeedbackWeb.CoreComponents do
         @kind == :warning && "bg-amber-50 text-amber-800 ring-amber-500 fill-amber-900",
         @kind == :error && "bg-rose-50 text-rose-900 shadow-md ring-rose-500 fill-rose-900",
         @kind == :info && "bg-blue-50 text-blue-800 ring-blue-500 fill-blue-900"
-        @kind == :success && "bg-emerald-50 text-emerald-800 ring-emerald-500 fill-cyan-900",
-        @kind == :warning && "bg-amber-50 text-amber-800 ring-amber-500 fill-amber-900",
-        @kind == :error && "bg-rose-50 text-rose-900 shadow-md ring-rose-500 fill-rose-900",
-        @kind == :info && "bg-blue-50 text-blue-800 ring-blue-500 fill-blue-900"
       ]}
       {@rest}
     >
       <p :if={@title} class="flex items-center gap-1.5 text-sm font-semibold leading-6">
-        <.icon :if={@kind == :success} name="hero-information-circle-mini" class="w-4 h-4" />
-        <.icon :if={@kind == :warning} name="hero-exclamation-triangle-mini" class="w-4 h-4" />
-        <.icon :if={@kind == :error} name="hero-exclamation-circle-mini" class="w-4 h-4" />
-        <.icon :if={@kind == :info} name="hero-information-circle-mini" class="w-4 h-4" /> <%= @title %>
         <.icon :if={@kind == :success} name="hero-information-circle-mini" class="w-4 h-4" />
         <.icon :if={@kind == :warning} name="hero-exclamation-triangle-mini" class="w-4 h-4" />
         <.icon :if={@kind == :error} name="hero-exclamation-circle-mini" class="w-4 h-4" />
@@ -167,8 +159,6 @@ defmodule LiveFeedbackWeb.CoreComponents do
   def flash_group(assigns) do
     ~H"""
     <div id={@id}>
-      <.flash kind={:success} title={gettext("Success!")} flash={@flash} />
-      <.flash kind={:warning} title={gettext("Warning!")} flash={@flash} />
       <.flash kind={:success} title={gettext("Success!")} flash={@flash} />
       <.flash kind={:warning} title={gettext("Warning!")} flash={@flash} />
       <.flash kind={:error} title={gettext("Error!")} flash={@flash} />

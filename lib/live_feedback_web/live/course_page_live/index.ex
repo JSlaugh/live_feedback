@@ -64,15 +64,26 @@ defmodule LiveFeedbackWeb.CoursePageLive.Index do
              socket.assigns.current_user,
              course_page
            ) do
-      socket
-      |> assign(:page_title, "Share Access")
-      |> assign(:course_page, course_page)
-      |> assign(:profiles, Courses.get_profiles_for_course(socket.assigns.current_user.id, id))
+            profiles =  Courses.get_profiles_for_course(socket.assigns.current_user.id, id)
+            case profiles do
+              [] ->
+                socket
+                |> put_flash(:info, "No one has joined this course")
+                |> redirect(to: ~p"/course_pages/host")
+
+              _ ->
+                socket
+                |> assign(:page_title, "Share Access")
+                |> assign(:course_page, course_page)
+                |> assign(:profiles, profiles)
+            end
+
+
     else
       {:error, _reason} ->
         socket
         |> put_flash(:error, "You are not authorized to manage this feedback page")
-        |> redirect(to: ~p"/course_pages")
+        |> redirect(to: ~p"/course_pages/host")
     end
   end
 

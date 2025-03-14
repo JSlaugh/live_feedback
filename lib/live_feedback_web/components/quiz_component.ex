@@ -126,7 +126,7 @@ defmodule LiveFeedbackWeb.QuizComponent do
 
           case Selection.add_response(attrs) do
             {:ok, new_response} ->
-              {[new_response], :added}
+              [new_response]
           end
         end
       else

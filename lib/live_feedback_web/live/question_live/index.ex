@@ -370,9 +370,6 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
         if socket.assigns.queue.is_presenting do
           send_updates_to_presentation(socket)
         end
-        if socket.assigns.queue.is_presenting do
-          send_updates_to_presentation(socket)
-        end
         {:noreply,
          socket
          |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue.id),

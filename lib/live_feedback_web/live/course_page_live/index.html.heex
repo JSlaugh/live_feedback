@@ -263,21 +263,3 @@
     patch={~p"/course_pages/host"}
   />
 </.modal>
-
-<.modal
-  :if={@live_action in [:share]}
-  id="course_page-modal"
-  show
-  on_cancel={JS.patch(~p"/course_pages/host")}
->
-  <.live_component
-    module={LiveFeedbackWeb.CoursePageLive.SettingsComponent}
-    id={@course_page.id || :share}
-    title={@page_title}
-    action={@live_action}
-    course_page={@course_page}
-    current_user={@current_user}
-    profiles={@profiles}
-    patch={~p"/course_pages/host"}
-  />
-</.modal>
