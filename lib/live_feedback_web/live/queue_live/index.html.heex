@@ -16,14 +16,14 @@
   <.accordion>
     <:content title="Upcoming Presentations" id="upcoming-presentations">
       <div class="grid gap-4" phx-update="stream" id="queues">
-        <%= for {id,queue} <- @streams.queues,
+        <%= for {id,queue} <- @streams.queues, queue.presented_date,
       Timex.after?(
-      queue.presented_date || Timex.to_datetime(~D[2000-01-01]),
+      queue.presented_date,
     Timex.now() |> Timex.shift(days: -1)
   )  do %>
           <div
             id={id}
-            class="bg-brand_navy rounded-lg V p-6 transition-all duration-200 hover:shadow-lg hover:scale-[1.01] cursor-pointer relative group hover:opacity-95"
+            class="bg-brand_navy rounded-lg V p-4 md:p-6 transition-all duration-200 hover:shadow-lg hover:scale-[1.01] cursor-pointer relative group hover:opacity-95"
             phx-click={JS.navigate(~p"/course_pages/#{@course_page_id}/#{queue.id}/questions")}
           >
             <div class="flex items-center justify-between relative z-10">
@@ -66,9 +66,9 @@
 
     <:content title="Past & Unscheduled Presentations" id="past_presentations" start_closed={true}>
       <div class="grid gap-4 my-4" phx-update="stream" id="queues">
-        <%= for {id,queue} <- @streams.queues,
+        <%= for {id,queue} <- @streams.queues, !queue.presented_date ||
     Timex.before?(
-    queue.presented_date || Timex.to_datetime(~D[2000-01-01]),
+    queue.presented_date,
   Timex.now()
 )  do %>
           <div
@@ -83,7 +83,11 @@
                 </h2>
 
                 <p class="text-blue-100">
-                  Scheduled for: <%= queue.presented_date %>
+                  <%= if !queue.presented_date do %>
+                    Unscheduled
+                  <% else %>
+                    Scheduled for: <%= queue.presented_date %>
+                  <% end %>
                 </p>
 
                 <p class="text-blue-100">
