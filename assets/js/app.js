@@ -23,12 +23,38 @@ import { LiveSocket } from "phoenix_live_view";
 import topbar from "../vendor/topbar";
 import { setupDropdowns } from "./dropdown_menu";
 
+const SubmitOnEnter = {
+	mounted() {
+		this.el.addEventListener("keydown", (e) => {
+			// If the Enter key is pressed *without* Shift, submit the form
+			if (
+				e.key === "Enter" &&
+				!e.shiftKey &&
+				this.el.value &&
+				this.el.value.trim() !== ""
+			) {
+				e.preventDefault();
+				// This triggers the same event as if you clicked the submit button:
+				this.pushEventTo("#message_form", "create_message", {
+					// You could also include the content here if you like
+					message: this.el.value,
+				}).then(() => {
+					this.el.value = "";
+				});
+			}
+		});
+	},
+};
+
 let csrfToken = document
 	.querySelector("meta[name='csrf-token']")
 	.getAttribute("content");
 let liveSocket = new LiveSocket("/live", Socket, {
 	longPollFallbackMs: 2500,
 	params: { _csrf_token: csrfToken },
+	hooks: {
+		SubmitOnEnter: SubmitOnEnter,
+	},
 });
 
 // Show progress bar on live navigation and form submits
