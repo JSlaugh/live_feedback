@@ -24,6 +24,13 @@ FROM ${BUILDER_IMAGE} as builder
 RUN apt-get update -y && apt-get install -y build-essential git \
     && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
+# Install node and npm
+RUN curl -fsSL http://deb.nodesource.com/setup_20.x | bash
+RUN apt-get install -y nodejs
+
+# install packages (node)
+RUN cd assets/js && npm install
+
 # prepare build dir
 WORKDIR /app
 
