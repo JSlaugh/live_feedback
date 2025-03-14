@@ -135,8 +135,15 @@ defmodule LiveFeedbackWeb.QaComponent do
       </div>
       
       <%= if !@page_admin do %>
-        <.simple_form for={@form} phx-submit="create_message">
-          <.textareaWithSave field={@form[:content]} type="textarea" label="New Message" />
+        <.simple_form id="message_form" for={@form} phx-submit="create_message">
+          <.textareaWithSave
+            field={@form[:content]}
+            type="textarea"
+            label="New Message"
+            phx-hook="SubmitOnEnter"
+            phx-target={@myself}
+            phx-throttle="500"
+          />
         </.simple_form>
       <% end %>
        <%!-- Focus Modal --%>
@@ -147,7 +154,7 @@ defmodule LiveFeedbackWeb.QaComponent do
         on_cancel={Phoenix.LiveView.JS.patch("/page/#{@course_page.slug}")}
       >
         <div class="flex justify-between p-4 bg-brand_grey rounded-lg">
-          <div class="">
+          <div>
             <p class="text-lg break-normal"><%= @message.content %></p>
           </div>
           
@@ -274,6 +281,34 @@ defmodule LiveFeedbackWeb.QaComponent do
     else
       {:noreply,
        put_flash(socket, :error, "You are not authorized to mark this question as answered.")}
+    end
+  end
+
+  # Create Message Function called by the Form in the QA component
+  def handle_event("create_message", %{"message" => message}, socket) do
+    message_params = %{"content" => message}
+
+    message_params =
+      Map.merge(message_params, %{
+        "anonymous_id" => socket.assigns.anonymous_id || nil,
+        "question_occurrence_id" => socket.assigns.current_question.id || nil,
+        "user_profile_id" => socket.assigns.profile_id || nil
+      })
+
+    case Messages.create_message(message_params) do
+      {:ok, message} ->
+        topic = "#{socket.assigns.queue_id}"
+        Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:new_message, message})
+        # Reset the form.
+        socket =
+          assign(socket, :form, to_form(Messages.change_message(%Message{}), action: :validate))
+
+        {:noreply, socket}
+
+      {:error, changeset} ->
+        form = to_form(changeset)
+        socket = assign(socket, :form, form)
+        {:noreply, socket}
     end
   end
 
