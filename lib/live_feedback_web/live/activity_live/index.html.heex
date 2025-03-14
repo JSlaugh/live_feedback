@@ -30,6 +30,18 @@
         </div>
       </div>
     <% end %>
+    <!-- QR Code -->
+      <.live_component
+        module={LiveFeedbackWeb.ToggleableImage}
+        id="qr-code"
+        visible_bool={@qr_code_visible}
+        icon="hero-qr-code"
+        parent_pid={self()}
+      >
+        <:innerblock>
+          <%= raw(@qr_code_svg) %>
+        </:innerblock>
+      </.live_component>
   </:leftSidebar>
 
   <:activity>
@@ -242,18 +254,6 @@
       <span>End Presentation</span>
     </button>
     <% end %>
-    <!-- QR Code -->
-    <.live_component
-      module={LiveFeedbackWeb.ToggleableImage}
-      id="qr-code"
-      visible_bool={@qr_code_visible}
-      icon="hero-qr-code"
-      parent_pid={self()}
-    >
-      <:innerblock>
-        <%= raw(@qr_code_svg) %>
-      </:innerblock>
-    </.live_component>
 
     <%= if @page_admin do %>
       <.live_component

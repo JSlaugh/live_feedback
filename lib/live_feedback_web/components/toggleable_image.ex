@@ -22,7 +22,7 @@ defmodule LiveFeedbackWeb.ToggleableImage do
             <.icon name={@icon} />
           </button>
           <%= if @visible_bool do %>
-            <%= render_slot(@innerblock) %>
+              <%= render_slot(@innerblock) %>
           <% end %>
         </div>
       </div>

@@ -120,9 +120,15 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
   def handle_params(params, url, socket) do
     url = URI.parse(url)
 
+
+
     {:ok, qr_code_svg} =
       QRCode.create("#{url.scheme}://#{url.authority}/page/#{socket.assigns.course_page.slug}")
-      |> QRCode.render()
+      |> QRCode.render(:svg, %QRCode.Render.SvgSettings{
+        background_color: "#ffffff",
+        scale: 7,
+        structure: :readable
+      })
 
     socket =
       socket
