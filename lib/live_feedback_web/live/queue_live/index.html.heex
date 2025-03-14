@@ -23,7 +23,7 @@
   )  do %>
           <div
             id={id}
-            class="bg-brand_navy rounded-lg V p-6 transition-all duration-200 hover:shadow-lg hover:scale-[1.01] cursor-pointer relative group hover:opacity-95"
+            class="bg-brand_navy rounded-lg V p-4 md:p-6 transition-all duration-200 hover:shadow-lg hover:scale-[1.01] cursor-pointer relative group hover:opacity-95"
             phx-click={JS.navigate(~p"/course_pages/#{@course_page_id}/#{queue.id}/questions")}
           >
             <div class="flex items-center justify-between relative z-10">
