@@ -13,7 +13,7 @@
           </h1>
           <!-- Action button section -->
         </div>
-
+        
         <div class="flex max-sm:flex max-sm:flex-col justify-between space-x-4 mr-4 max-sm:mt-4">
           <div>
             <.link
@@ -28,7 +28,7 @@
             >
               Join
             </.link>
-
+            
             <.link
               navigate={~p"/course_pages/host"}
               class={
@@ -42,7 +42,7 @@
               Host
             </.link>
           </div>
-
+          
           <div class="flex items-center justify-center max-sm:mt-6 max-sm:mb-2">
             <%= if @present_mode == "owner" do %>
               <.link
@@ -81,33 +81,25 @@
     }
   >
     <:col :let={{_id, course_page}} label="Title"><%= course_page.title %></:col>
-
+    
     <:col :let={{_id, course_page}} label="Description"><%= course_page.description %></:col>
-
-    <:col :let={{_id, course_page}} label="Slug"><%= course_page.slug %></:col>
-
-    <:col :let={{_id, course_page}} label="Participation Data">
-
-    <:col :let={{_id, course_page}} label="Description">
-      <%= course_page.description %>
-    </:col>
-
+    
     <:col :let={{_id, course_page}} label="Slug" class="hidden sm:table-cell">
       <%= course_page.slug %>
     </:col>
-
+    
     <:col :let={{_id, course_page}} label="Participation Data" class="hidden sm:table-cell">
       <.link patch={~p"/course_pages/#{course_page}/participation"}>
         <span>View</span> <.icon name="hero-document-text" class="text-blue-500" />
       </.link>
     </:col>
-
+    
     <:action :let={{_id, course_page}}>
       <.link patch={~p"/course_pages/#{course_page}/edit"}>
         <.icon name="hero-pencil-square" class="text-brand_blue" />
       </.link>
     </:action>
-
+    
     <:action :let={{id, course_page}}>
       <.link
         phx-click={JS.push("delete", value: %{id: course_page.id}) |> hide("##{id}")}
@@ -116,7 +108,7 @@
         <.icon name="hero-trash" class="text-red-500" />
       </.link>
     </:action>
-
+    
     <:action :let={{_id, course_page}}>
       <.link patch={~p"/course_pages/#{course_page}/share"}>
         <.icon name="hero-user-plus" class="text-brand_blue" />
@@ -128,7 +120,7 @@
   <h4 class="mt-4 sm:text-2xl font-bold lg:text-4xl sm:py-4 text-brand_blue">
     Favorites <.icon name="hero-star" class="text-brand_blue max-sm:w-5 " />
   </h4>
-
+  
   <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 mt-8">
     <%= for {id, course_page} <- @streams.course_pages, course_page.user_profile.is_course_page_favorite do %>
       <div
@@ -140,19 +132,19 @@
           <h5 class="mb-2 text-white text-xl break-all font-semibold max-w-[80%] md:max-w-[90%]">
             <%= course_page.title %>
           </h5>
-
+          
           <p class="text-white leading-normal break-all max-w-[80%] md:max-w-[90%]">
             <%= course_page.description %>
           </p>
         </div>
-
+        
         <div>
           <div class="absolute bottom-0 right-0 p-1 px-2 m-4 bg-white rounded-md text-logo_red font-bold">
             <.link phx-click={JS.push("leave", value: %{id: course_page.id}) |> hide("##{id}")}>
               Leave
             </.link>
           </div>
-
+          
           <div
             phx-click="toggle-favorite"
             phx-value-id={course_page.id}
@@ -161,20 +153,20 @@
             <span class="block group-hover:hidden">
               <.icon name="hero-star-solid" class="text-brand_blue" />
             </span>
-
+            
             <span class="hidden group-hover:block">
               <.icon name="hero-star" class="text-brand_blue" />
             </span>
           </div>
         </div>
-
+        
         <div></div>
       </div>
     <% end %>
   </div>
   <!--All -->
   <h4 class="mt-10 sm:text-2xl font-bold lg:text-4xl sm:py-4 text-brand_blue">All Courses</h4>
-
+  
   <div class="grid grid-cols-1 gap-8 mt-8">
     <%= for {id, course_page} <- @streams.course_pages, not course_page.user_profile.is_course_page_favorite do %>
       <div
@@ -186,19 +178,19 @@
           <h5 class="mb-2 text-white text-xl break-all font-semibold max-w-[80%] md:max-w-[90%]">
             <%= course_page.title %>
           </h5>
-
+          
           <p class="text-white leading-normal break-all max-w-[80%] md:max-w-[90%]">
             <%= course_page.description %>
           </p>
         </div>
-
+        
         <div>
           <div class="absolute bottom-0 right-0 p-1 px-2 m-4 bg-white rounded-md text-logo_red font-bold">
             <.link phx-click={JS.push("leave", value: %{id: course_page.id}) |> hide("##{id}")}>
               Leave
             </.link>
           </div>
-
+          
           <div
             phx-click="toggle-favorite"
             phx-value-id={course_page.id}
@@ -207,13 +199,13 @@
             <span class="block group-hover:hidden">
               <.icon name="hero-star" class="text-brand_blue" />
             </span>
-
+            
             <span class="hidden group-hover:block">
               <.icon name="hero-star-solid" class="text-brand_blue" />
             </span>
           </div>
         </div>
-
+        
         <div></div>
       </div>
     <% end %>
