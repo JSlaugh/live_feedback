@@ -52,14 +52,14 @@ defmodule LiveFeedbackWeb.JoinCourseFormComponent do
           {:ok, profile} ->
             socket =
               socket
-              |> put_flash(:info, "Joined class successfully")
+              |> put_flash(:success, "Joined class successfully")
 
               course_page = Courses.get_course_page!(profile.course_page_id)
               notify_parent({:saved, course_page})
 
               {:noreply,
                socket
-               |> put_flash(:info, "Feedback page created successfully")
+               |> put_flash(:success, "Feedback page created successfully")
                |> redirect(to: socket.assigns.patch)}
 
           {:error, %Ecto.Changeset{} = changeset} ->

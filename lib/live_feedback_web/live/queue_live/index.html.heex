@@ -4,7 +4,7 @@
     <h1 class="mt-2 max-sm:text-2xl sm:text-4xl font-bold lg:text-6xl sm:py-4">
       <%= @course_name %> Question Decks
     </h1>
-    
+
     <.link
       navigate={~p"/course_pages/#{@course_page_id}/queues/new"}
       class="bg-logo_red hover:bg-brand_dark_red text-white p-2 rounded-lg max-sm:text-2xl sm:text-2xl"
@@ -12,13 +12,13 @@
       Deck <.icon name="hero-plus" class="h-5 w-5" />
     </.link>
   </div>
-  
+
   <.accordion>
     <:content title="Upcoming Presentations" id="upcoming-presentations">
       <div class="grid gap-4" phx-update="stream" id="queues">
         <%= for {id,queue} <- @streams.queues, queue.presented_date,
       Timex.after?(
-    queue.presented_date,
+      queue.presented_date,
     Timex.now() |> Timex.shift(days: -1)
   )  do %>
           <div
@@ -31,16 +31,16 @@
                 <h2 class="text-xl font-semibold text-white mb-2">
                   <%= queue.name %>
                 </h2>
-                
+
                 <p class="text-blue-100">
                   Scheduled for: <%= queue.presented_date %>
                 </p>
-                
+
                 <p class="text-blue-100">
                   <%= queue.description %>
                 </p>
               </div>
-              
+
               <div class="flex items-center gap-4">
                 <.link
                   navigate={~p"/course_page/#{@course_page_id}/#{queue.id}/edit"}
@@ -48,7 +48,7 @@
                 >
                   <.icon name="hero-pencil-square" class="text-white" />
                 </.link>
-                
+
                 <.link
                   phx-click="delete_queue"
                   phx-value-id={queue.id}
@@ -63,12 +63,12 @@
         <% end %>
       </div>
     </:content>
-    
+
     <:content title="Past & Unscheduled Presentations" id="past_presentations" start_closed={true}>
       <div class="grid gap-4 my-4" phx-update="stream" id="queues">
         <%= for {id,queue} <- @streams.queues, !queue.presented_date ||
     Timex.before?(
-  queue.presented_date,
+    queue.presented_date,
   Timex.now()
 )  do %>
           <div
@@ -81,7 +81,7 @@
                 <h2 class="text-xl font-semibold text-white mb-2">
                   <%= queue.name %>
                 </h2>
-                
+
                 <p class="text-blue-100">
                   <%= if !queue.presented_date do %>
                     Unscheduled
@@ -89,12 +89,12 @@
                     Scheduled for: <%= queue.presented_date %>
                   <% end %>
                 </p>
-                
+
                 <p class="text-blue-100">
                   <%= queue.description %>
                 </p>
               </div>
-              
+
               <div class="flex items-center gap-4">
                 <.link
                   navigate={~p"/course_page/#{@course_page_id}/#{queue.id}/edit"}
@@ -102,7 +102,7 @@
                 >
                   <.icon name="hero-pencil-square" class="text-white" />
                 </.link>
-                
+
                 <.link
                   phx-click="delete_queue"
                   phx-value-id={queue.id}

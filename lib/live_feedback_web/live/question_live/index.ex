@@ -7,6 +7,8 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
   alias LiveFeedback.Courses
   alias LiveFeedback.Selection
   alias LiveFeedback.Messages
+  alias LiveFeedback.Selection
+  alias LiveFeedback.Messages
 
   @impl true
   @spec mount(map(), any(), map()) :: {:ok, Phoenix.LiveView.Socket.t()}
@@ -129,7 +131,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
          |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue.id),
            reset: false
          )
-         |> put_flash(:info, "Question added successfully.")}
+         |> put_flash(:success, "Question added successfully.")}
 
       {:error, changeset} ->
         # In case of error, return the socket with an error message
@@ -273,7 +275,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
          socket
          # close form
          |> assign(show_form: "none")
-         |> put_flash(:info, "Question updated successfully.")
+         |> put_flash(:success, "Question updated successfully.")
          |> stream_insert(:questions, question)}
 
       {:error, changeset} ->
@@ -315,7 +317,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
          |> assign(:max_question_num, Questions.get_max_display_order(socket.assigns.queue.id))
          # close modal
          |> assign(:confirm_delete, false)
-         |> put_flash(:info, "Successfully deleted the question.")
+         |> put_flash(:success, "Successfully deleted the question.")
          |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue.id),
            reset: true
          )}
@@ -345,7 +347,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
          socket
          # close modal
          |> assign(:confirm_delete, false)
-         |> put_flash(:info, "Question archived successfully.")
+         |> put_flash(:success, "Question archived successfully.")
          |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue.id),
            reset: false
          )}
@@ -376,7 +378,9 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
         if socket.assigns.queue.is_presenting do
           send_updates_to_presentation(socket)
         end
-
+        if socket.assigns.queue.is_presenting do
+          send_updates_to_presentation(socket)
+        end
         {:noreply,
          socket
          |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue.id),
@@ -448,34 +452,22 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
   end
 
   defp send_updates_to_presentation(socket) do
-    max_question_num = Questions.get_max_display_order(socket.assigns.queue.id)
-    max_question_num = if(max_question_num <= 0, do: 1)
-
-    current_question_num =
-      if(max_question_num < socket.assigns.queue.current_question_num,
-        do: max_question_num,
-        else: socket.assigns.queue.current_question_num
-      )
-
+    max_display_order = Questions.get_max_display_order(socket.assigns.queue.id)
+    max_question_num = if(max_display_order <= 0, do: 1, else: max_display_order)
+    current_question_num = if(max_question_num < socket.assigns.queue.current_question_num, do: max_question_num, else: socket.assigns.queue.current_question_num)
     Queues.update_queue(socket.assigns.queue, %{"current_question_num" => current_question_num})
-
-    current_question =
-      Selection.get_question_from_queue(socket.assigns.queue.id, current_question_num)
+    current_question = Selection.get_question_from_queue(socket.assigns.queue.id, current_question_num)
 
     question_responses =
-      if current_question && current_question.question_type != "QA" do
-        Selection.get_question_responses(current_question.id)
-      else
-        nil
-      end
-
+      if(current_question && current_question.question_type != "QA",
+        do: Selection.get_question_responses(current_question.id),
+        else: nil
+      )
     messages =
-      if current_question && current_question.question_type == "QA" do
-        Messages.get_messages_for_question(current_question.id)
-      else
-        []
-      end
-
+      if(current_question && current_question.question_type == "QA",
+        do: Messages.get_messages_for_question(current_question.id),
+        else: []
+      )
     topic = "#{socket.assigns.queue.id}"
 
     Phoenix.PubSub.broadcast(

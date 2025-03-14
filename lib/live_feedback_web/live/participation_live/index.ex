@@ -61,7 +61,7 @@ defmodule LiveFeedbackWeb.ParticipationLive.Index do
 
               {:noreply,
                 socket
-                |> put_flash(:info, "CSV export compiled successfully. Click 'Download CSV' to download your data.")
+                |> put_flash(:success, "CSV export compiled successfully. Click 'Download CSV' to download your data.")
                 |> assign(:participation_data, formatted_results)
                 |> assign(:date_presented, date_presented)
                 |> assign(:csv_gathered, true)}
