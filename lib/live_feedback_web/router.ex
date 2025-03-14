@@ -81,7 +81,6 @@ defmodule LiveFeedbackWeb.Router do
       live "/course_pages/new", CoursePageLive, :new
       live "/course_pages/join", CoursePageLive, :join
       live "/course_pages/host", CoursePageLive, :host
-      live "/course_pages/:id/edit", CoursePageLive, :edit
       live "/course_pages/:id", CoursePageLive, :update
       live "/course_pages/:id/delete", CoursePageLive, :delete
 
@@ -98,6 +97,8 @@ defmodule LiveFeedbackWeb.Router do
         # Ensure user is course owner
         {LiveFeedbackWeb.UserAuth, :require_course_owner}
       ] do
+      live "/course_pages/:id/edit", CoursePageLive, :edit
+      live "/course_pages/:id/share", CoursePageLive, :share
       live "/course_pages/:id/:queue/questions", QuestionLive, :index
       live "/course_pages/:id/queues/", QueueLive, :index
       live "/course_pages/:id/queues/new", QueueLive, :new

@@ -55,6 +55,28 @@ defmodule LiveFeedbackWeb.CoursePageLive.Index do
     |> assign(:course_page, %CoursePage{})
   end
 
+  defp apply_action(socket, :share, %{"id" => id}) do
+    course_page = Courses.get_course_page!(id)
+
+    with :ok <-
+           Bodyguard.permit(
+             Courses,
+             :change_course_page,
+             socket.assigns.current_user,
+             course_page
+           ) do
+      socket
+      |> assign(:page_title, "Share Access")
+      |> assign(:course_page, course_page)
+      |> assign(:profiles, Courses.get_profiles_for_course(socket.assigns.current_user.id, id))
+    else
+      {:error, _reason} ->
+        socket
+        |> put_flash(:error, "You are not authorized to manage this feedback page")
+        |> redirect(to: ~p"/course_pages")
+    end
+  end
+
   defp apply_action(socket, :host, _params) do
     course_list = Courses.list_course_pages_by_user(socket.assigns.current_user.id, "owner")
 

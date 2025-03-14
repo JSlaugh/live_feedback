@@ -20,7 +20,7 @@
       <div class="grid gap-4" phx-update="stream" id="queues">
         <%= for {id,queue} <- @streams.queues, queue.presented_date,
       Timex.after?(
-    queue.presented_date,
+      queue.presented_date,
     Timex.now() |> Timex.shift(days: -1)
   )  do %>
           <div
@@ -42,6 +42,8 @@
                   <%= queue.description %>
                 </p>
               </div>
+
+              <div class="flex items-center gap-4">
 
               <div class="flex flex-col sm:flex-row items-center gap-4">
                 <.link
@@ -70,7 +72,7 @@
       <div class="grid gap-4 my-4" phx-update="stream" id="queues">
         <%= for {id,queue} <- @streams.queues, !queue.presented_date ||
     Timex.before?(
-  queue.presented_date,
+    queue.presented_date,
   Timex.now()
 )  do %>
           <div
@@ -96,6 +98,8 @@
                   <%= queue.description %>
                 </p>
               </div>
+
+              <div class="flex items-center gap-4">
 
               <div class="flex flex-col sm:flex-row items-center gap-4">
                 <.link
