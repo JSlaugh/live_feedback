@@ -11,7 +11,7 @@ defmodule LiveFeedbackWeb.FeedbackLive.FormComponent do
         <%= @title %>
         <:subtitle>Ask a question, make a comment, or whatever you need</:subtitle>
       </.header>
-      
+
       <.simple_form
         for={@form}
         id="message-form"
@@ -47,6 +47,8 @@ defmodule LiveFeedbackWeb.FeedbackLive.FormComponent do
   end
 
   def handle_event("save", %{"message" => message_params}, socket) do
+    # IO.inspect(socket.assigns)
+
     message_params = Map.put(message_params, "anonymous_id", socket.assigns.anonymous_id)
     save_message(socket, socket.assigns.action, message_params)
   end

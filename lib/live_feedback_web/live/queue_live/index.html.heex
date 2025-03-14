@@ -4,7 +4,7 @@
     <h1 class="mt-2 max-sm:text-2xl sm:text-4xl font-bold lg:text-6xl sm:py-4">
       <%= @course_name %> Presentation Decks
     </h1>
-    
+
     <.link
       navigate={~p"/course_pages/#{@course_page_id}/queues/new"}
       class="bg-logo_red hover:bg-brand_dark_red text-white p-2 rounded-lg max-sm:text-lg sm:text-lg max-sm:mt-4"
@@ -14,11 +14,11 @@
       </span>
     </.link>
   </div>
-  
+
   <.accordion>
     <:content title="Upcoming Presentations" id="upcoming-presentations">
       <div class="grid gap-4" phx-update="stream" id="queues">
-        <%= for {id,queue} <- @streams.queues, queue.presented_date,
+      <%= for {id,queue} <- @streams.queues, queue.presented_date,
       Timex.after?(
       queue.presented_date,
     Timex.now() |> Timex.shift(days: -1)
@@ -33,16 +33,16 @@
                 <h2 class="text-lg md:text-xl font-semibold text-white mb-2">
                   <%= queue.name %>
                 </h2>
-                
+
                 <p class="text-blue-100">
                   Scheduled for: <%= queue.presented_date %>
                 </p>
-                
+
                 <p class="text-blue-100">
                   <%= queue.description %>
                 </p>
               </div>
-              
+
               <div class="flex items-center gap-4">
                 <div class="flex flex-col sm:flex-row items-center gap-4">
                   <.link
@@ -51,7 +51,7 @@
                   >
                     <.icon name="hero-pencil-square" class="text-white" />
                   </.link>
-                  
+
                   <.link
                     phx-click="delete_queue"
                     phx-value-id={queue.id}
@@ -67,7 +67,7 @@
         <% end %>
       </div>
     </:content>
-    
+
     <:content title="Past & Unscheduled Presentations" id="past_presentations" start_closed={true}>
       <div class="grid gap-4 my-4" phx-update="stream" id="queues">
         <%= for {id,queue} <- @streams.queues, !queue.presented_date ||
@@ -85,20 +85,20 @@
                 <h2 class="text-lg md:text-xl font-semibold text-white mb-2">
                   <%= queue.name %>
                 </h2>
-                
+
                 <p class="text-blue-100">
-                  <%= if !queue.presented_date do %>
-                    Unscheduled
-                  <% else %>
-                    Scheduled for: <%= queue.presented_date %>
-                  <% end %>
+                <%= if !queue.presented_date do %>
+                  Unscheduled
+                <% else %>
+                  Scheduled for: <%= queue.presented_date %>
+                <% end %>
                 </p>
-                
+
                 <p class="text-blue-100">
                   <%= queue.description %>
                 </p>
               </div>
-              
+
               <div class="flex items-center gap-4">
                 <div class="flex flex-col sm:flex-row items-center gap-4">
                   <.link
@@ -107,7 +107,7 @@
                   >
                     <.icon name="hero-pencil-square" class="text-white" />
                   </.link>
-                  
+
                   <.link
                     phx-click="delete_queue"
                     phx-value-id={queue.id}

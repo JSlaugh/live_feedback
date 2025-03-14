@@ -46,7 +46,7 @@ defmodule LiveFeedbackWeb.Components.Accordion do
                 }
               />
             </button>
-            
+
             <div id={content.id} class="p-4" style={if content[:start_closed], do: "display: none;"}>
               <%= render_slot(content) %>
             </div>
@@ -58,6 +58,7 @@ defmodule LiveFeedbackWeb.Components.Accordion do
   end
 
   def hide_panel(js \\ %JS{}, selector) do
+
     js
     |> JS.toggle(to: selector)
     |> JS.toggle_class("rotate-180", to: "#{selector}-chevron")

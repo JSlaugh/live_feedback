@@ -21,8 +21,14 @@
     />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
     </script>
+    <%= for script <- Application.get_env(:live_feedback, LiveFeedbackWeb, []) |> Keyword.get(:script_tags, []) do %>
+      <script src={script.src}
+              integrity={if Map.has_key?(script, :integrity), do: script.integrity}
+              crossorigin={if Map.has_key?(script, :crossorigin), do: script.crossorigin}>
+      </script>
+    <% end %>
   </head>
-  
+
   <body class="bg-white">
     <div class="flex justify-between px-4 py-4">
       <div>
@@ -32,21 +38,27 @@
           </.link>
         </div>
       </div>
-      
+
       <ul class="flex items-center justify-end gap-4 sm:px-6 lg:px-4">
         <%= if @current_user do %>
           <li class="text-[0.7rem] sm:text-[0.8125rem] lg:text-lg leading-6 text-zinc-900 font-semibold hover:text-zinc-700">
             <.link href={~p"/course_pages/"}>Feedback Pages</.link>
           </li>
-          
+
           <li>
             <.dropdown id="main-nav-dropdown">
               <:button>
                 <.icon name="hero-user-circle" class="w-8 h-8" />
               </:button>
-              
+
               <:content>
                 <div class="flex flex-col m-2  gap-2 ">
+                  <div class="flex text-center">
+                    <p class="text-[0.7rem] sm:text-[0.8125rem] lg:text-lg block w-full font-bold">
+                      <%= @current_user.email %>
+                    </p>
+                  </div>
+                   <hr />
                   <.link href={~p"/users/settings"}>
                     <div class="flex items-end lg:items-start gap-2 text-[0.7rem] sm:text-[0.8125rem] lg:text-lg hover:bg-brand_grey hover:rounded-lg">
                       <.icon name="hero-cog-6-tooth w-6 h-6" />
@@ -75,7 +87,7 @@
               Register
             </.link>
           </li>
-          
+
           <li>
             <.link
               href={~p"/users/log_in"}

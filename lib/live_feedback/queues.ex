@@ -67,18 +67,17 @@ defmodule LiveFeedback.Queues do
 
   def next_question(queue_id, next_question_num) do
     queue = get_queue!(queue_id)
-
     queue
-    |> Ecto.Changeset.change(current_question_num: next_question_num)
-    |> Repo.update!()
+        |> Ecto.Changeset.change(current_question_num: next_question_num)
+        |> Repo.update!()
   end
 
   def toggle_queue_lock(queue_id, is_locked) do
     from(q in Queue,
-      where: q.id == ^queue_id,
-      update: [set: [is_locked: ^is_locked]]
-    )
-    |> Repo.update_all([])
+          where: q.id == ^queue_id,
+          update: [set: [is_locked: ^is_locked]]
+        )
+        |> Repo.update_all([])
   end
 
   @doc """

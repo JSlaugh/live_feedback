@@ -22,6 +22,11 @@ config :live_feedback, LiveFeedbackWeb.Endpoint,
   pubsub_server: LiveFeedback.PubSub,
   live_view: [signing_salt: "9TvaEhGi"]
 
+  config :live_feedback, LiveFeedbackWeb,
+  script_tags: [
+    %{src: "https://cdn.jsdelivr.net/npm/chart.js", integrity: "sha384-+K7H84HKmEWWFhHCIJ2NEHjPmWtQxvI1EbfTzkozqG7tImCuXHNanXNSMFGC5H5J", crossorigin: "anonymous"}
+  ]
+
 # Configures the mailer
 #
 # By default it uses the "Local" adapter which stores the emails

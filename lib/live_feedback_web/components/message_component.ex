@@ -13,7 +13,7 @@ defmodule LiveFeedbackWeb.MessageComponent do
             <%= @message.content %>
           </p>
         </div>
-        
+
         <div class="space-y-1 ml-1">
           <!-- Button to Focus Message -->
           <%= if @page_admin do %>
@@ -26,7 +26,7 @@ defmodule LiveFeedbackWeb.MessageComponent do
               <.icon name="hero-arrows-pointing-out" />
             </button>
           <% end %>
-          
+
           <div>
             <%= if @anonymous_id == @message.anonymous_id do %>
               <button
@@ -39,7 +39,7 @@ defmodule LiveFeedbackWeb.MessageComponent do
               </button>
             <% end %>
           </div>
-          
+
           <div>
             <%= cond do %>
               <% @page_admin -> %>
@@ -126,12 +126,11 @@ defmodule LiveFeedbackWeb.MessageComponent do
     if page_admin || message.anonymous_id == anonymous_id do
       attrs = %{"is_answered" => true}
       LiveFeedback.Messages.answer_message(message, attrs)
-      # deletes message from stream
+      #deletes message from stream
       send(socket.assigns.parent_pid, {:selected_message_delete, message})
       {:noreply, socket}
     else
-      {:noreply,
-       put_flash(socket, :error, "You are not authorized to mark this question as answered.")}
+      {:noreply, put_flash(socket, :error, "You are not authorized to mark this question as answered.")}
     end
   end
 

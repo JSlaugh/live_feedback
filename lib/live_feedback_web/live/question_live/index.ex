@@ -116,11 +116,9 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
 
         # get the full question + options packaged together
         question = Questions.get_question!(question.id)
-
         if socket.assigns.queue.is_presenting do
           send_updates_to_presentation(socket)
         end
-
         {:noreply,
          socket
          # close the form
@@ -266,11 +264,9 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
 
         # get the question again from the database to include updated options
         question = Questions.get_question!(question.id)
-
         if socket.assigns.queue.is_presenting do
           send_updates_to_presentation(socket)
         end
-
         {:noreply,
          socket
          # close form
@@ -308,9 +304,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
         if socket.assigns.queue.is_presenting do
           send_updates_to_presentation(socket)
         end
-
         send_updates_to_presentation(socket)
-
         {:noreply,
          socket
          # replace max_question_num so the arrows can change
@@ -335,14 +329,12 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
       "is_archived" => true,
       "display_order" => nil
     }
-
-    # update question with so it is archived
+    #update question with so it is archived
     case Questions.archive_question(question, attrs) do
       {:ok, _question} ->
         if socket.assigns.queue.is_presenting do
           send_updates_to_presentation(socket)
         end
-
         {:noreply,
          socket
          # close modal
@@ -375,9 +367,6 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
     # sends question id and what direction it should go
     case Questions.move_question(id, direction) do
       {:ok, {q1, q2}} ->
-        if socket.assigns.queue.is_presenting do
-          send_updates_to_presentation(socket)
-        end
         if socket.assigns.queue.is_presenting do
           send_updates_to_presentation(socket)
         end
@@ -469,12 +458,6 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
         else: []
       )
     topic = "#{socket.assigns.queue.id}"
-
-    Phoenix.PubSub.broadcast(
-      LiveFeedback.PubSub,
-      topic,
-      {:receive_question_update, max_question_num, current_question_num, current_question,
-       question_responses, messages}
-    )
+    Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:receive_question_update, max_question_num, current_question_num, current_question, question_responses, messages})
   end
 end
