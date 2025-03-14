@@ -21,6 +21,12 @@
     />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
     </script>
+    <%= for script <- Application.get_env(:live_feedback, LiveFeedbackWeb, []) |> Keyword.get(:script_tags, []) do %>
+      <script src={script.src}
+              integrity={if Map.has_key?(script, :integrity), do: script.integrity}
+              crossorigin={if Map.has_key?(script, :crossorigin), do: script.crossorigin}>
+      </script>
+    <% end %>
   </head>
 
   <body class="bg-white">

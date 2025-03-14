@@ -106,6 +106,8 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      |> assign(:queue_id, queue_id)
      |> assign(:responses, question_responses)
      |> assign(:processed_responses, [])
+     |> assign(:user_understanding, "none")
+     |> assign(:chart_data, [0,0,0])
      |> assign(:live_refresh, false)
      |> stream(
        :messages,
@@ -264,6 +266,47 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     end
   end
 
+  def handle_event("gauge_understanding", %{"understanding_gauge" => choice}, socket) do
+    IO.inspect(choice, label: "User's understanding choice")
+    got_it =
+      cond do
+        socket.assigns.user_understanding == "got_it" and choice != "got_it" -> -1
+        socket.assigns.user_understanding != "got_it" and choice == "got_it" -> 1
+        true -> 0
+      end
+
+    getting_it =
+      cond do
+        socket.assigns.user_understanding == "getting_it" and choice != "getting_it" -> -1
+        socket.assigns.user_understanding != "getting_it" and choice == "getting_it" -> 1
+        true -> 0
+      end
+
+    lost =
+      cond do
+        socket.assigns.user_understanding == "lost" and choice != "lost" -> -1
+        socket.assigns.user_understanding != "lost" and choice == "lost" -> 1
+        true -> 0
+      end
+
+    gauge = [lost, getting_it, got_it]
+
+    topic = "Host:#{socket.assigns.course_page.id}"
+    Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:update_gauge, gauge})
+    {:noreply,
+    socket
+    |> assign(:user_understanding, choice)
+    }
+  end
+
+  def handle_event("clear_chart", _params, socket) do
+    topic = "#{socket.assigns.queue_id}"
+    Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:clear_chart})
+    {:noreply,
+    socket
+    |> assign(:chart_data, [0,0,0])}
+  end
+
   #changes sockets for pubsub broadcast
   # Event called by the new message pubsub
   def handle_info({:new_message, message}, socket) do
@@ -365,13 +408,6 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
         |> assign(:responses, nil)
         |> stream(:messages, [], reset: true)}
     end
-  end
-
-  def handle_info({:toggle_lock, lock_status}, socket) do
-    {:noreply,
-      socket
-      |> assign(:locked, lock_status)
-    }
   end
 
   # Handle Info for PubSub Update (start/stop presentation) --------------------------------------------------
@@ -486,6 +522,20 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     {:noreply, socket
     |> assign(:responses, question_responses)
     |> assign(:processed_responses, processed_responses)}
+ end
+
+ def handle_info({:update_gauge, gauge}, socket) do
+  {:noreply,
+  socket
+  |> assign(:chart_data, Enum.zip_with(socket.assigns.chart_data, gauge, &(&1 + &2)))
+ }
+ end
+
+ def handle_info({:clear_chart}, socket) do
+  {:noreply,
+  socket
+  |> assign(:user_understanding, "none")
+ }
  end
 
   # Handle Info for testing/troubleshooting purposes only ------------------------------------------
