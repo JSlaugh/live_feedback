@@ -23,16 +23,13 @@ FROM ${BUILDER_IMAGE} as builder
 # install build dependencies
 RUN apt-get update -y && apt-get install -y build-essential git \
     && apt-get clean && rm -f /var/lib/apt/lists/*_* 
-    
+
 #install curl
-RUN apt-get install -y curl
+RUN apt-get update -y && apt-get install -y curl
 
 # Install node and npm
 RUN curl -fsSL http://deb.nodesource.com/setup_20.x | bash
 RUN apt-get install -y nodejs
-
-# install packages (node)
-RUN cd assets/js && npm install
 
 # prepare build dir
 WORKDIR /app
@@ -60,6 +57,9 @@ COPY priv priv
 COPY lib lib
 
 COPY assets assets
+
+# install packages (node)
+RUN cd assets/js && npm install
 
 # compile assets
 RUN mix assets.deploy
