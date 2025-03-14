@@ -75,18 +75,19 @@ defmodule LiveFeedback.ParticipationCsvExport do
             |> MyCSV.dump_to_iodata()
 
 
-          # # Logic to determine what directory to write to based on your environment
-          # file_path = if Mix.env() == :prod do
-          #   # Code that should run on the server (production)
-          #   # Use var for version num
-          #   "/app/lib/live_feedback-0.1.0/priv/static/participation_summaries/#{filename}.csv"
-          # else
-          #   # Code that should run on your local machine (dev or test)
-          #   "priv/static/participation_summaries/#{filename}.csv"
-          # end
+          # Logic to determine what directory to write to based on your environment
+          file_path = if Application.get_env(:live_feedback, :environment) == :prod do
+            # prod branch - Code that should only run in production
+            "/app/lib/live_feedback-0.1.0/priv/static/participation_summaries/#{filename}.csv"
+          else
+            # dev/test branch - Code that should run in development or test
+            "priv/static/participation_summaries/#{filename}.csv"
+          end
+
+
 
           #file_path = "priv/static/participation_summaries/#{filename}.csv"
-          file_path = "/app/lib/live_feedback-0.1.0/priv/static/participation_summaries/#{filename}.csv"
+          #file_path = "/app/lib/live_feedback-0.1.0/priv/static/participation_summaries/#{filename}.csv"
 
           # Write to file
           File.write!(file_path, csv_data)

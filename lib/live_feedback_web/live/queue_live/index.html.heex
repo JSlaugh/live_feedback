@@ -1,7 +1,7 @@
 <.flash_group flash={@flash} /> <.back_button to={~p"/course_pages/host"} text="Back" />
-<div class="mx-auto max-w-4xl lg:px-4 lg:py-8" >
-  <div class="flex md:flex-row items-center md:justify-between mb-6 max-sm:flex-col max-sm:text-center">
-    <h1 class="mt-2 max-sm:text-2xl sm:text-4xl font-bold lg:text-4xl sm:py-4">
+<div class="mx-auto max-w-4xl px-4 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="mt-2 max-sm:text-2xl sm:text-4xl font-bold lg:text-6xl sm:py-4">
       <%= @course_name %> Question Decks
     </h1>
 
@@ -13,45 +13,107 @@
     </.link>
   </div>
 
-  <div class="grid gap-4" phx-update="stream" id="queues">
-    <%= for {id,queue} <- @streams.queues do %>
-      <div
-        id={id}
-        class="bg-brand_navy rounded-lg V p-6 transition-all duration-200 hover:shadow-lg hover:scale-[1.01] cursor-pointer relative group hover:opacity-95"
-        phx-click={JS.navigate(~p"/course_pages/#{@course_page_id}/#{queue.id}/questions")}
-      >
-        <div class="flex items-center justify-between relative z-10">
-          <div class="flex-1">
-            <h2 class="text-xl font-semibold text-white mb-2">
-              <%= queue.name %>
-            </h2>
+  <.accordion>
+    <:content title="Upcoming Presentations" id="upcoming-presentations">
+      <div class="grid gap-4" phx-update="stream" id="queues">
+        <%= for {id,queue} <- @streams.queues,
+      Timex.after?(
+    queue.presented_date,
+    Timex.now() |> Timex.shift(days: -1)
+  )  do %>
+          <div
+            id={id}
+            class="bg-brand_navy rounded-lg V p-6 transition-all duration-200 hover:shadow-lg hover:scale-[1.01] cursor-pointer relative group hover:opacity-95"
+            phx-click={JS.navigate(~p"/course_pages/#{@course_page_id}/#{queue.id}/questions")}
+          >
+            <div class="flex items-center justify-between relative z-10">
+              <div class="flex-1">
+                <h2 class="text-xl font-semibold text-white mb-2">
+                  <%= queue.name %>
+                </h2>
 
-            <p class="text-blue-100">
-              <%= queue.description %>
-            </p>
+                <p class="text-blue-100">
+                  Scheduled for: <%= queue.presented_date %>
+                </p>
+
+                <p class="text-blue-100">
+                  <%= queue.description %>
+                </p>
+              </div>
+
+              <div class="flex items-center gap-4">
+                <.link
+                  navigate={~p"/course_page/#{@course_page_id}/#{queue.id}/edit"}
+                  class="inline-flex items-center px-3 py-2 border shadow-sm text-sm font-medium rounded-md text-white bg-transparent focus:outline-none relative z-20"
+                >
+                  <.icon name="hero-pencil-square" class="text-white" />
+                </.link>
+
+                <.link
+                  phx-click="delete_queue"
+                  phx-value-id={queue.id}
+                  data-confirm="Are you sure you want to delete this queue?"
+                  class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none relative z-20"
+                >
+                  <.icon name="hero-trash" class="text-white" />
+                </.link>
+              </div>
+            </div>
           </div>
-
-          <div class="flex items-center gap-4">
-            <.link
-              navigate={~p"/course_page/#{@course_page_id}/#{queue.id}/edit"}
-              class="inline-flex items-center px-3 py-2 border shadow-sm text-sm font-medium rounded-md text-white bg-transparent focus:outline-none relative z-20"
-            >
-              <.icon name="hero-pencil-square" class="text-white" />
-            </.link>
-
-            <.link
-              phx-click="delete_queue"
-              phx-value-id={queue.id}
-              data-confirm="Are you sure you want to delete this queue?"
-              class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none relative z-20"
-            >
-              <.icon name="hero-trash" class="text-white" />
-            </.link>
-          </div>
-        </div>
+        <% end %>
       </div>
-    <% end %>
-  </div>
+    </:content>
+
+    <:content title="Past & Unscheduled Presentations" id="past_presentations" start_closed={true}>
+      <div class="grid gap-4 my-4" phx-update="stream" id="queues">
+        <%= for {id,queue} <- @streams.queues,
+    Timex.before?(
+  queue.presented_date,
+  Timex.now()
+)  do %>
+          <div
+            id={id}
+            class="bg-brand_navy rounded-lg V p-6 transition-all duration-200 hover:shadow-lg hover:scale-[1.01] cursor-pointer relative group hover:opacity-95"
+            phx-click={JS.navigate(~p"/course_pages/#{@course_page_id}/#{queue.id}/questions")}
+          >
+            <div class="flex items-center justify-between relative z-10">
+              <div class="flex-1">
+                <h2 class="text-xl font-semibold text-white mb-2">
+                  <%= queue.name %>
+                </h2>
+
+                <p class="text-blue-100">
+                  Scheduled for: <%= queue.presented_date %>
+                </p>
+
+                <p class="text-blue-100">
+                  <%= queue.description %>
+                </p>
+              </div>
+
+              <div class="flex items-center gap-4">
+                <.link
+                  navigate={~p"/course_page/#{@course_page_id}/#{queue.id}/edit"}
+                  class="inline-flex items-center px-3 py-2 border shadow-sm text-sm font-medium rounded-md text-white bg-transparent focus:outline-none relative z-20"
+                >
+                  <.icon name="hero-pencil-square" class="text-white" />
+                </.link>
+
+                <.link
+                  phx-click="delete_queue"
+                  phx-value-id={queue.id}
+                  data-confirm="Are you sure you want to delete this queue?"
+                  class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none relative z-20"
+                >
+                  <.icon name="hero-trash" class="text-white" />
+                </.link>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </:content>
+  </.accordion>
 </div>
 
 <.modal
