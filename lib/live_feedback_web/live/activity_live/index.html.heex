@@ -3,11 +3,7 @@
     <%= if @user_id != nil do %>
       <div class="mb-6">
         <.back_button
-          to={
-            if @page_admin,
-              do: ~p"/course_pages/#{@course_page.id}/queues",
-              else: ~p"/course_pages"
-          }
+          to={if @page_admin, do: ~p"/course_pages/#{@course_page.id}/queues", else: ~p"/course_pages"}
           text="Back"
           class="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-2"
         />
@@ -59,6 +55,7 @@
             <%= if @current_question.is_required, do: "Tracked", else: "Anonymous" %>
           </span>
         </div>
+
         <%= if @page_admin and @current_question.question_type in ["multiple_choice", "multi-select", "true_false"] do %>
           <h2 class="font-bold  inline-block p-2 rounded-lg  text-brand_navy text-xl ">
             <.icon name="hero-chat-bubble-left-right" class=" w-8 h-8" /> <%= if @responses,
@@ -74,7 +71,6 @@
         <% @current_question == nil -> %>
           <div class="bg-gray-50 border-l-4 border-gray-300 p-4">
             <p class="text-gray-700 italic">Nothing is currently being presented</p>
-
             <%= if @page_admin do %>
               <.link
                 href={~p"/course_pages/#{@course_page.id}/queues"}
@@ -92,9 +88,7 @@
               </div>
 
               <div class="ml-3">
-                <p class="text-sm text-yellow-700">
-                  This question is being tracked, you must loggin to participate.
-                </p>
+                <p class="text-sm text-yellow-700">This question is being tracked, you must loggin to participate.</p>
               </div>
             </div>
           </div>
@@ -102,7 +96,6 @@
           <.live_component
             module={LiveFeedbackWeb.QaComponent}
             id="example-activity"
-            profile_id={@profile_id}
             page_admin={@page_admin}
             course_page={@course_page}
             current_question={@current_question}
@@ -129,7 +122,6 @@
                 Show <.icon name="hero-chart-bar-solid" class="h-5 w-5 mb-2 scale-x-[-1]" />
               <% end %>
             </button>
-
             <button
               phx-click="toggle_lock"
               class="p-2  text-logo_red font-bold rounded-lg border border-logo_red bg-white hover:text-white hover:bg-logo_red transition-colors duration-500 "
@@ -197,7 +189,7 @@
 
       <div>
         <%= if @page_admin and @current_question != nil do %>
-          <%= if @current_question_num != @max_question_num do %>
+          <%= if @current_question_num != @max_question_num do%>
             <button
               class="inline-flex items-center px-4 py-2 rounded-md bg-sky-700 text-white hover:bg-brand_navy transition-colors duration-200 shadow-sm"
               phx-click="change_question"
@@ -219,37 +211,36 @@
         <% end %>
       </div>
     </div>
-
     <%= if @live_action == :join do %>
-      <p>liveaction works</p>
+          <p> liveaction works </p>
     <% end %>
 
     <.modal
-      :if={@live_action in [:join]}
-      id="activity-join-modal"
-      show
-      on_cancel={JS.patch(~p"/page/#{@course_page.slug}")}
-    >
-      <.live_component
-        module={LiveFeedbackWeb.JoinCourseFormComponent}
-        id={:join}
-        title={@page_title}
-        action={@live_action}
-        course_page={@course_page}
-        current_user={@current_user}
-        patch={~p"/page/#{@course_page.slug}"}
-      />
-    </.modal>
+    :if={@live_action in [:join]}
+    id="activity-join-modal"
+    show
+    on_cancel={JS.patch(~p"/page/#{@course_page.slug}")}
+  >
+    <.live_component
+      module={LiveFeedbackWeb.JoinCourseFormComponent}
+      id={:join}
+      title={@page_title}
+      action={@live_action}
+      course_page={@course_page}
+      current_user={@current_user}
+      patch={~p"/page/#{@course_page.slug}"}
+    />
+  </.modal>
   </:activity>
 
   <:rightSidebar>
-    <%= if @page_admin && @current_question != nil  do %>
-      <button
-        class="inline-flex items-center px-4 py-2 rounded-md bg-sky-700 text-white hover:bg-brand_navy transition-colors duration-200 shadow-sm"
-        phx-click="toggle_present"
-      >
-        <span>End Presentation</span>
-      </button>
+    <%= if @page_admin do %>
+    <button
+      class="inline-flex items-center px-4 py-2 rounded-md bg-sky-700 text-white hover:bg-brand_navy transition-colors duration-200 shadow-sm"
+      phx-click="toggle_present"
+    >
+      <span>End Presentation</span>
+    </button>
     <% end %>
     <!-- QR Code -->
     <.live_component

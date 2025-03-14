@@ -58,6 +58,8 @@ defmodule LiveFeedbackWeb.Components.Accordion do
   end
 
   def hide_panel(js \\ %JS{}, selector) do
+    IO.inspect(selector)
+
     js
     |> JS.toggle(to: selector)
     |> JS.toggle_class("rotate-180", to: "#{selector}-chevron")
