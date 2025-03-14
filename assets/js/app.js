@@ -38,8 +38,9 @@ const SubmitOnEnter = {
 				this.pushEventTo("#message_form", "create_message", {
 					// You could also include the content here if you like
 					message: this.el.value,
+				}).then(() => {
+					this.el.value = "";
 				});
-				this.el.value = ""; // Clear the input field
 			}
 		});
 	},
