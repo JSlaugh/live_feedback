@@ -30,7 +30,8 @@ defmodule LiveFeedback.Queues do
   """
   def get_queues_for_course(course_id) do
     from(queue in Queue,
-      where: queue.course_page_id == ^course_id
+      where: queue.course_page_id == ^course_id,
+      order_by: [asc: queue.presented_date, desc: queue.inserted_at]
     )
     |> Repo.all()
   end

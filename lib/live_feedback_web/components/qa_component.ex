@@ -129,7 +129,14 @@ defmodule LiveFeedbackWeb.QaComponent do
       </div>
       <%= if !@page_admin do %>
         <.simple_form for={@form} phx-submit="create_message">
-          <.textareaWithSave field={@form[:content]} type="textarea" label="New Message" />
+          <.textareaWithSave
+          field={@form[:content]}
+          type="textarea"
+          label="New Message"
+          phx-hook="SubmitOnEnter"
+          phx-target={@myself}
+          phx-throttle="500"
+          />
         </.simple_form>
       <% end %>
        <%!-- Focus Modal --%>
@@ -147,12 +154,12 @@ defmodule LiveFeedbackWeb.QaComponent do
           <div>
             <%= if @page_admin || @anonymous_id == @message.anonymous_id do %>
               <button
-                phx-click="delete_message"
+                phx-click="answer_message"
                 phx-target={@myself}
                 phx-value-id={@message.id}
                 class="ml-2 text-red-500"
               >
-                <.icon name="hero-trash" />
+                <.icon name="hero-archive-box" />
               </button>
             <% end %>
           </div>
@@ -249,6 +256,52 @@ defmodule LiveFeedbackWeb.QaComponent do
       {:noreply, socket}
     else
       {:noreply, put_flash(socket, :error, "You are not authorized to delete this message.")}
+    end
+  end
+
+  def handle_event("answer_message", %{"id" => id}, socket) do
+    message = Messages.get_message!(id)
+    page_admin = Map.get(socket.assigns, :page_admin)
+    anonymous_id = Map.get(socket.assigns, :anonymous_id)
+
+    if page_admin || message.anonymous_id == anonymous_id do
+      attrs = %{"is_answered" => true}
+      Messages.answer_message(message, attrs)
+      # deletes message from stream
+
+      send(socket.assigns.parent_pid, {:selected_message_delete, message})
+      {:noreply, socket |> push_patch(to: "/page/#{socket.assigns.course_page.slug}")}
+    else
+      {:noreply,
+       put_flash(socket, :error, "You are not authorized to mark this question as answered.")}
+    end
+  end
+
+  # Create Message Function called by the Form in the QA component
+  def handle_event("create_message", %{"message" => message}, socket) do
+    message_params = %{"content" => message}
+
+    message_params =
+      Map.merge(message_params, %{
+        "anonymous_id" => socket.assigns.anonymous_id || nil,
+        "question_occurrence_id" => socket.assigns.current_question.id || nil,
+        "user_profile_id" => socket.assigns.profile_id || nil
+      })
+
+    case Messages.create_message(message_params) do
+      {:ok, message} ->
+        topic = "#{socket.assigns.queue_id}"
+        Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:new_message, message})
+        # Reset the form.
+        socket =
+          assign(socket, :form, to_form(Messages.change_message(%Message{}), action: :validate))
+
+        {:noreply, socket}
+
+      {:error, changeset} ->
+        form = to_form(changeset)
+        socket = assign(socket, :form, form)
+        {:noreply, socket}
     end
   end
 
