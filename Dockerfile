@@ -58,6 +58,9 @@ COPY lib lib
 
 COPY assets assets
 
+# install packages (node)
+RUN cd assets && npm install
+
 # compile assets
 RUN mix assets.deploy
 
@@ -93,9 +96,6 @@ ENV MIX_ENV="prod"
 
 # Only copy the final release from the build stage
 COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/live_feedback ./
-
-# install packages (node)
-RUN cd assets/js && npm install
 
 USER nobody
 
