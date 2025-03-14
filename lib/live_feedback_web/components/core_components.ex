@@ -101,7 +101,11 @@ defmodule LiveFeedbackWeb.CoreComponents do
   attr :id, :string, doc: "the optional id of flash container"
   attr :flash, :map, default: %{}, doc: "the map of flash messages to display"
   attr :title, :string, default: nil
-  attr :kind, :atom, values: [:success, :info, :warning, :error], doc: "used for styling and flash lookup"
+
+  attr :kind, :atom,
+    values: [:success, :info, :warning, :error],
+    doc: "used for styling and flash lookup"
+
   attr :rest, :global, doc: "the arbitrary HTML attributes to add to the flash container"
 
   slot :inner_block, doc: "the optional inner block that renders the flash message"
@@ -114,6 +118,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
       :if={msg = render_slot(@inner_block) || Phoenix.Flash.get(@flash, @kind)}
       id={@id}
       phx-hook="AutoClearFlash"
+      phx-hook="AutoClearFlash"
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
       role="alert"
       class={[
@@ -122,10 +127,18 @@ defmodule LiveFeedbackWeb.CoreComponents do
         @kind == :warning && "bg-amber-50 text-amber-800 ring-amber-500 fill-amber-900",
         @kind == :error && "bg-rose-50 text-rose-900 shadow-md ring-rose-500 fill-rose-900",
         @kind == :info && "bg-blue-50 text-blue-800 ring-blue-500 fill-blue-900"
+        @kind == :success && "bg-emerald-50 text-emerald-800 ring-emerald-500 fill-cyan-900",
+        @kind == :warning && "bg-amber-50 text-amber-800 ring-amber-500 fill-amber-900",
+        @kind == :error && "bg-rose-50 text-rose-900 shadow-md ring-rose-500 fill-rose-900",
+        @kind == :info && "bg-blue-50 text-blue-800 ring-blue-500 fill-blue-900"
       ]}
       {@rest}
     >
       <p :if={@title} class="flex items-center gap-1.5 text-sm font-semibold leading-6">
+        <.icon :if={@kind == :success} name="hero-information-circle-mini" class="w-4 h-4" />
+        <.icon :if={@kind == :warning} name="hero-exclamation-triangle-mini" class="w-4 h-4" />
+        <.icon :if={@kind == :error} name="hero-exclamation-circle-mini" class="w-4 h-4" />
+        <.icon :if={@kind == :info} name="hero-information-circle-mini" class="w-4 h-4" /> <%= @title %>
         <.icon :if={@kind == :success} name="hero-information-circle-mini" class="w-4 h-4" />
         <.icon :if={@kind == :warning} name="hero-exclamation-triangle-mini" class="w-4 h-4" />
         <.icon :if={@kind == :error} name="hero-exclamation-circle-mini" class="w-4 h-4" />
@@ -154,6 +167,8 @@ defmodule LiveFeedbackWeb.CoreComponents do
   def flash_group(assigns) do
     ~H"""
     <div id={@id}>
+      <.flash kind={:success} title={gettext("Success!")} flash={@flash} />
+      <.flash kind={:warning} title={gettext("Warning!")} flash={@flash} />
       <.flash kind={:success} title={gettext("Success!")} flash={@flash} />
       <.flash kind={:warning} title={gettext("Warning!")} flash={@flash} />
       <.flash kind={:error} title={gettext("Error!")} flash={@flash} />
@@ -581,6 +596,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
 
   slot :col, required: true do
     attr :label, :string
+    attr :class, :string
   end
 
   slot :action, doc: "the slot for showing user actions in the last table column"
@@ -594,9 +610,11 @@ defmodule LiveFeedbackWeb.CoreComponents do
     ~H"""
     <div class="sm:px-4 sm:px-0">
       <table class="mt-11 w-full">
-        <thead class="sm:text-2xl font-bold lg:text-4xl leading-6 text-left text-brand_blue">
+        <thead class="max-sm:text-lg sm:text-xl font-bold lg:text-4xl leading-6 text-left text-brand_blue">
           <tr>
-            <th :for={col <- @col} class="p-0 pb-4 sm:pr-6 font-bold"><%= col[:label] %></th>
+            <th :for={col <- @col} class={["p-0 pb-4 sm:pr-6 font-bold", col[:class]]}>
+              <%= col[:label] %>
+            </th>
 
             <th :if={@action != []} class="relative p-0 pb-4">
               <span class=""><%= gettext("Actions") %></span>
@@ -607,13 +625,13 @@ defmodule LiveFeedbackWeb.CoreComponents do
         <tbody
           id={@id}
           phx-update={match?(%Phoenix.LiveView.LiveStream{}, @rows) && "stream"}
-          class="relative text-lg xl:text-xl leading-6 border-t divide-y divide-zinc-100 border-zinc-200 text-zinc-700"
+          class="relative max-sm:text-base sm:text-base xl:text-xl leading-6 border-t divide-y divide-zinc-100 border-zinc-200 text-zinc-700"
         >
           <tr :for={row <- @rows} id={@row_id && @row_id.(row)} class="group hover:bg-zinc-50">
             <td
               :for={{col, i} <- Enum.with_index(@col)}
               phx-click={@row_click && @row_click.(row)}
-              class={["relative p-0", @row_click && "hover:cursor-pointer"]}
+              class={["relative p-0", @row_click && "hover:cursor-pointer", col[:class]]}
             >
               <div class="block py-4 pr-2 sm:pr-6">
                 <span class="absolute right-0 -inset-y-px -left-4 group-hover:bg-zinc-50 sm:rounded-l-xl" />

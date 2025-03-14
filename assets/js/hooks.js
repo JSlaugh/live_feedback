@@ -1,3 +1,4 @@
+
 import Chart from 'chart.js/auto'
 let Hooks = {}
 
@@ -16,6 +17,28 @@ Hooks.AutoClearFlash = {
     }, timeout);
   }
 }
+
+Hooks.SubmitOnEnter = {
+	mounted() {
+		this.el.addEventListener("keydown", (e) => {
+			// If the Enter key is pressed *without* Shift, submit the form
+			if (
+				e.key === "Enter" &&
+				!e.shiftKey &&
+				this.el.value &&
+				this.el.value.trim() !== ""
+			) {
+				e.preventDefault();
+				// This triggers the same event as if you clicked the submit button:
+				this.pushEventTo("#message_form", "create_message", {
+					// You could also include the content here if you like
+					message: this.el.value,
+				});
+				this.el.value = "";
+			}
+		});
+	},
+};
 
 Hooks.PieChart = {
   mounted() {
@@ -52,6 +75,5 @@ Hooks.PieChart = {
     this.chart.destroy()
   }
 }
-
 
 export default Hooks;

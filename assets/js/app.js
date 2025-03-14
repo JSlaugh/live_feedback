@@ -23,6 +23,7 @@ import { LiveSocket } from "phoenix_live_view";
 import topbar from "../vendor/topbar";
 import { setupDropdowns } from "./dropdown_menu";
 import Hooks from "./hooks";
+import Hooks from "./hooks";
 
 let csrfToken = document
 	.querySelector("meta[name='csrf-token']")

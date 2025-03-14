@@ -330,7 +330,7 @@ defmodule LiveFeedbackWeb.QuestionLive.RequiredToggle do
     ~H"""
     <div class="flex items-center space-x-2" id={"required_toggle_#{@question.id}"}>
       <label for={"required_toggle_input_#{@question.id}"} class="text-sm text-gray-700">
-        Required
+        Track Participation
       </label>
 
       <label class="relative inline-flex items-center cursor-pointer">

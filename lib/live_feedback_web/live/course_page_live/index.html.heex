@@ -1,10 +1,10 @@
 <.header>
   <div class="w-full border-b border-gray-200">
-    <div class="py-4 w-full">
+    <div class="w-full">
       <!-- Top section with title and navigation -->
-      <div class="flex flex-col max-sm:items-center max-sm:justify-between sm:justify-start mb-4 mx-4">
+      <div class="flex flex-col max-sm:items-center max-sm:justify-between sm:justify-start mb-4 mx-4 mt-4">
         <div>
-          <h1 class="mt-2 max-sm:text-2xl sm:text-4xl font-bold lg:text-6xl sm:py-4">
+          <h1 class="max-sm:text-2xl sm:text-4xl font-bold lg:text-6xl sm:pb-4">
             <%= if @present_mode == "owner" do %>
               My Feedback Pages
             <% else %>
@@ -43,18 +43,18 @@
             </.link>
           </div>
 
-          <div class="flex items-center max-sm:mt-8">
+          <div class="flex items-center justify-center max-sm:mt-6 max-sm:mb-2">
             <%= if @present_mode == "owner" do %>
               <.link
                 patch={~p"/course_pages/new"}
-                class="bg-logo_red hover:bg-brand_dark_red text-white p-2 rounded-lg"
+                class="bg-logo_red hover:bg-brand_dark_red text-white p-1 sm:p-2 rounded-lg"
               >
                 <button class="mx-2">Create <.icon name="hero-plus" class="h-5 w-5" /></button>
               </.link>
             <% else %>
               <.link
                 patch={~p"/course_pages/join"}
-                class="bg-logo_red hover:bg-brand_dark_red text-white  p-2 rounded-lg"
+                class="bg-logo_red hover:bg-brand_dark_red text-white p-1 sm:p-2 rounded-lg"
               >
                 <button class="mx-2">Join <.icon name="hero-plus" class="h-5 w-5" /></button>
               </.link>
@@ -78,19 +78,19 @@
           JS.navigate(~p"/page/#{course_page.slug}")
         end
       end
-  }
->
-
+    }
+  >
     <:col :let={{_id, course_page}} label="Title"><%= course_page.title %></:col>
 
     <:col :let={{_id, course_page}} label="Description"><%= course_page.description %></:col>
 
-    <:col :let={{_id, course_page}} label="Slug"><%= course_page.slug %></:col>
+    <:col :let={{_id, course_page}} label="Slug" class="hidden sm:table-cell">
+      <%= course_page.slug %>
+    </:col>
 
-    <:col :let={{_id, course_page}} label="Participation Data">
+    <:col :let={{_id, course_page}} label="Participation Data" class="hidden sm:table-cell">
       <.link patch={~p"/course_pages/#{course_page}/participation"}>
-        <span>View</span>
-        <.icon name="hero-document-text" class="text-blue-500" />
+        <span>View</span> <.icon name="hero-document-text" class="text-blue-500" />
       </.link>
     </:col>
 
@@ -118,7 +118,7 @@
 <% else %>
   <!--Favorites -->
   <h4 class="mt-4 sm:text-2xl font-bold lg:text-4xl sm:py-4 text-brand_blue">
-    Favorites <.icon name="hero-star" class="text-brand_blue" />
+    Favorites <.icon name="hero-star" class="text-brand_blue max-sm:w-5 " />
   </h4>
 
   <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 mt-8">
@@ -153,6 +153,7 @@
             <span class="block group-hover:hidden">
               <.icon name="hero-star-solid" class="text-brand_blue" />
             </span>
+
             <span class="hidden group-hover:block">
               <.icon name="hero-star" class="text-brand_blue" />
             </span>
@@ -198,6 +199,7 @@
             <span class="block group-hover:hidden">
               <.icon name="hero-star" class="text-brand_blue" />
             </span>
+
             <span class="hidden group-hover:block">
               <.icon name="hero-star-solid" class="text-brand_blue" />
             </span>
@@ -241,6 +243,24 @@
     course_page={@course_page}
     current_user={@current_user}
     patch={~p"/course_pages"}
+  />
+</.modal>
+
+<.modal
+  :if={@live_action in [:share]}
+  id="course_page-modal"
+  show
+  on_cancel={JS.patch(~p"/course_pages/host")}
+>
+  <.live_component
+    module={LiveFeedbackWeb.CoursePageLive.SettingsComponent}
+    id={@course_page.id || :share}
+    title={@page_title}
+    action={@live_action}
+    course_page={@course_page}
+    current_user={@current_user}
+    profiles={@profiles}
+    patch={~p"/course_pages/host"}
   />
 </.modal>
 
