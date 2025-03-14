@@ -44,12 +44,15 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
           profile -> profile
         end
       end
+
     # Determine if they are the Presenter or not
 
     presenter = if profile && profile.role == "owner", do: true, else: false
 
     # Get the queue if it exists
-    {queue, queue_id, first_question, messages, question_responses, max_question_num, current_question_num, is_locked} =
+    {queue, queue_id, first_question, messages, question_responses, max_question_num,
+     current_question_num,
+     is_locked} =
       case Queues.get_presenting_queue_for_course(course_page.id) do
         nil ->
           {nil, nil, nil, [], nil, nil, 1, nil}
@@ -60,6 +63,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
           max_question_num = Questions.get_max_display_order(queue.id)
           current_question_num = queue.current_question_num
           is_locked = queue.is_locked
+
           messages =
             if first_question && first_question.question_type == "QA",
               do: Messages.get_messages_for_question(first_question.id),
@@ -73,7 +77,9 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
                   else: Selection.get_profile_responses(anonymous_id, first_question.id)
                 ),
               else: nil
-          {queue, queue_id, first_question, messages, question_responses, max_question_num, current_question_num, is_locked}
+
+          {queue, queue_id, first_question, messages, question_responses, max_question_num,
+           current_question_num, is_locked}
       end
 
     # Set the Visibility of the QR Code to be based on if they are a presenter or not
@@ -144,6 +150,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
   defp apply_action(socket, :join, _params) do
     IO.inspect("join action")
     page_title = "Join"
+
     socket
     |> assign(:page_title, page_title)
   end
@@ -171,12 +178,20 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
         do: Messages.get_messages_for_question(next_question.id),
         else: []
       )
+
     queue = Queues.get_queue!(socket.assigns.queue_id)
+
     case Queues.update_queue(queue, %{"current_question_num" => next_question_num}) do
       {:ok, _response} ->
         topic = "#{socket.assigns.queue_id}"
-        Phoenix.PubSub.broadcast(LiveFeedback.PubSub,topic,{:change_question, next_question_num, next_question, question_responses, messages})
+
+        Phoenix.PubSub.broadcast(
+          LiveFeedback.PubSub,
+          topic,
+          {:change_question, next_question_num, next_question, question_responses, messages}
+        )
     end
+
     {:noreply, socket}
   end
 
@@ -224,18 +239,23 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
   @impl true
   def handle_event("toggle_results", _params, socket) do
     # WRITE STUFF HERE TO CALL THE FUNCTIONS TO UPDATE THE RESULTS
-     # If results are not shown, process responses when toggling
-     processed_responses = if !socket.assigns.show_results do
-      ActivityResults.process_responses(socket.assigns.responses, socket.assigns.current_question)
-     else
-      []
-     end
-     IO.inspect(processed_responses)
+    # If results are not shown, process responses when toggling
+    processed_responses =
+      if !socket.assigns.show_results do
+        ActivityResults.process_responses(
+          socket.assigns.responses,
+          socket.assigns.current_question
+        )
+      else
+        []
+      end
+
+    IO.inspect(processed_responses)
+
     {:noreply,
-      socket
-      |> assign(:show_results, !socket.assigns.show_results)
-      |> assign(:processed_responses, processed_responses)
-    }
+     socket
+     |> assign(:show_results, !socket.assigns.show_results)
+     |> assign(:processed_responses, processed_responses)}
   end
 
   # Toggle the answering lock ----------------------------------------------
@@ -264,7 +284,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     end
   end
 
-  #changes sockets for pubsub broadcast
+  # changes sockets for pubsub broadcast
   # Event called by the new message pubsub
   def handle_info({:new_message, message}, socket) do
     # Update the messages stream with the new message
@@ -287,54 +307,66 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
     {:noreply, stream_insert(socket, :messages, message)}
   end
 
-  def handle_info({:change_question, next_question_num, next_question, question_responses, messages},socket) do
+  def handle_info(
+        {:change_question, next_question_num, next_question, question_responses, messages},
+        socket
+      ) do
     {:noreply,
-      socket
-      |> assign(:show_results, false)
-      |> assign(:locked, false)
-      |> assign(:current_question_num, next_question_num)
-      |> assign(:current_question, next_question)
-      |> assign(:responses, question_responses)
-      |> stream(:messages, messages, reset: true)}
-
+     socket
+     |> assign(:show_results, false)
+     |> assign(:locked, false)
+     |> assign(:current_question_num, next_question_num)
+     |> assign(:current_question, next_question)
+     |> assign(:responses, question_responses)
+     |> stream(:messages, messages, reset: true)}
   end
 
-  def handle_info({:receive_question_update, max_question_num, current_question_num, current_question, question_responses, messages},socket) do
+  def handle_info(
+        {:receive_question_update, max_question_num, current_question_num, current_question,
+         question_responses, messages},
+        socket
+      ) do
     locked = false
     show_results = false
+
     if current_question == socket.assigns.current_question do
       ^locked = socket.assigns.locked
       ^show_results = socket.assigns.show_results
     end
-      {:noreply,
-        socket
-        |> assign(:show_results, show_results)
-        |> assign(:locked, locked)
-        |> assign(:current_question_num, current_question_num)
-        |> assign(:current_question, current_question)
-        |> assign(:max_question_num, max_question_num)
-        |> assign(:responses, question_responses)
-        |> stream(:messages, messages, reset: true)}
+
+    {:noreply,
+     socket
+     |> assign(:show_results, show_results)
+     |> assign(:locked, locked)
+     |> assign(:current_question_num, current_question_num)
+     |> assign(:current_question, current_question)
+     |> assign(:max_question_num, max_question_num)
+     |> assign(:responses, question_responses)
+     |> stream(:messages, messages, reset: true)}
   end
 
   def handle_info({:toggle_lock, lock_status}, socket) do
     {:noreply,
-      socket
-      |> assign(:locked, lock_status)
-    }
+     socket
+     |> assign(:locked, lock_status)}
   end
 
-  def handle_info({:receive_question_update, max_question_num},socket) do
+  def handle_info({:receive_question_update, max_question_num}, socket) do
     if max_question_num > 0 do
-      current_question_num = if socket.assigns.current_question_num > max_question_num, do: max_question_num, else: socket.assigns.current_question_num
+      current_question_num =
+        if socket.assigns.current_question_num > max_question_num,
+          do: max_question_num,
+          else: socket.assigns.current_question_num
 
-      current_question = Selection.get_question_from_queue(socket.assigns.queue_id, current_question_num)
+      current_question =
+        Selection.get_question_from_queue(socket.assigns.queue_id, current_question_num)
 
       question_responses =
         if(current_question.question_type != "QA",
           do: Selection.get_question_responses(current_question.id),
           else: nil
         )
+
       messages =
         if(current_question.question_type == "QA",
           do: Messages.get_messages_for_question(current_question.id),
@@ -342,36 +374,36 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
         )
 
       queue = Queues.get_queue!(socket.assigns.queue_id)
+
       case Queues.update_queue(queue, %{"current_question_num" => current_question_num}) do
         {:ok, _response} ->
           {:noreply,
-        socket
-        |> assign(:show_results, false)
-        |> assign(:locked, false)
-        |> assign(:current_question_num, current_question_num)
-        |> assign(:current_question, current_question)
-        |> assign(:max_question_num, max_question_num)
-        |> assign(:responses, question_responses)
-        |> stream(:messages, messages, reset: true)}
+           socket
+           |> assign(:show_results, false)
+           |> assign(:locked, false)
+           |> assign(:current_question_num, current_question_num)
+           |> assign(:current_question, current_question)
+           |> assign(:max_question_num, max_question_num)
+           |> assign(:responses, question_responses)
+           |> stream(:messages, messages, reset: true)}
       end
     else
       {:noreply,
-        socket
-        |> assign(:show_results, false)
-        |> assign(:locked, false)
-        |> assign(:current_question_num, nil)
-        |> assign(:current_question, nil)
-        |> assign(:max_question_num, nil)
-        |> assign(:responses, nil)
-        |> stream(:messages, [], reset: true)}
+       socket
+       |> assign(:show_results, false)
+       |> assign(:locked, false)
+       |> assign(:current_question_num, nil)
+       |> assign(:current_question, nil)
+       |> assign(:max_question_num, nil)
+       |> assign(:responses, nil)
+       |> stream(:messages, [], reset: true)}
     end
   end
 
   def handle_info({:toggle_lock, lock_status}, socket) do
     {:noreply,
-      socket
-      |> assign(:locked, lock_status)
-    }
+     socket
+     |> assign(:locked, lock_status)}
   end
 
   # Handle Info for PubSub Update (start/stop presentation) --------------------------------------------------
@@ -411,8 +443,8 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
   # Handle Info for live refresh toggle ---------------------------------------------
   def handle_info({:toggle_live_refresh, live_refresh}, socket) do
     {:noreply,
-    socket
-    |> assign(:live_refresh, live_refresh)}
+     socket
+     |> assign(:live_refresh, live_refresh)}
   end
 
   def handle_info({:run_sort, sort_by}, socket) do
@@ -420,7 +452,8 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
       send(self(), {:sort_messages, sort_by})
       Process.send_after(self(), {:run_sort, sort_by}, 2000)
     end
-   {:noreply, socket}
+
+    {:noreply, socket}
   end
 
   # Handle Info for Deleting all Messages ------------------------------------------
@@ -482,11 +515,15 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
   # Handle Info for Refreshing Responses to Quiz Questions for Presenter ---------------------------
   def handle_info({:refresh_presenter_responses}, socket) do
     question_responses = Selection.get_question_responses(socket.assigns.current_question.id)
-    processed_responses = ActivityResults.process_responses(question_responses, socket.assigns.current_question)
-    {:noreply, socket
-    |> assign(:responses, question_responses)
-    |> assign(:processed_responses, processed_responses)}
- end
+
+    processed_responses =
+      ActivityResults.process_responses(question_responses, socket.assigns.current_question)
+
+    {:noreply,
+     socket
+     |> assign(:responses, question_responses)
+     |> assign(:processed_responses, processed_responses)}
+  end
 
   # Handle Info for testing/troubleshooting purposes only ------------------------------------------
   def handle_info(msg, socket) do
