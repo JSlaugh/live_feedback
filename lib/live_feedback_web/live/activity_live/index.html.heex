@@ -256,116 +256,19 @@
     </.live_component>
 
     <%= if @page_admin do %>
-      <div class="relative mx-auto max-w-md">
-        <div class="bg-gray-50 rounded-lg shadow-md p-4 mb-4">
-          <div class="h-64 w-64 mx-auto">
-            <canvas id="pieChart"
-                    phx-hook="PieChart"
-                    data-chart-data={Jason.encode!(%{
-                      labels: ["I'm Lost", "Getting it", "Got it!"],
-                      datasets: [
-                        %{
-                          data: @chart_data,
-                          backgroundColor: [
-                            "rgba(255, 99, 132, 0.8)",
-                            "rgba(255, 206, 86, 0.8)",
-                            "rgba(75, 192, 192, 0.8)"
-                          ]
-                        }
-                      ]
-                    })}>
-            </canvas>
-          </div>
-          <div class="mt-4 flex justify-center">
-            <button phx-click="clear_chart" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-              Clear Chart Data
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <script>
-        document.addEventListener("DOMContentLoaded", function() {
-          const chartHook = {
-            mounted() {
-              const ctx = this.el.getContext('2d');
-              const chartData = JSON.parse(this.el.dataset.chartData);
-
-              // Create the chart with legend inside
-              new Chart(ctx, {
-                type: 'pie',
-                data: chartData,
-                options: {
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: {
-                      position: 'right',
-                      align: 'center',
-                      labels: {
-                        boxWidth: 15,
-                        padding: 10,
-                        font: {
-                          size: 12
-                        }
-                      }
-                    }
-                  }
-                }
-              });
-            }
-          };
-
-          // Register the hook if its not already registered
-          if (window.Hooks && !window.Hooks.PieChart) {
-            window.Hooks.PieChart = chartHook;
-          }
-        });
-      </script>
+      <.live_component
+      module={LiveFeedbackWeb.GaugeChartComponent}
+      id="gauge_chart"
+      chart_data={@chart_data}
+      queue_id={@queue_id}
+      />
     <% else %>
-      <form phx-change="gauge_understanding" class="max-w-md mx-auto my-4 p-4 bg-gray-50 rounded-lg shadow-md">
-        <div class="flex flex-col space-y-3">
-          <div class="w-full">
-            <label class={[
-              "flex items-center p-3 rounded-md cursor-pointer transition-colors",
-              @user_understanding == "got_it" && "bg-green-50 border-2 border-green-400",
-              @user_understanding != "got_it" && "border-l-4 border-green-400 hover:bg-gray-100"
-            ]}>
-              <input type="radio" name="understanding_gauge" value="got_it"
-                    class="h-5 w-5 mr-3 text-green-500 cursor-pointer"
-                    checked={@user_understanding == "got_it"} />
-              <span class="font-medium">Got It! 😄</span>
-            </label>
-          </div>
-          <div class="w-full">
-            <label class={[
-              "flex items-center p-3 rounded-md cursor-pointer transition-colors",
-              @user_understanding == "getting_it" && "bg-yellow-50 border-2 border-yellow-400",
-              @user_understanding != "getting_it" && "border-l-4 border-yellow-400 hover:bg-gray-100"
-            ]}>
-              <input type="radio" name="understanding_gauge" value="getting_it"
-                    class="h-5 w-5 mr-3 text-yellow-500 cursor-pointer"
-                    checked={@user_understanding == "getting_it"} />
-              <span class="font-medium">Getting It 🤔</span>
-            </label>
-          </div>
-          <div class="w-full">
-            <label class={[
-              "flex items-center p-3 rounded-md cursor-pointer transition-colors",
-              @user_understanding == "lost" && "bg-red-50 border-2 border-red-400",
-              @user_understanding != "lost" && "border-l-4 border-red-400 hover:bg-gray-100"
-            ]}>
-              <input type="radio" name="understanding_gauge" value="lost"
-                    class="h-5 w-5 mr-3 text-red-500 cursor-pointer"
-                    checked={@user_understanding == "lost"} />
-              <span class="font-medium">I'm Lost 😕</span>
-            </label>
-          </div>
-        </div>
-      </form>
+        <.live_component
+        module={LiveFeedbackWeb.GaugeFormComponent}
+        id="gauge_chart"
+        user_understanding={@user_understanding}
+        course_page={@course_page}
+        />
     <% end %>
   </:rightSidebar>
 </.activity_template>
