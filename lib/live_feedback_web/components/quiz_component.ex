@@ -26,7 +26,7 @@ defmodule LiveFeedbackWeb.QuizComponent do
 
     ~H"""
     <div class="mt-4 flex flex-col">
-      <div class="grid grid-cols-2 gap-6 max-w-4xl mx-auto h-[50vh] w-[80vw]">
+      <div class="grid grid-cols-2 gap-6 max-w-4xl mx-auto h-[40vh] w-[80%]">
         <!-- #Check if this option matches a response for this profile -->
         <%= for {option, index} <- Enum.with_index(@current_question.question_options_occurrences) do %>
           <div

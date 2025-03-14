@@ -5,10 +5,11 @@ defmodule LiveFeedbackWeb.GaugeChartComponent do
     ~H"""
     <div class="relative mx-auto max-w-md">
       <div class="bg-gray-50 rounded-lg shadow-md p-4 mb-4">
-        <div class="h-64 w-64 mx-auto">
+        <div class="w-full mx-auto">
           <canvas id={"pieChart-#{@id}"}
                   phx-hook="PieChart"
                   phx-update="ignore"
+                  class="w-full"
                   data-chart-data={Jason.encode!(%{
                     labels: ["I'm Lost", "Getting it", "Got it!"],
                     datasets: [
