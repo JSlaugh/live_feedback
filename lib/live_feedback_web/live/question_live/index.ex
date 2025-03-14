@@ -114,9 +114,11 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
 
         # get the full question + options packaged together
         question = Questions.get_question!(question.id)
+
         if socket.assigns.queue.is_presenting do
           send_updates_to_presentation(socket)
         end
+
         {:noreply,
          socket
          # close the form
@@ -262,9 +264,11 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
 
         # get the question again from the database to include updated options
         question = Questions.get_question!(question.id)
+
         if socket.assigns.queue.is_presenting do
           send_updates_to_presentation(socket)
         end
+
         {:noreply,
          socket
          # close form
@@ -302,7 +306,9 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
         if socket.assigns.queue.is_presenting do
           send_updates_to_presentation(socket)
         end
+
         send_updates_to_presentation(socket)
+
         {:noreply,
          socket
          # replace max_question_num so the arrows can change
@@ -327,12 +333,14 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
       "is_archived" => true,
       "display_order" => nil
     }
-    #update question with so it is archived
+
+    # update question with so it is archived
     case Questions.archive_question(question, attrs) do
       {:ok, _question} ->
         if socket.assigns.queue.is_presenting do
           send_updates_to_presentation(socket)
         end
+
         {:noreply,
          socket
          # close modal
@@ -368,6 +376,7 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
         if socket.assigns.queue.is_presenting do
           send_updates_to_presentation(socket)
         end
+
         {:noreply,
          socket
          |> stream(:questions, Questions.list_questions_for_queue(socket.assigns.queue.id),
@@ -441,24 +450,39 @@ defmodule LiveFeedbackWeb.QuestionLive.Index do
   defp send_updates_to_presentation(socket) do
     max_question_num = Questions.get_max_display_order(socket.assigns.queue.id)
     max_question_num = if(max_question_num <= 0, do: 1)
-    current_question_num = if(max_question_num < socket.assigns.queue.current_question_num, do: max_question_num, else: socket.assigns.queue.current_question_num)
+
+    current_question_num =
+      if(max_question_num < socket.assigns.queue.current_question_num,
+        do: max_question_num,
+        else: socket.assigns.queue.current_question_num
+      )
+
     Queues.update_queue(socket.assigns.queue, %{"current_question_num" => current_question_num})
-    current_question = Selection.get_question_from_queue(socket.assigns.queue.id, current_question_num)
-    question_responses = nil
-    messages = []
-    if current_question do
-    ^question_responses =
-      if(current_question.question_type != "QA",
-        do: Selection.get_question_responses(current_question.id),
-        else: nil
-      )
-    ^messages =
-      if(current_question.question_type == "QA",
-        do: Messages.get_messages_for_question(current_question.id),
-        else: []
-      )
-    end
+
+    current_question =
+      Selection.get_question_from_queue(socket.assigns.queue.id, current_question_num)
+
+    question_responses =
+      if current_question && current_question.question_type != "QA" do
+        Selection.get_question_responses(current_question.id)
+      else
+        nil
+      end
+
+    messages =
+      if current_question && current_question.question_type == "QA" do
+        Messages.get_messages_for_question(current_question.id)
+      else
+        []
+      end
+
     topic = "#{socket.assigns.queue.id}"
-    Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:receive_question_update, max_question_num, current_question_num, current_question, question_responses, messages})
+
+    Phoenix.PubSub.broadcast(
+      LiveFeedback.PubSub,
+      topic,
+      {:receive_question_update, max_question_num, current_question_num, current_question,
+       question_responses, messages}
+    )
   end
 end
