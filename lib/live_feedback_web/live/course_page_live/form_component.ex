@@ -186,3 +186,97 @@ defmodule LiveFeedbackWeb.CoursePageLive.NewCourseFormComponent do
 
   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 end
+
+defmodule LiveFeedbackWeb.CoursePageLive.SettingsComponent do
+  use LiveFeedbackWeb, :live_component
+
+  alias LiveFeedback.Selection
+  alias LiveFeedback.Courses
+
+  @impl true
+  def render(assigns) do
+    ~H"""
+<div class="relative">
+  <.form for={@form} id="role-form" phx-submit="save_roles" phx-target={@myself}>
+    <div class="flex justify-between items-center mb-4">
+      <.header>
+        <%= @title %>
+        <:subtitle>Share Ownership Access</:subtitle>
+      </.header>
+
+      <div>
+        <.button type="submit">
+          Save Changes
+        </.button>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <h3 class="text-lg font-medium">Assign Owner Roles</h3>
+      <div class="mt-2 max-h-60 overflow-y-auto border rounded-md p-2">
+        <%= for profile <- @profiles do %>
+          <div class="py-2 flex items-center">
+            <.input
+              type="checkbox"
+              name={"profile-#{profile.id}"}
+              value={"#{profile.id}"}
+              checked={profile.role == "owner"}
+              label={profile.display_name}
+            />
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </.form>
+</div>
+"""
+  end
+
+  @impl true
+  def update(assigns, socket) do
+    # Create form for tracking checkbox states
+    form = to_form(%{})
+
+    {:ok,
+     socket
+     |> assign(assigns)
+     |> assign(:form, form)}
+  end
+
+  @impl true
+  def handle_event("save_roles", params, socket) do
+    IO.inspect(params)
+    course_page_id = socket.assigns.course_page.id
+    updated = []
+
+    # Process each profile
+    updated =
+      Enum.reduce(socket.assigns.profiles, [], fn profile, acc ->
+        checkbox_name = "profile-#{profile.id}"
+        is_owner = Map.get(params, checkbox_name)
+        new_role = if is_owner == "true", do: "owner", else: "user"
+
+        if profile.role != new_role do
+          attrs = %{"role" => new_role}
+          Selection.update_profile(profile, attrs)
+
+          # Add updated profile name to accumulator
+          [profile.display_name | acc]
+        else
+          acc
+        end
+      end)
+
+    # Construct flash message
+    flash_message = case updated do
+      [] -> "No changes were made"
+      [name] -> "Updated role for #{name}"
+      _ -> "Updated roles for #{Enum.count(updated)} profiles"
+    end
+
+    {:noreply,
+     socket
+     |> put_flash(:info, flash_message)
+     |> push_patch(to: socket.assigns.patch)}
+  end
+end

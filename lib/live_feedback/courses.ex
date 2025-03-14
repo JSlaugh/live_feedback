@@ -196,6 +196,13 @@ defmodule LiveFeedback.Courses do
     )
   end
 
+  def get_profiles_for_course(user_id, course_page_id) do
+    from(profile in UserProfile,
+      where: profile.user_id != ^user_id and profile.course_page_id == ^course_page_id,
+      order_by: [asc: fragment("LOWER(?)", profile.display_name)])
+    |> Repo.all()
+  end
+
   def toggle_favorite(user_id, course_page_id) do
     # First, find the profile
     query = from(profile in UserProfile,

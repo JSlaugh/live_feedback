@@ -34,6 +34,14 @@ defmodule LiveFeedback.Selection do
     |> Repo.one()
   end
 
+  def update_profile(%UserProfile{} = profile, attrs) do
+    profile
+    |> UserProfile.changeset(attrs)
+    |> Repo.update()
+  end
+
+
+
   def get_profile_responses(profile_id, question_id) do
     from(response in QuestionOptionsResponse,
     join: option in QuestionOptionsOccurrence,
