@@ -58,8 +58,7 @@ COPY lib lib
 
 COPY assets assets
 
-# install packages (node)
-RUN cd assets && npm install
+RUN cd assets && npm install chart.js
 
 # compile assets
 RUN mix assets.deploy
