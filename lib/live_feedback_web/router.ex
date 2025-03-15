@@ -83,11 +83,6 @@ defmodule LiveFeedbackWeb.Router do
       live "/course_pages/host", CoursePageLive, :host
       live "/course_pages/:id", CoursePageLive, :update
       live "/course_pages/:id/delete", CoursePageLive, :delete
-
-      # This is a test/template page
-
-      live "/page/testtemplate", ActivityLive, :index
-      live "/page/testtemplate/new", ActivityLive, :new
     end
 
     live_session :require_course_owner,
