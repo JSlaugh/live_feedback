@@ -128,7 +128,7 @@ defmodule LiveFeedbackWeb.QaComponent do
         <% end %>
       </div>
       <%= if !@page_admin do %>
-        <.simple_form for={@form} phx-submit="create_message">
+        <.simple_form id="message_form" for={@form} phx-submit="create_message">
           <.textareaWithSave
           field={@form[:content]}
           type="textarea"
