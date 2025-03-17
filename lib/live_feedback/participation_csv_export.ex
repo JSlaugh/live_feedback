@@ -7,7 +7,6 @@ defmodule LiveFeedback.ParticipationCsvExport do
   NimbleCSV.define(MyCSV, separator: ",", escape: "\"")
 
   def export_participation_requests(course_page_id, date_param) do
-
     # Cast course_page_id to an integer for use in SQL query
     course_page_id = String.to_integer(course_page_id)
 
@@ -15,18 +14,38 @@ defmodule LiveFeedback.ParticipationCsvExport do
     parsed_date = Date.from_iso8601!(date_param)
 
     # Headers for CSV data
-    headers = ["presented_date", "display_name", "custom_registration_id", "question_id", "question_content", "option_content", "option_order", "correct_yn"]
+    headers = [
+      "presented_date",
+      "display_name",
+      "custom_registration_id",
+      "question_id",
+      "question_content",
+      "option_content",
+      "option_order",
+      "correct_yn"
+    ]
 
     # Query your data in the format for participation summaries
-      query =
-        from qor in "question_options_responses",
-        left_join: qoo in "question_options_occurrences", on: qor.question_options_occurrence_id == qoo.id,
-        left_join: qo in "question_occurrences", on: qoo.question_occurrence_id == qo.id,
-        left_join: q in "queues", on: qo.queue_id == q.id,
-        left_join: up in "user_profiles", on: qor.user_profile_id == up.id,
+    query =
+      from qor in "question_options_responses",
+        left_join: qoo in "question_options_occurrences",
+        on: qor.question_options_occurrence_id == qoo.id,
+        left_join: qo in "question_occurrences",
+        on: qoo.question_occurrence_id == qo.id,
+        left_join: q in "queues",
+        on: qo.queue_id == q.id,
+        left_join: up in "user_profiles",
+        on: qor.user_profile_id == up.id,
         where: q.course_page_id == ^course_page_id,
         where: q.presented_date == ^parsed_date,
-        group_by: [q.presented_date, up.display_name, up.custom_registration_id, qor.anonymous_id, qo.id, qo.question_content],
+        group_by: [
+          q.presented_date,
+          up.display_name,
+          up.custom_registration_id,
+          qor.anonymous_id,
+          qo.id,
+          qo.question_content
+        ],
         order_by: [asc: q.presented_date, asc: qo.id, asc: up.custom_registration_id],
         select: %{
           presented_date: q.presented_date,
@@ -36,7 +55,11 @@ defmodule LiveFeedback.ParticipationCsvExport do
           question_content: qo.question_content,
           option_content: fragment("STRING_AGG(?, ', ')", qoo.option_content),
           option_order: fragment("STRING_AGG(?, ', ')", qoo.option_order),
-          is_correct: fragment("STRING_AGG(CAST(CASE WHEN ? IS TRUE THEN 1 ELSE 0 END AS text), ', ')", qoo.is_correct)
+          is_correct:
+            fragment(
+              "STRING_AGG(CAST(CASE WHEN ? IS TRUE THEN 1 ELSE 0 END AS text), ', ')",
+              qoo.is_correct
+            )
         }
 
     participation_summary =
@@ -59,44 +82,42 @@ defmodule LiveFeedback.ParticipationCsvExport do
       end)
 
     # Try to pull a record. If it doesn't exist, throw an error
-      # Assign participation_date to a var to use in name of file
-      try do
-        presented_date =
-          formatted_results
-          |> List.first() # Get first row
-          |> List.first() # Get first column. It will always be presented_date
+    # Assign participation_date to a var to use in name of file
+    try do
+      presented_date =
+        formatted_results
+        # Get first row
+        |> List.first()
+        # Get first column. It will always be presented_date
+        |> List.first()
 
-          # Create filename
-          filename = "course_#{course_page_id}_attendance_export_#{presented_date}"
+      # Create filename
+      filename = "course_#{course_page_id}_attendance_export_#{presented_date}"
 
-          # Convert rows to CSV format
-          csv_data =
-            [headers | formatted_results]
-            |> MyCSV.dump_to_iodata()
+      # Convert rows to CSV format
+      csv_data =
+        [headers | formatted_results]
+        |> MyCSV.dump_to_iodata()
 
+      # Logic to determine what directory to write to based on your environment
+      file_path =
+        if Application.get_env(:live_feedback, :environment) == :prod do
+          # prod branch - Code that should only run in production
+          "/app/lib/live_feedback-1.0.0/priv/static/participation_summaries/#{filename}.csv"
+        else
+          # dev/test branch - Code that should run in development or test
+          "priv/static/participation_summaries/#{filename}.csv"
+        end
 
-          # Logic to determine what directory to write to based on your environment
-          file_path = if Application.get_env(:live_feedback, :environment) == :prod do
-            # prod branch - Code that should only run in production
-            "/app/lib/live_feedback-0.1.0/priv/static/participation_summaries/#{filename}.csv"
-          else
-            # dev/test branch - Code that should run in development or test
-            "priv/static/participation_summaries/#{filename}.csv"
-          end
+      # file_path = "priv/static/participation_summaries/#{filename}.csv"
+      # file_path = "/app/lib/live_feedback-0.1.0/priv/static/participation_summaries/#{filename}.csv"
 
+      # Write to file
+      File.write!(file_path, csv_data)
 
-
-          #file_path = "priv/static/participation_summaries/#{filename}.csv"
-          #file_path = "/app/lib/live_feedback-0.1.0/priv/static/participation_summaries/#{filename}.csv"
-
-          # Write to file
-          File.write!(file_path, csv_data)
-
-        {:ok, formatted_results}
-      rescue
-        _hold in FunctionClauseError -> {:error, "No participation data found for the given date"}
-      end
-
+      {:ok, formatted_results}
+    rescue
+      _hold in FunctionClauseError -> {:error, "No participation data found for the given date"}
+    end
   end
-
 end

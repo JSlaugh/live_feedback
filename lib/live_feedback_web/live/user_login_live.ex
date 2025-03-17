@@ -41,7 +41,9 @@ defmodule LiveFeedbackWeb.UserLoginLive do
         <div class="">
           <h2 class="text-lg font-bold">Reset Your Password</h2>
 
-          <p class="mt-2">We've updated our password encryption system. As a result, all users must reset their passwords to continue accessing their accounts. If you haven't reset your password since <span class="font-bold">March 15th</span>, please do so now to keep using your account.</p>
+          <p class="mt-2">
+            We've updated our password encryption system. As a result, all users must reset their passwords to continue accessing their accounts. If you haven't reset your password since <span class="font-bold">March 17th</span>, please do so now to keep using your account.
+          </p>
 
           <div class="mt-4 flex justify-end">
             <.link
