@@ -4,7 +4,7 @@ defmodule LiveFeedback.MixProject do
   def project do
     [
       app: :live_feedback,
-      version: "0.1.0",
+      version: "1.0.0",
       elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
@@ -32,10 +32,11 @@ defmodule LiveFeedback.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:bcrypt_elixir, "~> 3.0"},
+      {:pbkdf2_elixir, "~> 2.0"},
       {:phoenix, "~> 1.7.14"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.10"},
+      {:nimble_csv, "~> 1.2"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 4.1"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
@@ -62,7 +63,8 @@ defmodule LiveFeedback.MixProject do
       {:bandit, "~> 1.5"},
       {:uuid, "~> 1.1"},
       {:qr_code, "~> 3.0.0"},
-      {:bodyguard, "~> 2.4"}
+      {:bodyguard, "~> 2.4"},
+      {:timex, "~> 3.7"}
     ]
   end
 

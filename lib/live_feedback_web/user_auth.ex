@@ -5,6 +5,8 @@ defmodule LiveFeedbackWeb.UserAuth do
   import Phoenix.Controller
 
   alias LiveFeedback.Accounts
+  alias LiveFeedback.Selection
+  alias LiveFeedback.Queues
 
   # Make the remember me cookie valid for 60 days.
   # If you want bump or reduce this value, also change
@@ -164,6 +166,44 @@ defmodule LiveFeedbackWeb.UserAuth do
     end
   end
 
+  def on_mount(:require_course_owner, params, _session, socket) do
+    # Ensure user is assigned
+    socket = mount_current_user(socket, _session)
+
+    course_page_id = String.to_integer(params["id"])
+    user = socket.assigns[:current_user]
+
+    # Check if the user is the course owner
+    if user_is_course_owner?(user, course_page_id) do
+      # If "queue" exists in params, validate its course_id
+      case params["queue"] do
+        nil ->
+          {:cont, socket}
+
+        queue_id ->
+          queue = Queues.get_queue!(queue_id)
+
+          if course_page_id == queue.course_page_id do
+            {:cont, socket}
+          else
+            socket =
+              socket
+              |> Phoenix.LiveView.put_flash(:error, "You are not authorized to access this page.")
+              |> Phoenix.LiveView.redirect(to: "/course_pages")
+
+            {:halt, socket}
+          end
+      end
+    else
+      socket =
+        socket
+        |> Phoenix.LiveView.put_flash(:error, "You are not authorized to access this page.")
+        |> Phoenix.LiveView.redirect(to: "/course_pages")
+
+      {:halt, socket}
+    end
+  end
+
   def on_mount(:redirect_if_user_is_authenticated, _params, session, socket) do
     socket = mount_current_user(socket, session)
 
@@ -213,6 +253,31 @@ defmodule LiveFeedbackWeb.UserAuth do
     end
   end
 
+  def require_course_owner(conn, _opts) do
+    course_page_id = conn.params["id"]
+    user = conn.assigns[:current_user]
+
+    if user && course_page_id do
+      case Selection.get_profile_id(user.id, course_page_id) do
+        %{role: "owner"} ->
+          conn
+
+        _ ->
+          conn
+          |> put_flash(:error, "You are not authorized to access this page.")
+          |> maybe_store_return_to()
+          |> redirect(to: ~p"/course_pages")
+          |> halt()
+      end
+    else
+      conn
+      |> put_flash(:error, "You are not authorized to access this page.")
+      |> maybe_store_return_to()
+      |> redirect(to: ~p"/course_pages")
+      |> halt()
+    end
+  end
+
   defp put_token_in_session(conn, token) do
     conn
     |> put_session(:user_token, token)
@@ -226,4 +291,11 @@ defmodule LiveFeedbackWeb.UserAuth do
   defp maybe_store_return_to(conn), do: conn
 
   defp signed_in_path(_conn), do: ~p"/"
+
+  defp user_is_course_owner?(user, course_page_id) do
+    case Selection.get_profile_id(user.id, course_page_id) do
+      %{role: "owner"} -> true
+      _ -> false
+    end
+  end
 end

@@ -3,7 +3,10 @@ defmodule LiveFeedbackWeb.Router do
 
   import LiveFeedbackWeb.UserAuth
   alias CoursePageLive.Index, as: CoursePageLive
-  alias FeedbackLive.Index, as: FeedbackLive
+  alias QuestionLive.Index, as: QuestionLive
+  alias SelectionLive.Index, as: SelectionLive
+  alias QueueLive.Index, as: QueueLive
+  alias ActivityLive.Index, as: ActivityLive
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -76,9 +79,27 @@ defmodule LiveFeedbackWeb.Router do
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
       live "/course_pages", CoursePageLive, :index
       live "/course_pages/new", CoursePageLive, :new
-      live "/course_pages/:id/edit", CoursePageLive, :edit
+      live "/course_pages/join", CoursePageLive, :join
+      live "/course_pages/host", CoursePageLive, :host
       live "/course_pages/:id", CoursePageLive, :update
       live "/course_pages/:id/delete", CoursePageLive, :delete
+    end
+
+    live_session :require_course_owner,
+      on_mount: [
+        # Ensure user is logged in
+        {LiveFeedbackWeb.UserAuth, :ensure_authenticated},
+        # Ensure user is course owner
+        {LiveFeedbackWeb.UserAuth, :require_course_owner}
+      ] do
+      live "/course_pages/:id/edit", CoursePageLive, :edit
+      live "/course_pages/:id/share", CoursePageLive, :share
+      live "/course_pages/:id/:queue/questions", QuestionLive, :index
+      live "/course_pages/:id/queues/", QueueLive, :index
+      live "/course_pages/:id/queues/new", QueueLive, :new
+      # Download the participation (attendance) summary data
+      live "/course_pages/:id/participation", ParticipationLive.Index, :index
+      get "/course_pages/:id/participation/export", ParticipationController, :download_csv
     end
   end
 
@@ -95,8 +116,10 @@ defmodule LiveFeedbackWeb.Router do
 
     live_session :feedback,
       on_mount: [{LiveFeedbackWeb.UserAuth, :mount_current_user}] do
-      live "/page/:coursepage", FeedbackLive, :index
-      live "/page/:coursepage/new", FeedbackLive, :new
+      live "/:id/queues", QueueLive, :delete
+      live "/course_page/:id/:queues/edit", QueueLive, :edit
+      live "/page/:coursepage", ActivityLive, :index
+      live "/page/:coursepage/join", ActivityLive, :join
     end
   end
 end

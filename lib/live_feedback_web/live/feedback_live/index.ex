@@ -20,16 +20,21 @@ defmodule LiveFeedbackWeb.FeedbackLive.Index do
         false
       end
 
+      qr_code_visible = page_admin
+
     {:ok,
      socket
      |> assign(:anonymous_id, anonymous_id)
      |> assign(:page_admin, page_admin)
+     |> assign(:qr_code_visible, qr_code_visible)
      |> assign(:course_page, course_page)
+     |> assign_new(:sort_by, fn -> :oldest end) # Use existing sort_by or default to :oldest
      |> stream(
        :messages,
        Messages.get_messages_for_course_page_id(course_page.id)
      )}
   end
+
 
   def get_anonymous_id(session) do
     Map.get(session, "anonymous_id")
@@ -39,7 +44,6 @@ defmodule LiveFeedbackWeb.FeedbackLive.Index do
   def handle_params(params, url, socket) do
     url =
       URI.parse(url)
-
     {:ok, qr_code_svg} =
       QRCode.create("#{url.scheme}://#{url.authority}/page/#{socket.assigns.course_page.slug}")
       |> QRCode.render()
@@ -83,6 +87,23 @@ defmodule LiveFeedbackWeb.FeedbackLive.Index do
   end
 
   @impl true
+  def handle_event("sort_messages", %{"sort" => sort_by}, socket) do
+    # Ensure that sort_by is an atom
+    sort_by_atom = String.to_existing_atom(sort_by)
+
+    course_page_id = socket.assigns.course_page.id
+
+    # Fetch and update the sorted messages
+    sorted_messages = Messages.get_messages_for_course_page_id(course_page_id, sort_by_atom)
+
+    {:noreply,
+    socket
+    |> assign(:sort_by, sort_by_atom)  # Update the sort_by atom in the socket
+    |> stream(:messages, sorted_messages, reset: true)}  # Stream the sorted messages
+  end
+
+  # ------------ This is the action for the delete in the modal------------
+  @impl true
   def handle_event("delete_message", %{"id" => id}, socket) do
     message = Messages.get_message!(id)
 
@@ -96,55 +117,76 @@ defmodule LiveFeedbackWeb.FeedbackLive.Index do
   end
 
   @impl true
-  def handle_event("edit_message", %{"id" => id, "content" => content}, socket) do
-    message = Messages.get_message!(id)
+  def handle_info({:deleted_message, message}, socket) do
+    if message.course_page_id == socket.assigns.course_page.id do
+      socket =
+        socket
+        |> stream_delete(:messages, message)
+        |> push_patch(to: ~p"/page/#{socket.assigns.course_page.slug}")
 
-    if (socket.assigns.current_user && socket.assigns.current_user.is_admin) ||
-         message.anonymous_id == socket.assigns.anonymous_id do
-      Messages.update_message(id, %{"content" => content})
-      {:noreply, stream(socket, :messages, %{})}
+      {:noreply, socket}
     else
-      {:noreply, put_flash(socket, :error, "You are not authorized to edit this message.")}
+      {:noreply, socket}
     end
-  end
-
-  @impl true
-  def handle_event("edit_message", %{"id" => id}, socket) do
-    message = Messages.get_message!(id)
-
-    {:noreply, assign(socket, live_action: :edit, message: message)}
   end
 
   @impl true
   def handle_info({:new_message, message}, socket) do
     if message.course_page_id == socket.assigns.course_page.id do
-      {:noreply, stream_insert(socket, :messages, message)}
+      sorted_messages =
+        Messages.get_messages_for_course_page_id(
+          socket.assigns.course_page.id,
+          socket.assigns.sort_by
+        )
+
+      {:noreply, stream(socket, :messages, sorted_messages, reset: true)}
     else
       {:noreply, socket}
     end
   end
 
   @impl true
-  def handle_info({:updated_message, message}, socket) do
-    if message.course_page_id == socket.assigns.course_page.id do
-      {:noreply, stream_insert(socket, :messages, message)}
+  def handle_info({:updated_message, updated_message}, socket) do
+    # Only update the message if it belongs to the current course page
+    if updated_message.course_page_id == socket.assigns.course_page.id do
+      {:noreply, stream_insert(socket, :messages, updated_message)}
     else
       {:noreply, socket}
     end
   end
 
-  @impl true
-  def handle_info({:deleted_message, message}, socket) do
-    if message.course_page_id == socket.assigns.course_page.id do
-      {:noreply, stream_delete(socket, :messages, message)}
-    else
-      {:noreply, socket}
-    end
-  end
 
   @impl true
   def handle_info({:deleted_all_messages, _course_page}, socket) do
     {:noreply, stream(socket, :messages, [], reset: true)}
+  end
+
+  # Focus Message Handle Event
+  def handle_info({:selected_message_focus, message}, socket) do
+    {:noreply,
+    socket
+    |> assign(:live_action, :focus)
+    |> assign(:message, message)}
+  end
+
+  # Edit Message Handle Event
+  def handle_info({:selected_message_edit, message}, socket) do
+    {:noreply, assign(socket, live_action: :edit, message: message)}
+  end
+
+  # Delete Message Handle Event
+  def handle_info({:selected_message_delete, message}, socket) do
+    {:noreply, stream_delete(socket, :messages, message)}
+  end
+
+  # Like Message Handle Event
+  def handle_info({:selected_message_liked, update_message}, socket) do
+    {:noreply, stream_insert(socket, :messages, update_message)}
+  end
+
+  #Toggle QR Code Handle Event
+  def handle_info({:update_toggle, toggle_bool}, socket) do
+    {:noreply, assign(socket, :qr_code_visible, toggle_bool)}
   end
 
   @impl true

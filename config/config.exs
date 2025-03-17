@@ -22,6 +22,7 @@ config :live_feedback, LiveFeedbackWeb.Endpoint,
   pubsub_server: LiveFeedback.PubSub,
   live_view: [signing_salt: "9TvaEhGi"]
 
+
 # Configures the mailer
 #
 # By default it uses the "Local" adapter which stores the emails
@@ -61,6 +62,10 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+# Add this before importing dev.exs and test.exs
+if config_env() in [:dev, :test] do
+  import_config ".env.exs"
+end
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

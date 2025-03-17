@@ -17,7 +17,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
   use Phoenix.Component
 
   alias Phoenix.LiveView.JS
-  import LiveFeedbackWeb.Gettext
+  use Gettext, backend: LiveFeedbackWeb.Gettext
 
   @doc """
   Renders a modal.
@@ -48,7 +48,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
       phx-mounted={@show && show_modal(@id)}
       phx-remove={hide_modal(@id)}
       data-cancel={JS.exec(@on_cancel, "phx-remove")}
-      class="relative z-50 hidden"
+      class="relative z-40 hidden"
     >
       <div id={"#{@id}-bg"} class="fixed inset-0 transition-opacity bg-zinc-50/90" aria-hidden="true" />
       <div
@@ -78,6 +78,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
                   <.icon name="hero-x-mark-solid" class="w-5 h-5" />
                 </button>
               </div>
+
               <div id={"#{@id}-content"}>
                 <%= render_slot(@inner_block) %>
               </div>
@@ -100,7 +101,11 @@ defmodule LiveFeedbackWeb.CoreComponents do
   attr :id, :string, doc: "the optional id of flash container"
   attr :flash, :map, default: %{}, doc: "the map of flash messages to display"
   attr :title, :string, default: nil
-  attr :kind, :atom, values: [:info, :error], doc: "used for styling and flash lookup"
+
+  attr :kind, :atom,
+    values: [:success, :info, :warning, :error],
+    doc: "used for styling and flash lookup"
+
   attr :rest, :global, doc: "the arbitrary HTML attributes to add to the flash container"
 
   slot :inner_block, doc: "the optional inner block that renders the flash message"
@@ -112,21 +117,27 @@ defmodule LiveFeedbackWeb.CoreComponents do
     <div
       :if={msg = render_slot(@inner_block) || Phoenix.Flash.get(@flash, @kind)}
       id={@id}
+      phx-hook="AutoClearFlash"
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
       role="alert"
       class={[
-        "fixed top-2 right-2 mr-2 w-80 sm:w-96 z-50 rounded-lg p-3 ring-1",
-        @kind == :info && "bg-emerald-50 text-emerald-800 ring-emerald-500 fill-cyan-900",
-        @kind == :error && "bg-rose-50 text-rose-900 shadow-md ring-rose-500 fill-rose-900"
+        "fixed top-20 right-2 mr-2 w-80 sm:w-96 z-50 rounded-lg p-3 ring-1 ",
+        @kind == :success && "bg-emerald-50 text-emerald-800 ring-emerald-500 fill-cyan-900",
+        @kind == :warning && "bg-amber-50 text-amber-800 ring-amber-500 fill-amber-900",
+        @kind == :error && "bg-rose-50 text-rose-900 shadow-md ring-rose-500 fill-rose-900",
+        @kind == :info && "bg-blue-50 text-blue-800 ring-blue-500 fill-blue-900"
       ]}
       {@rest}
     >
       <p :if={@title} class="flex items-center gap-1.5 text-sm font-semibold leading-6">
-        <.icon :if={@kind == :info} name="hero-information-circle-mini" class="w-4 h-4" />
+        <.icon :if={@kind == :success} name="hero-information-circle-mini" class="w-4 h-4" />
+        <.icon :if={@kind == :warning} name="hero-exclamation-triangle-mini" class="w-4 h-4" />
         <.icon :if={@kind == :error} name="hero-exclamation-circle-mini" class="w-4 h-4" />
-        <%= @title %>
+        <.icon :if={@kind == :info} name="hero-information-circle-mini" class="w-4 h-4" /> <%= @title %>
       </p>
+
       <p class="mt-2 text-sm leading-5"><%= msg %></p>
+
       <button type="button" class="absolute p-2 group top-1 right-1" aria-label={gettext("close")}>
         <.icon name="hero-x-mark-solid" class="w-5 h-5 opacity-40 group-hover:opacity-70" />
       </button>
@@ -147,8 +158,10 @@ defmodule LiveFeedbackWeb.CoreComponents do
   def flash_group(assigns) do
     ~H"""
     <div id={@id}>
-      <.flash kind={:info} title={gettext("Success!")} flash={@flash} />
+      <.flash kind={:success} title={gettext("Success!")} flash={@flash} />
+      <.flash kind={:warning} title={gettext("Warning!")} flash={@flash} />
       <.flash kind={:error} title={gettext("Error!")} flash={@flash} />
+      <.flash kind={:info} title={gettext("Info")} flash={@flash} />
       <.flash
         id="client-error"
         kind={:error}
@@ -242,6 +255,20 @@ defmodule LiveFeedbackWeb.CoreComponents do
     """
   end
 
+  def back_button(assigns) do
+    assigns = assign_new(assigns, :class, fn -> "" end)
+    assigns = assign_new(assigns, :text, fn -> "Back" end)
+
+    ~H"""
+    <.link
+      navigate={@to}
+      class={"inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 transition-colors duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 #{@class}"}
+    >
+      <.icon name="hero-arrow-left" class="h-4 w-4 mr-2" /> <span><%= @text %></span>
+    </.link>
+    """
+  end
+
   @doc """
   Renders an input with label and error messages.
 
@@ -320,9 +347,9 @@ defmodule LiveFeedbackWeb.CoreComponents do
           checked={@checked}
           class="rounded border-zinc-300 text-zinc-900 focus:ring-0"
           {@rest}
-        />
-        <%= @label %>
+        /> <%= @label %>
       </label>
+
       <.error :for={msg <- @errors}><%= msg %></.error>
     </div>
     """
@@ -332,6 +359,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
     ~H"""
     <div>
       <.label for={@id}><%= @label %></.label>
+
       <select
         id={@id}
         name={@name}
@@ -340,8 +368,9 @@ defmodule LiveFeedbackWeb.CoreComponents do
         {@rest}
       >
         <option :if={@prompt} value=""><%= @prompt %></option>
-        <%= Phoenix.HTML.Form.options_for_select(@options, @value) %>
+         <%= Phoenix.HTML.Form.options_for_select(@options, @value) %>
       </select>
+
       <.error :for={msg <- @errors}><%= msg %></.error>
     </div>
     """
@@ -351,7 +380,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
     ~H"""
     <div>
       <.label for={@id}><%= @label %></.label>
-      <textarea
+       <textarea
         id={@id}
         name={@name}
         class={[
@@ -371,6 +400,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
     ~H"""
     <div>
       <.label for={@id}><%= @label %></.label>
+
       <input
         type={@type}
         name={@name}
@@ -385,6 +415,96 @@ defmodule LiveFeedbackWeb.CoreComponents do
       />
       <.error :for={msg <- @errors}><%= msg %></.error>
     </div>
+    """
+  end
+
+  @doc """
+  Text Input with Save Button.
+  """
+  attr :id, :any, default: nil
+  attr :name, :any
+  attr :label, :string, default: nil
+  attr :value, :any
+
+  attr :type, :string,
+    default: "text",
+    values: ~w(checkbox color date datetime-local email file month number password
+               range search select tel text textarea time url week)
+
+  attr :field, Phoenix.HTML.FormField,
+    doc: "a form field struct retrieved from the form, for example: @form[:email]"
+
+  attr :errors, :list, default: []
+  attr :checked, :boolean, doc: "the checked flag for checkbox inputs"
+  attr :prompt, :string, default: nil, doc: "the prompt for select inputs"
+  attr :options, :list, doc: "the options to pass to Phoenix.HTML.Form.options_for_select/2"
+  attr :multiple, :boolean, default: false, doc: "the multiple flag for select inputs"
+
+  attr :rest, :global,
+    include: ~w(accept autocomplete capture cols disabled form list max maxlength min minlength
+                multiple pattern placeholder readonly required rows size step)
+
+  def textareaWithSave(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
+    errors = if Phoenix.Component.used_input?(field), do: field.errors, else: []
+
+    assigns
+    |> assign(field: nil, id: assigns.id || field.id)
+    |> assign(:errors, Enum.map(errors, &translate_error(&1)))
+    |> assign_new(:name, fn -> if assigns.multiple, do: field.name <> "[]", else: field.name end)
+    |> assign_new(:value, fn -> field.value end)
+    |> textareaWithSave()
+  end
+
+  def textareaWithSave(%{type: "textarea"} = assigns) do
+    ~H"""
+    <div class="mb-4">
+      <.label for={@id}><%= @label %></.label>
+
+      <div class="mt-2 flex">
+        <textarea
+          id={@id}
+          name={@name}
+          class={[
+            "flex-1",
+            "rounded-r-none",
+            "rounded-l-md",
+            "border border-zinc-300 focus:border-zinc-400 focus:ring-0",
+            "text-zinc-900 sm:text-sm sm:leading-6"
+          ]}
+          {@rest}
+        ><%= Phoenix.HTML.Form.normalize_value("textarea", @value) %></textarea>
+        <.buttonCustomColor
+          type="submit"
+          class="rounded-l-none bg-black text-white hover:bg-brand_navy"
+        >
+          <.icon name="hero-arrow-right-circle" class="w-8 h-8" />
+        </.buttonCustomColor>
+      </div>
+
+      <.error :for={msg <- @errors}><%= msg %></.error>
+    </div>
+    """
+  end
+
+  attr :type, :string, default: nil
+  attr :class, :string, default: nil
+  attr :rest, :global, include: ~w(disabled form name value)
+
+  slot :inner_block, required: true
+
+  def buttonCustomColor(assigns) do
+    ~H"""
+    <button
+      type={@type}
+      class={[
+        "phx-submit-loading:opacity-75 rounded-lg px-3",
+        "text-sm font-semibold",
+        @class
+      ]}
+      {@rest}
+    >
+      <%= render_slot(@inner_block) %>
+    </button>
     """
   end
 
@@ -410,8 +530,9 @@ defmodule LiveFeedbackWeb.CoreComponents do
   def error(assigns) do
     ~H"""
     <p class="flex gap-3 mt-3 text-sm leading-6 text-rose-600">
-      <.icon name="hero-exclamation-circle-mini" class="mt-0.5 h-5 w-5 flex-none" />
-      <%= render_slot(@inner_block) %>
+      <.icon name="hero-exclamation-circle-mini" class="mt-0.5 h-5 w-5 flex-none" /> <%= render_slot(
+        @inner_block
+      ) %>
     </p>
     """
   end
@@ -427,15 +548,17 @@ defmodule LiveFeedbackWeb.CoreComponents do
 
   def header(assigns) do
     ~H"""
-    <header class={[@actions != [] && "flex items-center justify-between gap-6", @class]}>
-      <div>
-        <h1 class="text-lg font-semibold leading-8 text-zinc-800">
+    <header class={[@actions != [] && " flex items-center justify-between gap-6", @class]}>
+      <div class="">
+        <h1 class="text-lg lg:text-3xl font-semibold leading-8 text-zinc-800">
           <%= render_slot(@inner_block) %>
         </h1>
-        <p :if={@subtitle != []} class="mt-2 text-sm leading-6 text-zinc-600">
+
+        <p :if={@subtitle != []} class="mt-2 text-sm lg:text-lg leading-6 text-zinc-600">
           <%= render_slot(@subtitle) %>
         </p>
       </div>
+
       <div class="flex-none"><%= render_slot(@actions) %></div>
     </header>
     """
@@ -462,6 +585,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
 
   slot :col, required: true do
     attr :label, :string
+    attr :class, :string
   end
 
   slot :action, doc: "the slot for showing user actions in the last table column"
@@ -475,24 +599,28 @@ defmodule LiveFeedbackWeb.CoreComponents do
     ~H"""
     <div class="sm:px-4 sm:px-0">
       <table class="mt-11 w-full">
-        <thead class="text-sm leading-6 text-left text-zinc-500">
+        <thead class="max-sm:text-lg sm:text-xl font-bold lg:text-4xl leading-6 text-left text-brand_blue">
           <tr>
-            <th :for={col <- @col} class="p-0 pb-4 sm:pr-6 font-normal"><%= col[:label] %></th>
+            <th :for={col <- @col} class={["p-0 pb-4 sm:pr-6 font-bold", col[:class]]}>
+              <%= col[:label] %>
+            </th>
+
             <th :if={@action != []} class="relative p-0 pb-4">
-              <span class="sr-only"><%= gettext("Actions") %></span>
+              <span class=""><%= gettext("Actions") %></span>
             </th>
           </tr>
         </thead>
+
         <tbody
           id={@id}
           phx-update={match?(%Phoenix.LiveView.LiveStream{}, @rows) && "stream"}
-          class="relative text-sm leading-6 border-t divide-y divide-zinc-100 border-zinc-200 text-zinc-700"
+          class="relative max-sm:text-base sm:text-base xl:text-xl leading-6 border-t divide-y divide-zinc-100 border-zinc-200 text-zinc-700"
         >
           <tr :for={row <- @rows} id={@row_id && @row_id.(row)} class="group hover:bg-zinc-50">
             <td
               :for={{col, i} <- Enum.with_index(@col)}
               phx-click={@row_click && @row_click.(row)}
-              class={["relative p-0", @row_click && "hover:cursor-pointer"]}
+              class={["relative p-0", @row_click && "hover:cursor-pointer", col[:class]]}
             >
               <div class="block py-4 pr-2 sm:pr-6">
                 <span class="absolute right-0 -inset-y-px -left-4 group-hover:bg-zinc-50 sm:rounded-l-xl" />
@@ -501,8 +629,9 @@ defmodule LiveFeedbackWeb.CoreComponents do
                 </span>
               </div>
             </td>
+
             <td :if={@action != []} class="relative p-0">
-              <div class="flex flex-col sm:flex-row justify-between py-4 text-sm font-medium text-left whitespace-nowrap">
+              <div class="flex flex-col sm:flex-row  py-4 text-sm font-medium text-left whitespace-nowrap">
                 <span class="group-hover:bg-zinc-50 sm:rounded-r-xl" />
                 <span
                   :for={action <- @action}
@@ -539,6 +668,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
       <dl class="-my-4 divide-y divide-zinc-100">
         <div :for={item <- @item} class="flex gap-4 py-4 text-sm leading-6 sm:gap-8">
           <dt class="flex-none w-1/4 text-zinc-500"><%= item.title %></dt>
+
           <dd class="text-zinc-700"><%= render_slot(item) %></dd>
         </div>
       </dl>
@@ -563,8 +693,7 @@ defmodule LiveFeedbackWeb.CoreComponents do
         navigate={@navigate}
         class="text-sm font-semibold leading-6 text-zinc-900 hover:text-zinc-700"
       >
-        <.icon name="hero-arrow-left-solid" class="w-3 h-3" />
-        <%= render_slot(@inner_block) %>
+        <.icon name="hero-arrow-left-solid" class="w-3 h-3" /> <%= render_slot(@inner_block) %>
       </.link>
     </div>
     """
@@ -590,10 +719,11 @@ defmodule LiveFeedbackWeb.CoreComponents do
   """
   attr :name, :string, required: true
   attr :class, :string, default: nil
+  attr :id, :string, default: nil
 
   def icon(%{name: "hero-" <> _} = assigns) do
     ~H"""
-    <span class={[@name, @class]} />
+    <span id={@id} class={[@name, @class]} />
     """
   end
 
@@ -672,5 +802,57 @@ defmodule LiveFeedbackWeb.CoreComponents do
   """
   def translate_errors(errors, field) when is_list(errors) do
     for {^field, {msg, opts}} <- errors, do: translate_error({msg, opts})
+  end
+
+  @doc """
+  Dropdown Menu for the user to access Logout / Account Settings
+  """
+  def chevron_down(assigns) do
+    ~H"""
+    <svg
+      class="-mr-1 h-5 w-5 text-gray-400"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        fill-rule="evenodd"
+        d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+        clip-rule="evenodd"
+      />
+    </svg>
+    """
+  end
+
+  attr(:id, :string, required: true)
+
+  slot(:button, required: true)
+  slot(:content, required: true)
+
+  def dropdown(assigns) do
+    ~H"""
+    <div class="relative" data-component="dropdown">
+      <button
+        type="button"
+        class=""
+        id={"#{@id}-button"}
+        aria-expanded="false"
+        phx-click={JS.dispatch("toggle", to: "##{@id}-menu")}
+        phx-click-away={JS.dispatch("close", to: "##{@id}-menu")}
+        phx-window-keydown={JS.dispatch("close", to: "##{@id}-menu")}
+        phx-key="Escape"
+      >
+        <%= render_slot(@button) %>
+      </button>
+
+      <nav
+        hidden="true"
+        class="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5"
+        id={"#{@id}-menu"}
+      >
+        <%= render_slot(@content) %>
+      </nav>
+    </div>
+    """
   end
 end

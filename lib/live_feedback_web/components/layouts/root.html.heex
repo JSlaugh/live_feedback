@@ -7,57 +7,91 @@
     <.live_title suffix="">
       <%= assigns[:page_title] || "Chattr Live" %>
     </.live_title>
-    <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
+     <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
+    <!--Joe-->
+    <link rel="stylesheet" href="https://use.typekit.net/vzz8fcr.css" />
+    <!--Maddy-->
+    <link rel="stylesheet" href="https://use.typekit.net/uxu5yyi.css" />
+    <!--Google-->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+      rel="stylesheet"
+    />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
     </script>
+    <%= for script <- Application.get_env(:live_feedback, LiveFeedbackWeb, []) |> Keyword.get(:script_tags, []) do %>
+      <script src={script.src}
+              integrity={if Map.has_key?(script, :integrity), do: script.integrity}
+              crossorigin={if Map.has_key?(script, :crossorigin), do: script.crossorigin}>
+      </script>
+    <% end %>
   </head>
+
   <body class="bg-white">
     <div class="flex justify-between px-4 py-4">
-        <div>
-          <div>
-            <.link href={~p"/"}>
-              <.icon name="hero-home" />
-            </.link>
-          </div>
+      <div>
+        <div class="pl-4">
+          <.link href={~p"/"}>
+            <.icon name="hero-home" class="w-8 h-8" />
+          </.link>
         </div>
-      <ul class="flex items-center justify-end gap-4 sm:px-6 lg:px-8">
+      </div>
+
+      <ul class="flex items-center justify-end gap-4 sm:px-6 lg:px-4">
         <%= if @current_user do %>
-          <li class="text-[0.7rem] sm:text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700">
-            <.link href={~p"/course_pages/"}>Feedback pages</.link>
+          <li class="text-[0.7rem] sm:text-[0.8125rem] lg:text-lg leading-6 text-zinc-900 font-semibold hover:text-zinc-700">
+            <.link href={~p"/course_pages/"}>Feedback Pages</.link>
           </li>
-          <li class="text-[0.7rem] sm:text-[0.8125rem] leading-6 text-zinc-900">
-            <%= @current_user.email %>
-          </li>
+
           <li>
-            <.link
-              href={~p"/users/settings"}
-              class="text-[0.7rem] sm:text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
-            >
-              Settings
-            </.link>
-          </li>
-          <li>
-            <.link
-              href={~p"/users/log_out"}
-              method="delete"
-              class="text-[0.7rem] sm:text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
-            >
-              Log out
-            </.link>
+            <.dropdown id="main-nav-dropdown">
+              <:button>
+                <.icon name="hero-user-circle" class="w-8 h-8" />
+              </:button>
+
+              <:content>
+                <div class="flex flex-col m-2  gap-2 ">
+                  <div class="flex text-center">
+                    <p class="text-[0.7rem] sm:text-[0.8125rem] lg:text-lg block w-full font-bold">
+                      <%= @current_user.email %>
+                    </p>
+                  </div>
+                   <hr />
+                  <.link href={~p"/users/settings"}>
+                    <div class="flex items-end lg:items-start gap-2 text-[0.7rem] sm:text-[0.8125rem] lg:text-lg hover:bg-brand_grey hover:rounded-lg">
+                      <.icon name="hero-cog-6-tooth w-6 h-6" />
+                      <p class="w-full h-full">Account</p>
+                    </div>
+                  </.link>
+                   <hr />
+                  <div>
+                    <.link href={~p"/users/log_out"} method="delete">
+                      <div class="flex items-end lg:items-start gap-2 text-[0.7rem] sm:text-[0.8125rem] lg:text-lg hover:bg-brand_grey hover:rounded-lg">
+                        <.icon name="hero-arrow-left-end-on-rectangle" />
+                        <p>Log Out</p>
+                      </div>
+                    </.link>
+                  </div>
+                </div>
+              </:content>
+            </.dropdown>
           </li>
         <% else %>
           <li>
             <.link
               href={~p"/users/register"}
-              class="text-[0.7rem] sm:text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
+              class="text-[0.7rem] sm:text-[0.8125rem] lg:text-lg leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
             >
               Register
             </.link>
           </li>
+
           <li>
             <.link
               href={~p"/users/log_in"}
-              class="text-[0.7rem] sm:text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
+              class="text-[0.7rem] sm:text-[0.8125rem] lg:text-lg leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
             >
               Log in
             </.link>
@@ -65,7 +99,6 @@
         <% end %>
       </ul>
     </div>
-    <hr>
-    <%= @inner_content %>
+     <hr /> <%= @inner_content %>
   </body>
 </html>

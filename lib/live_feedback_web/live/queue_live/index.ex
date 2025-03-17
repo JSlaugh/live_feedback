@@ -1,0 +1,69 @@
+defmodule LiveFeedbackWeb.QueueLive.Index do
+  use LiveFeedbackWeb, :live_view
+
+  alias LiveFeedback.Queues.Queue
+  alias LiveFeedback.Queues
+  import LiveFeedbackWeb.Components.Accordion
+
+  @impl true
+  def mount(%{"id" => course_page_id}, _session, socket) do
+    Phoenix.PubSub.subscribe(LiveFeedback.PubSub, "queues:#{course_page_id}")
+
+    {:ok,
+     socket
+     |> stream(:queues, Queues.get_queues_for_course(course_page_id))
+     |> assign(:course_name, Queues.get_course_name(course_page_id))
+     |> assign(:course_page_id, course_page_id)}
+  end
+
+  @impl true
+  def handle_params(params, _url, socket) do
+    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
+  end
+
+  defp apply_action(socket, :index, %{"id" => course_page_id}) do
+    socket
+    |> assign(:page_title, "List Queues")
+    |> assign(:course_page_id, course_page_id)
+  end
+
+  defp apply_action(socket, :new, %{"id" => course_page_id}) do
+    socket
+    |> assign(:page_title, "New Deck")
+    |> assign(:queue, %Queue{})
+    |> assign(:course_page_id, course_page_id)
+  end
+
+  defp apply_action(socket, :edit, %{"id" => _, "queues" => queue_id}) do
+    socket
+    |> assign(:page_title, "Edit Queue")
+    |> assign(:queue, Queues.get_queue!(queue_id))
+  end
+
+  @impl true
+  def handle_info({LiveFeedbackWeb.QueueLive.FormComponent, {:saved, queue}}, socket) do
+    {:noreply,
+     stream(socket, :queues, Queues.get_queues_for_course(queue.course_page_id), reset: true)}
+  end
+
+  @impl true
+  def handle_event("delete_queue", %{"id" => id}, socket) do
+    queue = Queues.get_queue!(id)
+
+    if queue.is_presenting do
+      {:noreply, put_flash(socket, :error, "Cannot delete queue while presenting")}
+    else
+      delete_queue(socket, queue)
+    end
+  end
+
+  defp delete_queue(socket, queue) do
+    with :ok <- Bodyguard.permit(Queues, :delete_queue, socket.assigns.current_user, queue) do
+      Queues.delete_queue(queue)
+      {:noreply, stream_delete(socket, :queues, queue)}
+    else
+      {:error, _reason} ->
+        {:noreply, put_flash(socket, :error, "You are not authorized to delete this queue")}
+    end
+  end
+end

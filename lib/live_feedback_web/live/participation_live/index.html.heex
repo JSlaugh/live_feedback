@@ -1,0 +1,138 @@
+<.flash_group flash={@flash} /> <.back_button to={~p"/course_pages/host"} text="Back" />
+<div class="mx-auto px-4 py-2">
+  <div class="flex flex-col">
+    <h1 class="mt-2 max-sm:text-2xl sm:text-4xl font-bold lg:text-6xl sm:py-4">
+      Participation Data
+    </h1>
+  </div>
+</div>
+
+<div class="px-4 grid grid-cols-1 lg:grid-cols-3 gap-8">
+  <!--Retrieve Data Input Area -->
+  <div class="w-full lg:col-span-1">
+    <div>
+      <%= if @participation_dates != [] do %>
+        <.form for={@form} phx-submit="add_pr">
+          <div class="py-4">
+            <label>Participation Date Requested</label>
+            <.input field={@form[:date]} type="date" name="date" />
+          </div>
+
+          <.button>Request Data</.button>
+        </.form>
+      <% end %>
+    </div>
+
+    <div>
+      <div class="mt-8 mb-4 text-center">
+        <h1 class="font-semibold text-gray-800 max-sm:text-xl sm:text-2xl lg:text-4xl">
+          All Available Presentation Decks
+        </h1>
+      </div>
+
+      <div class="bg-gray-50 shadow-md rounded-lg p-4 w-full">
+        <div class="space-y-4 place-items-center">
+          <%= for date <- @participation_dates do %>
+            <div
+              class="bg-white rounded-lg p-2 outline outline-1 outline-brand_navy hover:bg-gray-50 cursor-pointer w-[98%]"
+              phx-click="add_pr"
+              phx-value-date={if date.presented_date, do: date.presented_date, else: nil}
+            >
+              <h3 class="max-sm:text-md text-lg font-semibold pr-3"><%= date.name %></h3>
+
+              <p class="text-gray-600">
+                <%= if date.presented_date do %>
+                  <%= Timex.Format.DateTime.Formatter.format!(
+                    date.presented_date,
+                    "{WDfull}, {Mfull} {D}, {YYYY}"
+                  ) %>
+                <% else %>
+                  <i>Deck not yet presented</i>
+                <% end %>
+              </p>
+            </div>
+          <% end %>
+        </div>
+
+        <%= if Enum.empty?(@participation_dates) do %>
+          <p class="text-gray-500">
+            No presentation decks to show. Create a deck, present it, and gather responses to download the data.
+          </p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gray-50 shadow-md rounded-lg p-4 w-full lg:col-span-2">
+    <%= if @csv_gathered do %>
+      <div class="flex items-center justify-center">
+        <a
+          href={"/course_pages/#{@course_page_id}/participation/export?date=#{@date_presented}"}
+          class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300"
+        >
+          Download CSV for <%= @date_presented %>
+        </a>
+      </div>
+
+      <div class="w-full mx-auto p-6 bg-white shadow-md rounded-lg">
+        <h1 class="text-2xl font-semibold text-gray-800 mb-4 text-center">CSV Preview</h1>
+
+        <div class="overflow-x-auto">
+          <table class="w-full border border-gray-300 rounded-lg shadow-sm">
+            <thead class="bg-gray-200 text-gray-700">
+              <tr class="text-left">
+                <th class="py-2 px-4 border-b">Class Code</th>
+
+                <th class="py-2 px-4 border-b">Date Asked</th>
+
+                <th class="py-2 px-4 border-b">Participant Display Name</th>
+
+                <th class="py-2 px-4 border-b">Participant ID</th>
+
+                <th class="py-2 px-4 border-b">Question ID</th>
+
+                <th class="py-2 px-4 border-b">Question</th>
+
+                <th class="py-2 px-4 border-b">Option(s)</th>
+
+                <th class="py-2 px-4 border-b">Option(s) Picked</th>
+
+                <th class="py-2 px-4 border-b">Correct</th>
+              </tr>
+            </thead>
+
+            <tbody class="divide-y divide-gray-200">
+              <%= for [presented_date, display_name, custom_registration_id, question_occurrence_id, question_content, option_content, option_order, correct_yn] <- @participation_data do %>
+                <tr class="hover:bg-gray-100 text-gray-700">
+                  <td class="py-2 px-4 border-b"><%= @course_page_id %></td>
+
+                  <td class="py-2 px-4 border-b"><%= presented_date %></td>
+
+                  <td class="py-2 px-4 border-b"><%= display_name %></td>
+
+                  <td class="py-2 px-4 border-b"><%= custom_registration_id %></td>
+
+                  <td class="py-2 px-4 border-b"><%= question_occurrence_id %></td>
+
+                  <td class="py-2 px-4 border-b"><%= question_content %></td>
+
+                  <td class="py-2 px-4 border-b"><%= option_content %></td>
+
+                  <td class="py-2 px-4 border-b"><%= option_order %></td>
+
+                  <td class="py-2 px-4 border-b"><%= correct_yn %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% else %>
+      <div class="flex w-full h-full justify-center items-center align-center">
+        <p class="max-sm:text-sm text-md bg-white p-4 rounded-lg shadow-md">
+          Please select a presented presentation deck to retrieve data.
+        </p>
+      </div>
+    <% end %>
+  </div>
+</div>

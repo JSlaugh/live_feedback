@@ -35,3 +35,11 @@ live_feedback-*.tar
 npm-debug.log
 /assets/node_modules/
 
+#ignore vscode files
+.vs/*
+
+#ignore env
+config/.env.exs
+
+#ignore dev because of my own password lol
+config/dev.exs

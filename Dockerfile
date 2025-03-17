@@ -22,7 +22,14 @@ FROM ${BUILDER_IMAGE} as builder
 
 # install build dependencies
 RUN apt-get update -y && apt-get install -y build-essential git \
-    && apt-get clean && rm -f /var/lib/apt/lists/*_*
+    && apt-get clean && rm -f /var/lib/apt/lists/*_* 
+
+#install curl
+RUN apt-get update -y && apt-get install -y curl
+
+# Install node and npm
+RUN curl -fsSL http://deb.nodesource.com/setup_20.x | bash
+RUN apt-get install -y nodejs
 
 # prepare build dir
 WORKDIR /app
@@ -50,6 +57,8 @@ COPY priv priv
 COPY lib lib
 
 COPY assets assets
+
+RUN cd assets && npm install chart.js
 
 # compile assets
 RUN mix assets.deploy

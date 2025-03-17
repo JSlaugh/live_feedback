@@ -2,6 +2,7 @@ defmodule LiveFeedbackWeb.MessageLive.FormComponent do
   use LiveFeedbackWeb, :live_component
 
   alias LiveFeedback.Messages
+  import LiveFeedbackWeb.CoreComponents
 
   @impl true
   def render(assigns) do
@@ -11,7 +12,7 @@ defmodule LiveFeedbackWeb.MessageLive.FormComponent do
         <%= @title %>
         <:subtitle>Use this form to manage message records in your database.</:subtitle>
       </.header>
-
+      
       <.simple_form
         for={@form}
         id="message-form"

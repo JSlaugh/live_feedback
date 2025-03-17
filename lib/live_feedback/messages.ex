@@ -9,7 +9,9 @@ defmodule LiveFeedback.Messages do
   alias LiveFeedback.Repo
 
   alias LiveFeedback.Messages.Message
+  alias LiveFeedback.Messages.LikedBy
   alias LiveFeedback.Courses.CoursePage
+  alias LiveFeedback.Questions.Question
 
   # Admins can update any message
   def authorize(:update_message, %{role: :admin} = _user, _message), do: :ok
@@ -77,8 +79,6 @@ defmodule LiveFeedback.Messages do
     |> Repo.insert()
     |> case do
       {:ok, message} ->
-        topic = "messages:#{message.course_page_id}"
-        Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:new_message, message})
         {:ok, message}
 
       {:error, changeset} ->
@@ -104,13 +104,19 @@ defmodule LiveFeedback.Messages do
     |> Repo.update()
     |> case do
       {:ok, message} ->
-        topic = "messages:#{message.course_page_id}"
+        topic = "messages:#{message.id}"
         Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:updated_message, message})
         {:ok, message}
 
       {:error, changeset} ->
         {:error, changeset}
     end
+  end
+
+  def answer_message(%Message{} = message, attrs) do
+    message
+    |> Message.changeset(attrs)
+    |> Repo.update()
   end
 
   @doc """
@@ -129,8 +135,6 @@ defmodule LiveFeedback.Messages do
     Repo.delete(message)
     |> case do
       {:ok, message} ->
-        topic = "messages:#{message.course_page_id}"
-        Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:deleted_message, message})
         {:ok, message}
 
       {:error, changeset} ->
@@ -160,13 +164,25 @@ defmodule LiveFeedback.Messages do
       [%Message{}, ...]
 
   """
-  def get_messages_for_course_page_id(course_page_id) do
-    from(m in Message, where: m.course_page_id == ^course_page_id, order_by: [asc: m.inserted_at])
+  def get_messages_for_course_page_id(course_page_id, sort_by \\ :oldest) do
+    sort_order =
+      case sort_by do
+        :newest -> [desc: :inserted_at]
+        :oldest -> [asc: :inserted_at]
+        :like_count -> [desc: :like_count]
+        # Default to oldest
+        _ -> [asc: :inserted_at]
+      end
+
+    from(m in Message,
+      where: m.course_page_id == ^course_page_id,
+      order_by: ^sort_order
+    )
     |> Repo.all(preload: [:course_page])
   end
 
   def delete_all_messages_for_course_page(%CoursePage{id: course_page_id}) do
-    from(m in Message, where: m.course_page_id == ^course_page_id)
+    from(message in Message, where: message.course_page_id == ^course_page_id)
     |> Repo.delete_all()
     |> case do
       {_, nil} ->
@@ -185,8 +201,99 @@ defmodule LiveFeedback.Messages do
     end
   end
 
-  def subscribe(course_page_id) do
-    topic = "messages:#{course_page_id}"
+  @doc """
+  Toggles the like on a message for a given user (authenticated or anonymous).
+  """
+  def toggle_like_message(%Message{} = message, anonymous_id) do
+    like_query =
+      from(like in LikedBy,
+        where: like.message_id == ^message.id and like.anonymous_id == ^anonymous_id
+      )
+
+    case Repo.one(like_query) do
+      # If a like exists, remove it
+      %LikedBy{} = like ->
+        Repo.delete(like)
+        |> case do
+          {:ok, _} ->
+            update_like_count(message, -1)
+
+          {:error, changeset} ->
+            {:error, changeset}
+        end
+
+      # If no like exists, create one
+      nil ->
+        %LikedBy{}
+        |> LikedBy.changeset(%{message_id: message.id, anonymous_id: anonymous_id})
+        |> Repo.insert()
+        |> case do
+          {:ok, _} ->
+            update_like_count(message, 1)
+
+          {:error, changeset} ->
+            {:error, changeset}
+        end
+    end
+  end
+
+  # Helper function to update the like count on a message
+  defp update_like_count(%Message{} = message, delta) do
+    new_count = message.like_count + delta
+
+    message
+    |> Message.changeset(%{like_count: new_count})
+    |> Repo.update()
+    |> case do
+      {:ok, updated_message} ->
+        # Broadcast the updated message
+        topic = "messages:#{updated_message.id}"
+        Phoenix.PubSub.broadcast(LiveFeedback.PubSub, topic, {:updated_message, updated_message})
+
+        {:ok, updated_message}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  def has_liked_message?(%Message{} = message, anonymous_id) do
+    like_query =
+      from(like in LikedBy,
+        where: like.message_id == ^message.id and like.anonymous_id == ^anonymous_id
+      )
+
+    case Repo.one(like_query) do
+      nil -> false
+      %LikedBy{} -> true
+    end
+  end
+
+  def subscribe(queue_id) do
+    topic = "#{queue_id}"
+
     Phoenix.PubSub.subscribe(LiveFeedback.PubSub, topic)
+  end
+
+  def get_messages_for_question(question_id, sort_by \\ :oldest) do
+    sort_order =
+      case sort_by do
+        :newest -> [desc: :inserted_at]
+        :oldest -> [asc: :inserted_at]
+        :like_count -> [desc: :like_count, asc: :inserted_at]
+        # Default to oldest
+        _ -> [asc: :inserted_at]
+      end
+
+    from(message in Message,
+      where: message.question_occurrence_id == ^question_id and message.is_answered == false,
+      order_by: ^sort_order
+    )
+    |> Repo.all()
+  end
+
+  def delete_all_messages_for_question_occurrence(question_id) do
+    from(message in Message, where: message.question_occurrence_id == ^question_id)
+    |> Repo.delete_all()
   end
 end
