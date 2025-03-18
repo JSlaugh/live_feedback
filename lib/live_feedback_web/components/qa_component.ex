@@ -52,13 +52,19 @@ defmodule LiveFeedbackWeb.QaComponent do
       <div class="flex justify-between mx-2 mb-4 xl:mb-6">
         <div>
           <form phx-target={@myself}>
-            <select phx-change="sort_messages_parent" id="sort" name="sort" class="p-2 pr-8  border rounded-lg">
+            <select
+              phx-change="sort_messages_parent"
+              id="sort"
+              name="sort"
+              class="p-2 pr-8  border rounded-lg"
+            >
               <option value="oldest" selected={@sort_by == :oldest}>Oldest</option>
-
+              
               <option value="newest" selected={@sort_by == :newest}>Newest</option>
-
+              
               <option value="like_count" selected={@sort_by == :like_count}>Most Liked</option>
             </select>
+            
             <button
               type="button"
               phx-click="sort_messages"
@@ -66,10 +72,9 @@ defmodule LiveFeedbackWeb.QaComponent do
               phx-target={@myself}
               class="ml-2 p-2 border rounded-lg bg-gray-200 hover:bg-gray-300"
             >
-              <.icon name="hero-arrow-path"/>
+              <.icon name="hero-arrow-path" />
             </button>
-
-            <%!-- If it is an admin or owner of the page it should show this item --%>
+             <%!-- If it is an admin or owner of the page it should show this item --%>
             <%= if @page_admin do %>
               <label
                 phx-click="toggle_live_refresh"
@@ -108,6 +113,7 @@ defmodule LiveFeedbackWeb.QaComponent do
           </.buttonCustomColor>
         <% end %>
       </div>
+      
       <div
         id="messages"
         phx-update="stream"
@@ -127,15 +133,16 @@ defmodule LiveFeedbackWeb.QaComponent do
           </div>
         <% end %>
       </div>
+      
       <%= if !@page_admin do %>
         <.simple_form id="message_form" for={@form} phx-submit="create_message">
           <.textareaWithSave
-          field={@form[:content]}
-          type="textarea"
-          label="New Message"
-          phx-hook="SubmitOnEnter"
-          phx-target={@myself}
-          phx-throttle="500"
+            field={@form[:content]}
+            type="textarea"
+            label="New Message"
+            phx-hook="SubmitOnEnter"
+            phx-target={@myself}
+            phx-throttle="500"
           />
         </.simple_form>
       <% end %>
@@ -150,7 +157,7 @@ defmodule LiveFeedbackWeb.QaComponent do
           <div class="">
             <p class="text-lg break-normal"><%= @message.content %></p>
           </div>
-
+          
           <div>
             <%= if @page_admin || @anonymous_id == @message.anonymous_id do %>
               <button
@@ -180,7 +187,7 @@ defmodule LiveFeedbackWeb.QaComponent do
           action={@live_action}
           message={@message}
           anonymous_id={@anonymous_id}
-          patch={"/page/#{@course_page.id}/#{@queue_id}"}
+          patch={"/page/#{@course_page.slug}"}
         />
       </.modal>
     </div>
