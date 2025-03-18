@@ -34,6 +34,9 @@ live_feedback-*.tar
 # In case you use Node.js/npm, you want to ignore these.
 npm-debug.log
 /assets/node_modules/
+/assets/js/node_modules/
+/assets/js/package-lock.json
+/assets/js/package.json
 
 #ignore vscode files
 .vs/*
