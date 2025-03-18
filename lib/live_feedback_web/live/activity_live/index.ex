@@ -76,8 +76,9 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
           {queue, queue_id, first_question, messages, question_responses, max_question_num, current_question_num, is_locked}
       end
 
-    # Set the Visibility of the QR Code to be based on if they are a presenter or not
+    # Set the Visibility of the QR Code and other variables to be based on if they are a presenter or not
     qr_code_visible = presenter
+    understanding_chart_visible = presenter
 
     # Subscribe to the Pubsub for this Course ID
     if connected?(socket), do: Messages.subscribe(course_page.id)
@@ -93,6 +94,7 @@ defmodule LiveFeedbackWeb.ActivityLive.Index do
      |> assign(:profile_id, if(profile, do: profile.id, else: nil))
      |> assign(:page_admin, presenter)
      |> assign(:qr_code_visible, qr_code_visible)
+     |> assign(:understanding_chart_visible, understanding_chart_visible)
      |> assign(:show_results, false)
      |> assign(:locked, is_locked)
      |> assign(:course_page, course_page)
